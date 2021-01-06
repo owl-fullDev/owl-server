@@ -22,7 +22,7 @@ public class pos_endpoint {
 
     @GetMapping
     public String testConnection(){
-        return "connection sucess!";
+        return "there there, everything will be ok ishna";
     }
 
     @GetMapping("/testPersistence")
