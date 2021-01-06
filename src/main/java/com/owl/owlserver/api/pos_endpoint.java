@@ -22,7 +22,22 @@ public class pos_endpoint {
 
     @GetMapping
     public String testConnection(){
-        return "there there, everything will be ok ishna";
+        return "well hellp there";
+    }
+
+    @GetMapping("/j")
+    public String joyi(){
+        return "E-GIRL DETECTED";
+    }
+
+    @GetMapping("/c")
+    public String caroline(){
+        return "blek";
+    }
+
+    @GetMapping("/i")
+    public String ian(){
+        return "vroom ~";
     }
 
     @GetMapping("/testPersistence")
