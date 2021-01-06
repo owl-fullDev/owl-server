@@ -21,14 +21,19 @@ public class pos_endpoint {
     CustomerRepository customerRepository;
 
     @GetMapping
-    public String test(){
+    public String testConnection(){
+        return "connection sucess!";
+    }
+
+    @GetMapping("/testPersistence")
+    public String testPersistence(){
 
         Customer customer = new Customer("testuser","1","0101010101","",0,0.0,0.0,0,0.0,"x",0.0,0.0,0,0.0,"x");
         Sale newsale = new Sale(2,222.2,1,1,LocalDateTime.now(),"cash",333.3,true);
         customer.addSale(newsale);
         customerRepository.save(customer);
 
-        return "sucess";
+        return "sucessfully added new user";
     }
 
 }
