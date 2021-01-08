@@ -1,63 +1,75 @@
 package com.owl.owlserver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
-@Table(name="PROMOTION")
+@Table(name = "PROMOTION")
 public class Promotion implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "PROMOTION_ID")
-    private int promotion_id;
+    @Column(name = "PROMOTION_ID", nullable = false)
+    private int promotionId;
 
-    @OneToMany(mappedBy = "promotion", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<StorePromotion> storePromotionList;
-
-    @Column(name = "PROMOTION_NAME")
-    private String promotion_name;
+    @Column(name = "PROMOTION_NAME", nullable = false)
+    private String promotionName;
 
     @Column(name = "PERCENTAGE")
     private int percentage;
 
+    @JsonIgnore
+    @ManyToMany(mappedBy = "promotionList")
+    List<Store> storeList;
+
     public Promotion() {
+        storeList = new ArrayList<>();
     }
 
-    public Promotion(String promotion_details) {
-        this.promotion_name = promotion_details;
+    public Promotion(int promotionId, String promotionName) {
+        storeList = new ArrayList<>();
+        this.promotionId = promotionId;
+        this.promotionName = promotionName;
     }
 
-    public Promotion(String promotion_details, int percentage) {
-        this.promotion_name = promotion_details;
+    public Promotion(int promotionId, String promotionName, int percentage) {
+        storeList = new ArrayList<>();
+        this.promotionId = promotionId;
+        this.promotionName = promotionName;
         this.percentage = percentage;
     }
 
-    public List<StorePromotion> getStorePromotions() {
-        return storePromotionList;
+    public List<Store> getStoreList() {
+        return storeList;
     }
 
-    public void addStorePromotion (StorePromotion storePromotion){
-        storePromotionList.add(storePromotion);
-        storePromotion.setPromotion(this);
+    public void addStore(Store store) {
+        storeList.add(store);
     }
 
-    public void removeSaleDetail (StorePromotion storePromotion){
-        storePromotionList.remove(storePromotion);
-        storePromotion.setPromotion(null);
+    public void removeStore(Store store) {
+        storeList.remove(store);
     }
 
-    public int getPromotion_id() {
-        return promotion_id;
+    public int getPromotionId() {
+        return promotionId;
     }
 
-    public String getPromotion_name() {
-        return promotion_name;
+    public void setPromotionId(int promotionId) {
+        this.promotionId = promotionId;
     }
 
-    public void setPromotion_name(String promotion_details) {
-        this.promotion_name = promotion_details;
+    public String getPromotionName() {
+        return promotionName;
+    }
+
+    public void setPromotionName(String promotionName) {
+        this.promotionName = promotionName;
     }
 
     public int getPercentage() {
@@ -68,13 +80,4 @@ public class Promotion implements Serializable {
         this.percentage = percentage;
     }
 
-    @Override
-    public String toString() {
-        return "Promotions{" +
-                "promotion_id=" + promotion_id +
-                ", storePromotionsList=" + storePromotionList +
-                ", promotion_details='" + promotion_name + '\'' +
-                ", percentage=" + percentage +
-                '}';
-    }
 }

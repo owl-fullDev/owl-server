@@ -1,86 +1,99 @@
 package com.owl.owlserver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 @Entity
-@Table(name="EMPLOYEE")
+@Table(name = "EMPLOYEE")
 public class Employee implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "employee_id", nullable = false)
-    private int employee_id;
+    @Column(name = "EMPLOYEE_ID", nullable = false)
+    private int employeeId;
 
-    @Column(name = "first_name", nullable = false)
-    private String first_name;
+    @Column(name = "FIRST_NAME", nullable = false)
+    private String firstName;
 
-    @Column(name = "last_name", nullable = false)
-    private String last_name;
+    @Column(name = "LAST_NAME", nullable = false)
+    private String lastname;
 
-    @Column(name = "job_title", nullable = false)
-    private String job_title;
+    @Column(name = "JOB_TITLE", nullable = false)
+    private String jobTitle;
 
-    @Column(name = "phone_number")
-    private int phone_number;
+    @Column(name = "PHONE_NUMBER")
+    private String phoneNumber;
 
-    @Column(name = "email")
+    @Column(name = "EMAIL")
     private String email;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "STORE_ID")
+    private Store store;
 
     public Employee() {
     }
 
-    public Employee(int employee_id, String first_name, String last_name, String job_title) {
-        this.employee_id = employee_id;
-        this.first_name = first_name;
-        this.last_name = last_name;
-        this.job_title = job_title;
+    public Employee(String firstName, String lastname, String jobTitle) {
+        this.firstName = firstName;
+        this.lastname = lastname;
+        this.jobTitle = jobTitle;
     }
 
-    public Employee(int employee_id, String first_name, String last_name, int phone_number, String email, String job_title) {
-        this.employee_id = employee_id;
-        this.first_name = first_name;
-        this.last_name = last_name;
-        this.phone_number = phone_number;
-        this.email = email;
-        this.job_title = job_title;
+    public Store getStore(){
+        return store;
     }
 
-    public int getEmployee_id() {
-        return employee_id;
+    public void setStore(Store store){
+        this.store = store;
     }
 
-    public String getFirst_name() {
-        return first_name;
+    public void removeStore(){
+        this.store = null;
     }
 
-    public void setFirst_name(String first_name) {
-        this.first_name = first_name;
+    public int getEmployeeId() {
+        return employeeId;
     }
 
-    public String getLast_name() {
-        return last_name;
+    public void setEmployeeId(int employeeId) {
+        this.employeeId = employeeId;
     }
 
-    public void setLast_name(String last_name) {
-        this.last_name = last_name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public String getJob_title() {
-        return job_title;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public void setJob_title(String job_tittle) {
-        this.job_title = job_tittle;
+    public String getLastname() {
+        return lastname;
     }
 
-    public int getPhone_number() {
-        return phone_number;
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
     }
 
-    public void setPhone_number(int phone_number) {
-        this.phone_number = phone_number;
+    public String getJobTitle() {
+        return jobTitle;
+    }
+
+    public void setJobTitle(String jobTitle) {
+        this.jobTitle = jobTitle;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getEmail() {
@@ -89,5 +102,30 @@ public class Employee implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Employee employee = (Employee) o;
+        return employeeId == employee.employeeId && firstName.equals(employee.firstName) && lastname.equals(employee.lastname) && jobTitle.equals(employee.jobTitle) && Objects.equals(phoneNumber, employee.phoneNumber) && Objects.equals(email, employee.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(employeeId, firstName, lastname, jobTitle, phoneNumber, email);
+    }
+
+    @Override
+    public String toString() {
+        return "Employee{" +
+                "employeeId=" + employeeId +
+                ", firstName='" + firstName + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", jobTitle='" + jobTitle + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", email='" + email + '\'' +
+                '}';
     }
 }

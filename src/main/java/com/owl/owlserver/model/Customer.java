@@ -4,117 +4,138 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Objects;
 
 @Entity
 @Table(name = "CUSTOMER")
-public class Customer {
+public class Customer implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "customer_id", nullable = false)
-    private int customer_id;
+    @Column(name = "CUSTOMER_ID", nullable = false)
+    private int customerId;
 
     @Column(name = "FIRST_NAME", nullable = false)
-    private String first_name;
+    private String firstName;
 
     @Column(name = "LAST_NAME", nullable = false)
-    private String last_name;
+    private String lastName;
 
-    @Column(name = "phone_number", nullable = false)
-    private String phone_number;
+    @Column(name = "PHONE_NUMBER", nullable = false)
+    private String phoneNumber;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "EMAIL")
     private String email;
 
-    @Column(name = "pupil_distance", nullable = false)
-    private int pupil_distance;
-    @Column(name = "right_eye_sphere", nullable = false)
-    private double right_eye_sphere;
-    @Column(name = "right_eye_cylinder", nullable = false)
-    private double right_eye_cylinder;
-    @Column(name = "right_eye_axis", nullable = false)
-    private int right_eye_axis;
-    @Column(name = "right_eye_add", nullable = false)
-    private double right_eye_add;
-    @Column(name = "right_eye_prism", nullable = false)
-    private String right_eye_prism;
-    @Column(name = "left_eye_sphere", nullable = false)
-    private double left_eye_sphere;
-    @Column(name = "left_eye_cylinder", nullable = false)
-    private double left_eye_cylinder;
-    @Column(name = "left_eye_axis", nullable = false)
-    private int left_eye_axis;
-    @Column(name = "left_eye_add", nullable = false)
-    private double left_eye_add;
-    @Column(name = "left_eye_prism", nullable = false)
-    private String left_eye_prism;
+    @Column(name = "PUPIL_DISTANCE", nullable = false)
+    private int pupilDistance;
+    @Column(name = "RIGHT_EYE_SPHERE", nullable = false)
+    private double rightEyeSphere;
+    @Column(name = "RIGHT_EYE_CYLINDER", nullable = false)
+    private double rightEyeCylinder;
+    @Column(name = "RIGHT_EYE_AXIS", nullable = false)
+    private int rightEyeAxis;
+    @Column(name = "RIGHT_EYE_ADD", nullable = false)
+    private double rightEyeAdd;
+    @Column(name = "RIGHT_EYE_PRISM", nullable = false)
+    private String rightEyePrism;
+    @Column(name = "LEFT_EYE_SPHERE", nullable = false)
+    private double leftEyeSphere;
+    @Column(name = "LEFT_EYE_CYLINDER", nullable = false)
+    private double leftEyeCylinder;
+    @Column(name = "LEFT_EYE_AXIS", nullable = false)
+    private int leftEyeAxis;
+    @Column(name = "LEFT_EYE_ADD", nullable = false)
+    private double leftEyeAdd;
+    @Column(name = "LEFT_EYE_PRISM", nullable = false)
+    private String leftEyePrism;
 
-    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Sale> saleList; //stores list of sale entries
+    @OneToMany(mappedBy = "customer")
+    private List<Sale> saleList;
 
     public Customer() {
         saleList = new ArrayList<>();
     }
 
-    public Customer(String first_name, String last_name, String phone_number, String email, int pupil_distance, double right_eye_sphere, double right_eye_cylinder, int right_eye_axis, double right_eye_add, String right_eye_prism, double left_eye_sphere, double left_eye_cylinder, int left_eye_axis, double left_eye_add, String left_eye_prism) {
+    public Customer(String firstName, String lastName, String phoneNumber, int pupilDistance, double rightEyeSphere, double rightEyeCylinder, int rightEyeAxis, double rightEyeAdd, String rightEyePrism, double leftEyeSphere, double leftEyeCylinder, int leftEyeAxis, double leftEyeAdd, String leftEyePrism) {
         saleList = new ArrayList<>();
-        this.first_name = first_name;
-        this.last_name = last_name;
-        this.phone_number = phone_number;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
+        this.pupilDistance = pupilDistance;
+        this.rightEyeSphere = rightEyeSphere;
+        this.rightEyeCylinder = rightEyeCylinder;
+        this.rightEyeAxis = rightEyeAxis;
+        this.rightEyeAdd = rightEyeAdd;
+        this.rightEyePrism = rightEyePrism;
+        this.leftEyeSphere = leftEyeSphere;
+        this.leftEyeCylinder = leftEyeCylinder;
+        this.leftEyeAxis = leftEyeAxis;
+        this.leftEyeAdd = leftEyeAdd;
+        this.leftEyePrism = leftEyePrism;
+    }
+
+    public Customer(String firstName, String lastName, String phoneNumber, String email, int pupilDistance, double rightEyeSphere, double rightEyeCylinder, int rightEyeAxis, double rightEyeAdd, String rightEyePrism, double leftEyeSphere, double leftEyeCylinder, int leftEyeAxis, double leftEyeAdd, String leftEyePrism) {
+        saleList = new ArrayList<>();
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
         this.email = email;
-        this.pupil_distance = pupil_distance;
-        this.right_eye_sphere = right_eye_sphere;
-        this.right_eye_cylinder = right_eye_cylinder;
-        this.right_eye_axis = right_eye_axis;
-        this.right_eye_add = right_eye_add;
-        this.right_eye_prism = right_eye_prism;
-        this.left_eye_sphere = left_eye_sphere;
-        this.left_eye_cylinder = left_eye_cylinder;
-        this.left_eye_axis = left_eye_axis;
-        this.left_eye_add = left_eye_add;
-        this.left_eye_prism = left_eye_prism;
+        this.pupilDistance = pupilDistance;
+        this.rightEyeSphere = rightEyeSphere;
+        this.rightEyeCylinder = rightEyeCylinder;
+        this.rightEyeAxis = rightEyeAxis;
+        this.rightEyeAdd = rightEyeAdd;
+        this.rightEyePrism = rightEyePrism;
+        this.leftEyeSphere = leftEyeSphere;
+        this.leftEyeCylinder = leftEyeCylinder;
+        this.leftEyeAxis = leftEyeAxis;
+        this.leftEyeAdd = leftEyeAdd;
+        this.leftEyePrism = leftEyePrism;
     }
 
     public List<Sale> getSaleList() {
         return saleList;
     }
 
-    public void setSaleList(List<Sale> saleList) {
-        this.saleList = saleList;
+    public Sale getSale(Sale sale){
+        return saleList.get(saleList.indexOf(sale));
     }
 
     public void addSale(Sale sale) {
         saleList.add(sale);
-        sale.setCustomer(this);
     }
 
-    public int getCustomer_id() {
-        return customer_id;
+    public void removeSale(Sale sale) {
+        saleList.remove(sale);
     }
 
-    public String getFirst_name() {
-        return first_name;
+    public int getCustomerId() {
+        return customerId;
     }
 
-    public void setFirst_name(String first_name) {
-        this.first_name = first_name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public String getLast_name() {
-        return last_name;
+    public void setFirstName(String first_name) {
+        this.firstName = first_name;
     }
 
-    public void setLast_name(String last_name) {
-        this.last_name = last_name;
+    public String getLastName() {
+        return lastName;
     }
 
-    public String getPhone_number() {
-        return phone_number;
+    public void setLastName(String last_name) {
+        this.lastName = last_name;
     }
 
-    public void setPhone_number(String phone_number) {
-        this.phone_number = phone_number;
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phone_number) {
+        this.phoneNumber = phone_number;
     }
 
     public String getEmail() {
@@ -125,93 +146,111 @@ public class Customer {
         this.email = email;
     }
 
-    public int getPupil_distance() {
-        return pupil_distance;
+    public int getPupilDistance() { return pupilDistance; }
+
+    public void setPupilDistance(int pupilDistance) {
+        this.pupilDistance = pupilDistance;
     }
 
-    public void setPupil_distance(int pupil_distance) {
-        this.pupil_distance = pupil_distance;
+    public double getRightEyeSphere() {
+        return rightEyeSphere;
     }
 
-    public double getRight_eye_sphere() {
-        return right_eye_sphere;
+    public void setRightEyeSphere(double rightEyeSphere) {
+        this.rightEyeSphere = rightEyeSphere;
     }
 
-    public void setRight_eye_sphere(double right_eye_sphere) {
-        this.right_eye_sphere = right_eye_sphere;
+    public double getRightEyeCylinder() {
+        return rightEyeCylinder;
     }
 
-    public double getRight_eye_cylinder() {
-        return right_eye_cylinder;
+    public void setRightEyeCylinder(double rightEyeCylinder) {
+        this.rightEyeCylinder = rightEyeCylinder;
     }
 
-    public void setRight_eye_cylinder(double right_eye_cylinder) {
-        this.right_eye_cylinder = right_eye_cylinder;
+    public int getRightEyeAxis() {
+        return rightEyeAxis;
     }
 
-    public int getRight_eye_axis() {
-        return right_eye_axis;
+    public void setRightEyeAxis(int rightEyeAxis) {
+        this.rightEyeAxis = rightEyeAxis;
     }
 
-    public void setRight_eye_axis(int right_eye_axis) {
-        this.right_eye_axis = right_eye_axis;
+    public double getRightEyeAdd() {
+        return rightEyeAdd;
     }
 
-    public double getRight_eye_add() {
-        return right_eye_add;
+    public void setRightEyeAdd(double rightEyeAdd) {
+        this.rightEyeAdd = rightEyeAdd;
     }
 
-    public void setRight_eye_add(double right_eye_add) {
-        this.right_eye_add = right_eye_add;
+    public String getRightEyePrism() {
+        return rightEyePrism;
     }
 
-    public String getRight_eye_prism() {
-        return right_eye_prism;
+    public void setRightEyePrism(String rightEyePrism) {
+        this.rightEyePrism = rightEyePrism;
     }
 
-    public void setRight_eye_prism(String right_eye_prism) {
-        this.right_eye_prism = right_eye_prism;
+    public double getLeftEyeSphere() {
+        return leftEyeSphere;
     }
 
-    public double getLeft_eye_sphere() {
-        return left_eye_sphere;
+    public void setLeftEyeSphere(double leftEyeSphere) {
+        this.leftEyeSphere = leftEyeSphere;
     }
 
-    public void setLeft_eye_sphere(double left_eye_sphere) {
-        this.left_eye_sphere = left_eye_sphere;
+    public double getLeftEyeCylinder() {
+        return leftEyeCylinder;
     }
 
-    public double getLeft_eye_cylinder() {
-        return left_eye_cylinder;
+    public void setLeftEyeCylinder(double leftEyeCylinder) {
+        this.leftEyeCylinder = leftEyeCylinder;
     }
 
-    public void setLeft_eye_cylinder(double left_eye_cylinder) {
-        this.left_eye_cylinder = left_eye_cylinder;
+    public int getLeftEyeAxis() {
+        return leftEyeAxis;
     }
 
-    public int getLeft_eye_axis() {
-        return left_eye_axis;
+    public void setLeftEyeAxis(int leftEyeAxis) {
+        this.leftEyeAxis = leftEyeAxis;
     }
 
-    public void setLeft_eye_axis(int left_eye_axis) {
-        this.left_eye_axis = left_eye_axis;
+    public double getLeftEyeAdd() {
+        return leftEyeAdd;
     }
 
-    public double getLeft_eye_add() {
-        return left_eye_add;
+    public void setLeftEyeAdd(double leftEyeAdd) {
+        this.leftEyeAdd = leftEyeAdd;
     }
 
-    public void setLeft_eye_add(double left_eye_add) {
-        this.left_eye_add = left_eye_add;
+    public String getLeftEyePrism() {
+        return leftEyePrism;
     }
 
-    public String getLeft_eye_prism() {
-        return left_eye_prism;
+    public void setLeftEyePrism(String leftEyePrism) {
+        this.leftEyePrism = leftEyePrism;
     }
 
-    public void setLeft_eye_prism(String left_eye_prism) {
-        this.left_eye_prism = left_eye_prism;
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "customerId=" + customerId +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", email='" + email + '\'' +
+                ", pupilDistance=" + pupilDistance +
+                ", rightEyeSphere=" + rightEyeSphere +
+                ", rightEyeCylinder=" + rightEyeCylinder +
+                ", rightEyeAxis=" + rightEyeAxis +
+                ", rightEyeAdd=" + rightEyeAdd +
+                ", rightEyePrism='" + rightEyePrism + '\'' +
+                ", leftEyeSphere=" + leftEyeSphere +
+                ", leftEyeCylinder=" + leftEyeCylinder +
+                ", leftEyeAxis=" + leftEyeAxis +
+                ", leftEyeAdd=" + leftEyeAdd +
+                ", leftEyePrism='" + leftEyePrism + '\'' +
+                '}';
     }
-
-
 }

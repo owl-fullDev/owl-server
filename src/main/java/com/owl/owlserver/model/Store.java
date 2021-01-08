@@ -1,60 +1,93 @@
 package com.owl.owlserver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
-@Table(name="STORE")
+@Table(name = "store")
 public class Store implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "store_id")
-    private int store_id;
+    @Column(name = "STORE_ID", nullable = false)
+    private int storeId;
 
-    @Column(name = "location")
+    @Column(name = "LOCATION", nullable = false)
     private String location;
 
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private List<StoreInventory> storeInventoryList;
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+            name = "STORE_PROMOTION",
+            joinColumns = @JoinColumn(name = "STORE_ID"),
+            inverseJoinColumns = @JoinColumn(name = "PROMOTION_ID")
+    )
+    List<Promotion> promotionList;
 
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<StorePromotion> storePromotionList;
+    @JsonIgnore
+    @OneToMany(mappedBy = "store")
+    private List<Employee> employeesList;
 
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<StoreEmployee> storeEmployeeList;
-
-    public List<StoreInventory> getStoreInventoryList() {
-        return storeInventoryList;
-    }
-
-    public List<StorePromotion> getStorePromotionList() {
-        return storePromotionList;
-    }
-
-    public List<StoreEmployee> getStoreEmployeeList() {
-        return storeEmployeeList;
-    }
+    @JsonIgnore
+    @OneToMany(mappedBy = "store")
+    private List<StoreQuantity> storeQuantityList;
 
     public Store() {
-        storeInventoryList = new ArrayList<>();
-        storePromotionList = new ArrayList<>();
-        storeEmployeeList = new ArrayList<>();
-
+        promotionList = new ArrayList<>();
+        employeesList = new ArrayList<>();
+        storeQuantityList = new ArrayList<>();
     }
 
     public Store(String location) {
+        promotionList = new ArrayList<>();
+        employeesList = new ArrayList<>();
+        storeQuantityList = new ArrayList<>();
         this.location = location;
-        storeInventoryList = new ArrayList<>();
-        storePromotionList = new ArrayList<>();
-        storeEmployeeList = new ArrayList<>();
     }
 
-    public int getStore_id() {
-        return store_id;
+    public List<Promotion> getPromotionList() {
+        return promotionList;
+    }
+
+    public void addPromotion(Promotion promotion) {
+        promotionList.add(promotion);
+    }
+
+    public void removePromotion(Promotion promotion) {
+        promotionList.remove(promotion);
+    }
+
+    public List<Employee> getEmployeesList() {
+        return employeesList;
+    }
+
+    public void addEmployee(Employee employee) {
+        employeesList.add(employee);
+    }
+
+    public void removeEmployee(Employee employee) {
+        employeesList.remove(employee);
+    }
+
+    public List<StoreQuantity> getStoreQuantityList() {
+        return storeQuantityList;
+    }
+
+    public void addStoreQuantity(StoreQuantity storeQuantity) {
+        storeQuantityList.add(storeQuantity);
+    }
+
+    public void removeEmployee(StoreQuantity storeQuantity) {
+        storeQuantityList.remove(storeQuantity);
+    }
+
+    public int getStoreId() {
+        return storeId;
     }
 
     public String getLocation() {
@@ -65,33 +98,4 @@ public class Store implements Serializable {
         this.location = location;
     }
 
-    public void addStoreInventory(StoreInventory storeInventory) {
-        storeInventoryList.add(storeInventory);
-        storeInventory.setStore(this);
-    }
-
-    public void removeStoreInventory (StoreInventory storeInventory){
-        storeInventoryList.remove(storeInventory);
-        storeInventory.setStore(null);
-    }
-
-    public void addStorePromotion (StorePromotion storePromotion){
-        storePromotionList.add(storePromotion);
-        storePromotion.setStore(this);
-    }
-
-    public void removeSaleDetail (StorePromotion storePromotion){
-        storePromotionList.remove(storePromotion);
-        storePromotion.setStore(null);
-    }
-
-    public void addStoreEmployee(StoreEmployee storeEmployee) {
-        storeEmployeeList.add(storeEmployee);
-        storeEmployee.setStore(this);
-    }
-
-    public void removeStoreEmployee(StoreEmployee storeEmployee){
-        storeEmployeeList.remove(storeEmployee);
-        storeEmployee.setStore(null);
-    }
 }

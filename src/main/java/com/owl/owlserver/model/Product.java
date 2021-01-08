@@ -2,69 +2,97 @@ package com.owl.owlserver.model;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 @Entity
-@Table(name="PRODUCT")
+@Table(name = "Product")
 public class Product implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "product_id", nullable = false)
-    private String product_id;
+    @Column(name = "PRODUCT_ID", nullable = false)
+    private String productId;
 
-    @Column(name = "product_name", nullable = false)
-    private String product_name;
+    @Column(name = "PRODUCT_NAME", nullable = false)
+    private String productName;
 
-    @Column(name = "product_price", nullable = false)
-    private double product_price;
+    @Column(name = "PRODUCT_PRICE", nullable = false)
+    private double productPrice;
 
-    @Column(name = "image_link")
-    private String image_link;
+    @Column(name = "IMAGE_LINK")
+    private String imageLink;
+
+    @Transient
+    private int storeQuantity;
 
     public Product() {
     }
 
-    public Product(String product_SKU, String product_name) {
-        this.product_id = product_SKU;
-        this.product_name = product_name;
+    public Product(String productId, String productName, double productPrice) {
+        this.productId = productId;
+        this.productName = productName;
+        this.productPrice = productPrice;
     }
 
-    public Product(String product_SKU, String product_name, String image_link) {
-        this.product_id = product_SKU;
-        this.product_name = product_name;
-        this.image_link = image_link;
+    public String getProductId() {
+        return productId;
     }
 
-
-    public String getProduct_name() {
-        return product_name;
+    public void setProductId(String productId) {
+        this.productId = productId;
     }
 
-    public void setProduct_name(String product_name) {
-        this.product_name = product_name;
+    public String getProductName() {
+        return productName;
     }
 
-    public String getProduct_id() {
-        return product_id;
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
-    public void setProduct_id(String product_id) {
-        this.product_id = product_id;
+    public double getProductPrice() {
+        return productPrice;
     }
 
-    public double getProduct_price() {
-        return product_price;
+    public void setProductPrice(double productPrice) {
+        this.productPrice = productPrice;
     }
 
-    public void setProduct_price(double product_price) {
-        this.product_price = product_price;
+    public String getImageLink() {
+        return imageLink;
     }
 
-    public String getImage_link() {
-        return image_link;
+    public void setImageLink(String imageLink) {
+        this.imageLink = imageLink;
     }
 
-    public void setImage_link(String image_link) {
-        this.image_link = image_link;
+    public int getStoreQuantity() {
+        return storeQuantity;
+    }
+
+    public void setStoreQuantity(int storeQuantity) {
+        this.storeQuantity = storeQuantity;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return Double.compare(product.productPrice, productPrice) == 0 && productId.equals(product.productId) && productName.equals(product.productName) && Objects.equals(imageLink, product.imageLink);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(productId, productName, productPrice, imageLink);
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "productId='" + productId + '\'' +
+                ", productName='" + productName + '\'' +
+                ", productPrice=" + productPrice +
+                ", imageLink='" + imageLink + '\'' +
+                '}';
     }
 }
