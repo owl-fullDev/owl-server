@@ -1,9 +1,11 @@
 package com.owl.owlserver.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonAppend;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,10 +31,10 @@ public class Sale implements Serializable {
     private double grandTotal;
 
     @Column(name = "PICKUP_DATE")
-    private String pickupDate;
+    private java.time.LocalDateTime pickupDate;
 
     @Column(name = "INITIAL_DEPOSIT_DATE", nullable = false)
-    private String initialDepositDate;
+    private java.time.LocalDateTime initialDepositDate;
 
     @Column(name = "INITIAL_DEPOSIT_TYPE", nullable = false)
     private String initialDepositType;
@@ -41,7 +43,7 @@ public class Sale implements Serializable {
     private double initialDepositAmount;
 
     @Column(name = "FINAL_DEPOSIT_DATE")
-    private String finalDepositDate;
+    private java.time.LocalDateTime finalDepositDate;
 
     @Column(name = "FINAL_DEPOSIT_TYPE")
     private String finalDepositType;
@@ -49,20 +51,21 @@ public class Sale implements Serializable {
     @Column(name = "FINAL_DEPOSIT_AMOUNT")
     private double finalDepositAmount;
 
-    @JsonIgnore
+    @Column(name = "FULL_PAYMENT")
+    private boolean fullyPaid;
+
     @ManyToOne
     @JoinColumn(name = "CUSTOMER_ID", nullable = false)
     private Customer customer;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "sale")
+    @OneToMany(mappedBy = "sale", fetch = FetchType.EAGER)
     private List<SaleDetail> saleDetailList;
 
     public Sale() {
         saleDetailList = new ArrayList<>();
     }
 
-    public Sale(int promotionId, int employeeId, int storeId, double grandTotal, String initialDepositDate, String initialDepositType, double initialDepositAmount) {
+    public Sale(int promotionId, int employeeId, int storeId, double grandTotal, LocalDateTime initialDepositDate, String initialDepositType, double initialDepositAmount, boolean fullyPaid) {
         saleDetailList = new ArrayList<>();
         this.promotionId = promotionId;
         this.employeeId = employeeId;
@@ -71,6 +74,7 @@ public class Sale implements Serializable {
         this.initialDepositDate = initialDepositDate;
         this.initialDepositType = initialDepositType;
         this.initialDepositAmount = initialDepositAmount;
+        this.fullyPaid = fullyPaid;
     }
 
     public List<SaleDetail> getSaleDetailList() {
@@ -129,19 +133,19 @@ public class Sale implements Serializable {
         this.grandTotal = grandTotal;
     }
 
-    public String getPickupDate() {
+    public LocalDateTime getPickupDate() {
         return pickupDate;
     }
 
-    public void setPickupDate(String pickupDate) {
+    public void setPickupDate(LocalDateTime pickupDate) {
         this.pickupDate = pickupDate;
     }
 
-    public String getInitialDepositDate() {
+    public LocalDateTime getInitialDepositDate() {
         return initialDepositDate;
     }
 
-    public void setInitialDepositDate(String initialDepositDate) {
+    public void setInitialDepositDate(LocalDateTime initialDepositDate) {
         this.initialDepositDate = initialDepositDate;
     }
 
@@ -161,11 +165,11 @@ public class Sale implements Serializable {
         this.initialDepositAmount = initialDepositAmount;
     }
 
-    public String getFinalDepositDate() {
+    public LocalDateTime getFinalDepositDate() {
         return finalDepositDate;
     }
 
-    public void setFinalDepositDate(String finalDepositDate) {
+    public void setFinalDepositDate(LocalDateTime finalDepositDate) {
         this.finalDepositDate = finalDepositDate;
     }
 
@@ -185,6 +189,14 @@ public class Sale implements Serializable {
         this.finalDepositAmount = finalDepositAmount;
     }
 
+    public boolean isFullyPaid() {
+        return fullyPaid;
+    }
+
+    public void setFullyPaid(boolean fullyPaid) {
+        this.fullyPaid = fullyPaid;
+    }
+
     @Override
     public String toString() {
         return "Sale{" +
@@ -193,14 +205,16 @@ public class Sale implements Serializable {
                 ", employeeId=" + employeeId +
                 ", storeId=" + storeId +
                 ", grandTotal=" + grandTotal +
-                ", pickupDate='" + pickupDate + '\'' +
-                ", initialDepositDate='" + initialDepositDate + '\'' +
+                ", pickupDate=" + pickupDate +
+                ", initialDepositDate=" + initialDepositDate +
                 ", initialDepositType='" + initialDepositType + '\'' +
                 ", initialDepositAmount=" + initialDepositAmount +
-                ", finalDepositDate='" + finalDepositDate + '\'' +
+                ", finalDepositDate=" + finalDepositDate +
                 ", finalDepositType='" + finalDepositType + '\'' +
                 ", finalDepositAmount=" + finalDepositAmount +
-                ", customer=" + customer +
+                ", fullyPaid=" + fullyPaid +
                 '}';
     }
+
+
 }

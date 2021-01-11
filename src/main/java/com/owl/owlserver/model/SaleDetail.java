@@ -1,5 +1,7 @@
 package com.owl.owlserver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.io.Serializable;
 
@@ -10,7 +12,7 @@ public class SaleDetail implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "SALE_DETAIL_ID", nullable = false)
-    private int saleId;
+    private int saleDetailId;
 
     @Column(name = "PRODUCT_ID", nullable = false)
     private String productId;
@@ -18,6 +20,7 @@ public class SaleDetail implements Serializable {
     @Column(name = "QUANTITY", nullable = false)
     private int quantity;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "SALE_ID", nullable = false)
     private Sale sale;
@@ -25,8 +28,7 @@ public class SaleDetail implements Serializable {
     public SaleDetail() {
     }
 
-    public SaleDetail(Sale sale, String productId, int quantity) {
-        this.sale = sale;
+    public SaleDetail(String productId, int quantity) {
         this.productId = productId;
         this.quantity = quantity;
     }
@@ -39,8 +41,8 @@ public class SaleDetail implements Serializable {
         this.sale = sale;
     }
 
-    public int getSaleId() {
-        return saleId;
+    public int getSaleDetailId() {
+        return saleDetailId;
     }
 
     public String getProductId() {
@@ -57,5 +59,14 @@ public class SaleDetail implements Serializable {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    @Override
+    public String toString() {
+        return "SaleDetail{" +
+                "saleId=" + saleDetailId +
+                ", productId='" + productId + '\'' +
+                ", quantity=" + quantity +
+                '}';
     }
 }

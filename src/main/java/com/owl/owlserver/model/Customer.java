@@ -1,5 +1,10 @@
 package com.owl.owlserver.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -50,6 +55,7 @@ public class Customer implements Serializable {
     @Column(name = "LEFT_EYE_PRISM", nullable = false)
     private String leftEyePrism;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "customer")
     private List<Sale> saleList;
 
