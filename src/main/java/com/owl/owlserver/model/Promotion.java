@@ -20,8 +20,11 @@ public class Promotion implements Serializable {
     @Column(name = "PROMOTION_NAME", nullable = false)
     private String promotionName;
 
-    @Column(name = "PERCENTAGE")
+    @Column(name = "PERCENTAGE", nullable = false)
     private int percentage;
+
+    @Column(name = "ACTIVE_ALL_STORES",nullable = false)
+    private boolean activeInAllStores;
 
     @JsonIgnore
     @ManyToMany(mappedBy = "promotionList")
@@ -31,17 +34,11 @@ public class Promotion implements Serializable {
         storeList = new ArrayList<>();
     }
 
-    public Promotion(int promotionId, String promotionName) {
+    public Promotion(int percentage, String promotionName) {
         storeList = new ArrayList<>();
-        this.promotionId = promotionId;
-        this.promotionName = promotionName;
-    }
-
-    public Promotion(int promotionId, String promotionName, int percentage) {
-        storeList = new ArrayList<>();
-        this.promotionId = promotionId;
         this.promotionName = promotionName;
         this.percentage = percentage;
+        this.activeInAllStores = false;
     }
 
     public List<Store> getStoreList() {
@@ -80,4 +77,21 @@ public class Promotion implements Serializable {
         this.percentage = percentage;
     }
 
+    public boolean isActiveInAllStores() {
+        return activeInAllStores;
+    }
+
+    public void setActiveInAllStores(boolean activeInAllStores) {
+        this.activeInAllStores = activeInAllStores;
+    }
+
+    @Override
+    public String toString() {
+        return "Promotion{" +
+                "promotionId=" + promotionId +
+                ", promotionName='" + promotionName + '\'' +
+                ", percentage=" + percentage +
+                ", activeInAllStores=" + activeInAllStores +
+                '}';
+    }
 }

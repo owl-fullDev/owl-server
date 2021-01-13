@@ -54,6 +54,7 @@ public class Sale implements Serializable {
     @Column(name = "FULL_PAYMENT")
     private boolean fullyPaid;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "CUSTOMER_ID", nullable = false)
     private Customer customer;

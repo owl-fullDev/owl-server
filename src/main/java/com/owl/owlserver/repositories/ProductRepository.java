@@ -9,6 +9,18 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository <Product, String> {
 
-    List<Product> findAllByProductIdStartsWith(String cl);
+    List<Product> findAllByProductIdStartsWith(String startingChars);
+
+    //frames
+
+
+    //lenses
+
+
+    //custom lenses
+
+
+    //others
+
 }
 

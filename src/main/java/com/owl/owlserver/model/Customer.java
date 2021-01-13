@@ -55,7 +55,6 @@ public class Customer implements Serializable {
     @Column(name = "LEFT_EYE_PRISM", nullable = false)
     private String leftEyePrism;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "customer")
     private List<Sale> saleList;
 

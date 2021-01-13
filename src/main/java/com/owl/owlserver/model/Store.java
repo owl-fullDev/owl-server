@@ -82,7 +82,7 @@ public class Store implements Serializable {
         storeQuantityList.add(storeQuantity);
     }
 
-    public void removeEmployee(StoreQuantity storeQuantity) {
+    public void removeStoreQuantity(StoreQuantity storeQuantity) {
         storeQuantityList.remove(storeQuantity);
     }
 

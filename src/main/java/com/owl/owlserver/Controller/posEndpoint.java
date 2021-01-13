@@ -1,4 +1,4 @@
-package com.owl.owlserver.controller;
+package com.owl.owlserver.Controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
