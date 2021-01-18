@@ -29,6 +29,9 @@ public class Store implements Serializable {
     )
     List<Promotion> promotionList;
 
+    @OneToMany(mappedBy = "store")
+    private List<Sale> saleList;
+
     @JsonIgnore
     @OneToMany(mappedBy = "store")
     private List<Employee> employeesList;
@@ -60,6 +63,18 @@ public class Store implements Serializable {
 
     public void removePromotion(Promotion promotion) {
         promotionList.remove(promotion);
+    }
+
+    public List<Sale> getSaleList() {
+        return saleList;
+    }
+
+    public void addSale(Sale sale) {
+        saleList.add(sale);
+    }
+
+    public void removeSale(Sale sale) {
+        saleList.remove(sale);
     }
 
     public List<Employee> getEmployeesList() {

@@ -82,7 +82,7 @@ public class posEndpoint {
 
     @GetMapping("/getPendingSaleList")
     public List<Sale> getPendingSaleList(@RequestParam int storeId) throws JsonProcessingException {
-        List<Sale> pendingSaleList = saleRepository.getAllByStoreIdEqualsAndAndPickupDateEquals(storeId, null);
+        List<Sale> pendingSaleList = saleRepository.getAllByStoreStoreIdAndPickupDateEquals(storeId, null);
         return pendingSaleList;
     }
 
@@ -117,6 +117,9 @@ public class posEndpoint {
         ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
         LocalDateTime initialDepositDate = convertedTime.toLocalDateTime();
 
+        Store store = storeRepository.findById(storeId).orElse(null);
+        Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
+
         //full payment or deposit
         if (grandTotal > initialDepositAmount) {
             fullyPaid = false;
@@ -125,7 +128,7 @@ public class posEndpoint {
         }
 
         //new sale
-        Sale newSale = new Sale(promotionId, employeeId, storeId, grandTotal, initialDepositDate, initialDepositType, initialDepositAmount, fullyPaid);
+        Sale newSale = new Sale(promotion, employeeId, store, grandTotal, initialDepositDate, initialDepositType, initialDepositAmount, fullyPaid);
         customer.addSale(newSale);
         newSale.setCustomer(customer);
         saleRepository.save(newSale);
@@ -138,7 +141,8 @@ public class posEndpoint {
         for (int i = 0; i < itemList; i++) {
             String productId = wholeJSON.get("products").get(i).get("productId").asText();
             int quantity = wholeJSON.get("products").get(i).get("quantity").asInt();
-            SaleDetail newSaleDetail = new SaleDetail(productId, quantity);
+            Product product = productRepository.findById(productId).orElse(null);
+            SaleDetail newSaleDetail = new SaleDetail(product, quantity);
             newSale.addSaleDetail(newSaleDetail);
             newSaleDetail.setSale(newSale);
             saleDetailRepository.save(newSaleDetail);

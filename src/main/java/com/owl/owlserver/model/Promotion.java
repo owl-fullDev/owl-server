@@ -27,14 +27,20 @@ public class Promotion implements Serializable {
     private boolean activeInAllStores;
 
     @JsonIgnore
+    @OneToMany(mappedBy = "promotion")
+    List<Sale> saleList;
+
+    @JsonIgnore
     @ManyToMany(mappedBy = "promotionList")
     List<Store> storeList;
 
     public Promotion() {
+        saleList = new ArrayList<>();
         storeList = new ArrayList<>();
     }
 
     public Promotion(int percentage, String promotionName) {
+        saleList = new ArrayList<>();
         storeList = new ArrayList<>();
         this.promotionName = promotionName;
         this.percentage = percentage;
@@ -52,6 +58,19 @@ public class Promotion implements Serializable {
     public void removeStore(Store store) {
         storeList.remove(store);
     }
+
+    public List<Sale> getSaleList() {
+        return saleList;
+    }
+
+    public void addSale(Sale sale) {
+        saleList.add(sale);
+    }
+
+    public void removeSale(Sale sale) {
+        saleList.remove(sale);
+    }
+
 
     public int getPromotionId() {
         return promotionId;

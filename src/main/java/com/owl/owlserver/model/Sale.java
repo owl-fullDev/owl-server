@@ -2,6 +2,8 @@ package com.owl.owlserver.model;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonAppend;
+import com.owl.owlserver.repositories.PromotionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -18,14 +20,8 @@ public class Sale implements Serializable {
     @Column(name = "SALE_ID", nullable = false)
     private int saleId;
     
-    @Column(name = "PROMOTION_ID", nullable = false)
-    private int promotionId;
-    
     @Column(name = "EMPLOYEE_ID", nullable = false)
     private int employeeId;
-
-    @Column(name = "STORE_ID", nullable = false)
-    private int storeId;
 
     @Column(name = "GRAND_TOTAL", nullable = false)
     private double grandTotal;
@@ -56,6 +52,16 @@ public class Sale implements Serializable {
 
     @JsonIgnore
     @ManyToOne
+    @JoinColumn(name = "PROMOTION_ID", nullable = false)
+    private Promotion promotion;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "STORE_ID", nullable = false)
+    private Store store;
+
+    @JsonIgnore
+    @ManyToOne
     @JoinColumn(name = "CUSTOMER_ID", nullable = false)
     private Customer customer;
 
@@ -66,11 +72,11 @@ public class Sale implements Serializable {
         saleDetailList = new ArrayList<>();
     }
 
-    public Sale(int promotionId, int employeeId, int storeId, double grandTotal, LocalDateTime initialDepositDate, String initialDepositType, double initialDepositAmount, boolean fullyPaid) {
+    public Sale(Promotion promotion, int employeeId, Store store, double grandTotal, LocalDateTime initialDepositDate, String initialDepositType, double initialDepositAmount, boolean fullyPaid) {
         saleDetailList = new ArrayList<>();
-        this.promotionId = promotionId;
+        this.promotion = promotion;
         this.employeeId = employeeId;
-        this.storeId = storeId;
+        this.store = store;
         this.grandTotal = grandTotal;
         this.initialDepositDate = initialDepositDate;
         this.initialDepositType = initialDepositType;
@@ -102,12 +108,12 @@ public class Sale implements Serializable {
         return saleId;
     }
 
-    public int getPromotionId() {
-        return promotionId;
+    public Promotion getPromotion() {
+        return promotion;
     }
 
-    public void setPromotionId(int promotionId) {
-        this.promotionId = promotionId;
+    public void setPromotion(Promotion promotion) {
+        this.promotion = promotion;
     }
 
     public int getEmployeeId() {
@@ -118,12 +124,12 @@ public class Sale implements Serializable {
         this.employeeId = employeeId;
     }
 
-    public int getStoreId() {
-        return storeId;
+    public Store getStore() {
+        return store;
     }
 
-    public void setStoreId(int storeId) {
-        this.storeId = storeId;
+    public void setStore(Store store) {
+        this.store = store;
     }
 
     public double getGrandTotal() {
@@ -202,9 +208,7 @@ public class Sale implements Serializable {
     public String toString() {
         return "Sale{" +
                 "saleId=" + saleId +
-                ", promotionId=" + promotionId +
                 ", employeeId=" + employeeId +
-                ", storeId=" + storeId +
                 ", grandTotal=" + grandTotal +
                 ", pickupDate=" + pickupDate +
                 ", initialDepositDate=" + initialDepositDate +
@@ -216,6 +220,4 @@ public class Sale implements Serializable {
                 ", fullyPaid=" + fullyPaid +
                 '}';
     }
-
-
 }

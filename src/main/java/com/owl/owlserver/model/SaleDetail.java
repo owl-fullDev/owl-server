@@ -14,11 +14,12 @@ public class SaleDetail implements Serializable {
     @Column(name = "SALE_DETAIL_ID", nullable = false)
     private int saleDetailId;
 
-    @Column(name = "PRODUCT_ID", nullable = false)
-    private String productId;
-
     @Column(name = "QUANTITY", nullable = false)
     private int quantity;
+
+    @ManyToOne
+    @JoinColumn(name = "PRODUCT_ID", nullable = false)
+    private Product product;
 
     @JsonIgnore
     @ManyToOne
@@ -28,8 +29,8 @@ public class SaleDetail implements Serializable {
     public SaleDetail() {
     }
 
-    public SaleDetail(String productId, int quantity) {
-        this.productId = productId;
+    public SaleDetail(Product product, int quantity) {
+        this.product = product;
         this.quantity = quantity;
     }
 
@@ -45,12 +46,12 @@ public class SaleDetail implements Serializable {
         return saleDetailId;
     }
 
-    public String getProductId() {
-        return productId;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public int getQuantity() {
@@ -65,7 +66,7 @@ public class SaleDetail implements Serializable {
     public String toString() {
         return "SaleDetail{" +
                 "saleId=" + saleDetailId +
-                ", productId='" + productId + '\'' +
+                ", productId='" + product.getProductId() + '\'' +
                 ", quantity=" + quantity +
                 '}';
     }
