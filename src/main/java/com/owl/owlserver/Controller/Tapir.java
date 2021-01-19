@@ -20,7 +20,8 @@ public class Tapir {
 
     @GetMapping("/i")
     public String i() {
-        return "Happy birthday Ishnaaaaaaaaa\nhttps://tenor.com/view/taylor-swift-22-lyrics-gif-12372675";
+        return "Happy birthday Ishnaaaaaaaaa\n\n" +
+                "https://tenor.com/view/taylor-swift-22-lyrics-gif-12372675";
     }
 
     @GetMapping("/j")
@@ -41,10 +42,5 @@ public class Tapir {
     @GetMapping("/b")
     public String b() {
         return "Happy birthday broooooooooooo";
-    }
-
-    @GetMapping("/v")
-    public String v() {
-        return "Suck it\nhttps://tenor.com/view/taylor-swift-boom-suck-it-take-that-take-this-gif-4652493";
     }
 }
