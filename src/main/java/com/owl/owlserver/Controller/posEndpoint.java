@@ -88,8 +88,6 @@ public class posEndpoint {
 
     @PostMapping(value = "/newSale")
     public String newSale(@RequestBody String jsonString) throws JsonProcessingException, InterruptedException {
-        try {
-
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode wholeJSON = objectMapper.readTree(jsonString);
             int customerId = wholeJSON.get("customerId").asInt();
@@ -140,20 +138,25 @@ public class posEndpoint {
             int itemList = wholeJSON.get("itemsSold").asInt();
             String saleDetailList = "";
 
-            for (int i = 0; i < itemList; i++) {
-                String productId = wholeJSON.get("products").get(i).get("productId").asText();
-                int quantity = wholeJSON.get("products").get(i).get("quantity").asInt();
-                Product product = productRepository.findById(productId).orElse(null);
-                SaleDetail newSaleDetail = new SaleDetail(product, quantity);
-                newSale.addSaleDetail(newSaleDetail);
-                newSaleDetail.setSale(newSale);
-                saleDetailRepository.save(newSaleDetail);
-                saleDetailList += "\n" + newSaleDetail.toString();
+            try {
+                for (int i = 0; i < itemList; i++) {
+                    String productId = wholeJSON.get("products").get(i).get("productId").asText();
+                    int quantity = wholeJSON.get("products").get(i).get("quantity").asInt();
+                    Product product = productRepository.findById(productId).orElse(null);
+                    if (product==null){
+                        return "no product found";
+                    }
+                    SaleDetail newSaleDetail = new SaleDetail(product, quantity);
+                    newSale.addSaleDetail(newSaleDetail);
+                    newSaleDetail.setSale(newSale);
+                    saleDetailRepository.save(newSaleDetail);
+                    saleDetailList += "\n" + newSaleDetail.toString();
+                }
             }
-        }
-        catch (Exception error){
-            return error.toString();
-        }
+            catch (Exception error){
+                return error.toString();
+            }
+
 //        return customer.toString() + "\n\n" + customer.getSale(newSale).toString() + "\n\n" + saleDetailList;
         return "sucess";
     }
