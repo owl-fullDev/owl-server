@@ -138,7 +138,6 @@ public class posEndpoint {
             int itemList = wholeJSON.get("itemsSold").asInt();
             String saleDetailList = "";
 
-            try {
                 for (int i = 0; i < itemList; i++) {
                     String productId = wholeJSON.get("products").get(i).get("productId").asText();
                     int quantity = wholeJSON.get("products").get(i).get("quantity").asInt();
@@ -161,10 +160,6 @@ public class posEndpoint {
                     }
 
                 }
-            }
-            catch (Exception error){
-                return error.toString();
-            }
 
 //        return customer.toString() + "\n\n" + customer.getSale(newSale).toString() + "\n\n" + saleDetailList;
         return "sucess";
