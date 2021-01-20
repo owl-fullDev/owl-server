@@ -6,21 +6,20 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.owl.owlserver.model.Sale;
 import com.owl.owlserver.model.SaleDetail;
 import com.owl.owlserver.repositories.ProductRepository;
-import com.owl.owlserver.repositories.StoreRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 
-public class SaleSerializer extends StdSerializer<Sale> {
+public class SalesAllSerializer extends StdSerializer<Sale> {
 
     @Autowired
     ProductRepository productRepository;
 
-    public SaleSerializer(){
+    public SalesAllSerializer(){
         this(null);
     }
 
-    public SaleSerializer(Class<Sale> t) {
+    public SalesAllSerializer(Class<Sale> t) {
         super(t);
     }
 
