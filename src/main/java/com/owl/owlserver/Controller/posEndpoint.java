@@ -39,7 +39,7 @@ public class posEndpoint {
     StoreRepository storeRepository;
 
     //Time settings
-    final DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+    final DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
     final ZoneId serverLocalTime = ZoneId.systemDefault();
 
     //REST endpoints
@@ -88,74 +88,68 @@ public class posEndpoint {
 
     @PostMapping(value = "/newSale")
     public String newSale(@RequestBody String jsonString) throws JsonProcessingException, InterruptedException {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode wholeJSON = objectMapper.readTree(jsonString);
-            int customerId = wholeJSON.get("customerId").asInt();
-            Customer customer;
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+        int customerId = wholeJSON.get("customerId").asInt();
+        Customer customer;
 
-            //new customer or existing customer
-            if (customerId == 0) {
-                JsonNode customerJSON = wholeJSON.get("newCustomer");
-                customer = objectMapper.treeToValue(customerJSON, Customer.class);
-                customerRepository.save(customer);
-            } else {
-                customer = customerRepository.findById(customerId).orElse(null);
-            }
+        //new customer or existing customer
+        if (customerId == 0) {
+            JsonNode customerJSON = wholeJSON.get("newCustomer");
+            customer = objectMapper.treeToValue(customerJSON, Customer.class);
+            customerRepository.save(customer);
+        } else {
+            customer = customerRepository.findById(customerId).orElse(null);
+        }
 
-            //sale deserialization
-            JsonNode sale = wholeJSON.get("sale");
-            int promotionId = sale.get("promotionId").asInt(0);
-            int employeeId = sale.get("employeeId").asInt(0);
-            int storeId = sale.get("storeId").asInt(0);
-            double grandTotal = sale.get("grandTotal").asDouble(0);
-            String initialDepositDateStr = sale.get("initialDepositDate").asText();
-            String initialDepositType = sale.get("initialDepositType").asText();
-            double initialDepositAmount = sale.get("initialDepositAmount").asDouble(0);
-            boolean fullyPaid;
+        //sale deserialization
+        JsonNode sale = wholeJSON.get("sale");
+        int promotionId = sale.get("promotionId").asInt(0);
+        int employeeId = sale.get("employeeId").asInt(0);
+        int storeId = sale.get("storeId").asInt(0);
+        double grandTotal = sale.get("grandTotal").asDouble(0);
+        String initialDepositDateStr = sale.get("initialDepositDate").asText();
+        String initialDepositType = sale.get("initialDepositType").asText();
+        double initialDepositAmount = sale.get("initialDepositAmount").asDouble(0);
+        boolean fullyPaid;
 
-            ZonedDateTime zonedDateTime = ZonedDateTime.parse(initialDepositDateStr, formatter);
-            ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
-            LocalDateTime initialDepositDate = convertedTime.toLocalDateTime();
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(initialDepositDateStr, formatter);
+        ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
+        LocalDateTime initialDepositDate = convertedTime.toLocalDateTime();
 
-            Store store = storeRepository.findById(storeId).orElse(null);
-            Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
+        Store store = storeRepository.findById(storeId).orElse(null);
+        Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
 
-            //full payment or deposit
-            if (grandTotal > initialDepositAmount) {
-                fullyPaid = false;
-            } else {
-                fullyPaid = true;
-            }
+        //full payment or deposit
+        if (grandTotal > initialDepositAmount) {
+            fullyPaid = false;
+        } else {
+            fullyPaid = true;
+        }
 
-            //new sale
-            Sale newSale = new Sale(promotion, employeeId, store, grandTotal, initialDepositDate, initialDepositType, initialDepositAmount, fullyPaid);
-            customer.addSale(newSale);
-            newSale.setCustomer(customer);
-            saleRepository.save(newSale);
+        //new sale
+        Sale newSale = new Sale(promotion, employeeId, store, grandTotal, initialDepositDate, initialDepositType, initialDepositAmount, fullyPaid);
+        customer.addSale(newSale);
+        newSale.setCustomer(customer);
+        saleRepository.save(newSale);
 
-            //saleDetails
-            JsonNode products = wholeJSON.get("products");
-            int itemList = wholeJSON.get("itemsSold").asInt();
-            String saleDetailList = "";
+        //saleDetails
+        JsonNode products = wholeJSON.get("products");
+        int itemList = wholeJSON.get("itemsSold").asInt();
+        String saleDetailList = "";
 
-                for (int i = 0; i < itemList; i++) {
-                    String productId = wholeJSON.get("products").get(i).get("productId").asText();
-                    int quantity = wholeJSON.get("products").get(i).get("quantity").asInt();
-                    Product product = productRepository.findById(productId).orElse(null);
-                        SaleDetail newSaleDetail = new SaleDetail(product, quantity);
-                        newSale.addSaleDetail(newSaleDetail);
-                        newSaleDetail.setSale(newSale);
-                        saleDetailRepository.save(newSaleDetail);
-                        saleDetailList += "\n" + newSaleDetail.toString();
-                }
+        for (int i = 0; i < itemList; i++) {
+            String productId = wholeJSON.get("products").get(i).get("productId").asText();
+            int quantity = wholeJSON.get("products").get(i).get("quantity").asInt();
+            Product product = productRepository.findById(productId).orElse(null);
+            SaleDetail newSaleDetail = new SaleDetail(product, quantity);
+            newSale.addSaleDetail(newSaleDetail);
+            newSaleDetail.setSale(newSale);
+            saleDetailRepository.save(newSaleDetail);
+            saleDetailList += "\n" + newSaleDetail.toString();
+        }
+        return customer.toString() + "\n\n" + customer.getSale(newSale).toString() + "\n\n" + saleDetailList;
 
-                try {
-                    return customer.toString() + "\n\n" + customer.getSale(newSale).toString() + "\n\n" + saleDetailList;
-
-                }
-                catch (Exception error){
-                    return error.toString();
-                }
     }
 
 
