@@ -141,28 +141,21 @@ public class posEndpoint {
                 for (int i = 0; i < itemList; i++) {
                     String productId = wholeJSON.get("products").get(i).get("productId").asText();
                     int quantity = wholeJSON.get("products").get(i).get("quantity").asInt();
-                    Product product;
-                    try {
-                        product = productRepository.findById(productId).orElse(null);
-                    }
-                    catch (Exception error){
-                        return "product null error";
-                    }
-                    try {
+                    Product product = productRepository.findById(productId).orElse(null);
                         SaleDetail newSaleDetail = new SaleDetail(product, quantity);
                         newSale.addSaleDetail(newSaleDetail);
                         newSaleDetail.setSale(newSale);
                         saleDetailRepository.save(newSaleDetail);
                         saleDetailList += "\n" + newSaleDetail.toString();
-                    }
-                    catch (Exception error){
-                        return "sale detail null error";
-                    }
-
                 }
 
-//        return customer.toString() + "\n\n" + customer.getSale(newSale).toString() + "\n\n" + saleDetailList;
-        return "sucess";
+                try {
+                    return customer.toString() + "\n\n" + customer.getSale(newSale).toString() + "\n\n" + saleDetailList;
+
+                }
+                catch (Exception error){
+                    return error.toString();
+                }
     }
 
 
