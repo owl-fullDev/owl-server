@@ -39,7 +39,7 @@ public class posEndpoint {
     StoreRepository storeRepository;
 
     //Time settings
-    final DateTimeFormatter formatter = DateTimeFormatter.ISO_INSTANT;
+    final DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
     final ZoneId serverLocalTime = ZoneId.systemDefault();
 
     //REST endpoints
