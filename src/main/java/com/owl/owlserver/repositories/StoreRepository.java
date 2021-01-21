@@ -12,7 +12,7 @@ public interface StoreRepository extends JpaRepository <Store,Integer> {
 
     Boolean existsByLocation(String location);
 
-    @Query(value = "SELECT SUM(grand_total) FROM OWL_Database.sale where store_id = :storeId and initial_deposit_date between :startDate and :endDate ", nativeQuery = true)
+    @Query(value = "SELECT SUM(grand_total) FROM sale where store_id = :storeId and initial_deposit_date between :startDate and :endDate ", nativeQuery = true)
     double totalStoreRevenue(int storeId, String startDate, String endDate);
 
 }
