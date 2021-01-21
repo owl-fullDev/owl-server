@@ -29,6 +29,7 @@ public class Store implements Serializable {
     )
     List<Promotion> promotionList;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "store")
     private List<Sale> saleList;
 
@@ -41,12 +42,14 @@ public class Store implements Serializable {
     private List<StoreQuantity> storeQuantityList;
 
     public Store() {
+        saleList = new ArrayList<>();
         promotionList = new ArrayList<>();
         employeesList = new ArrayList<>();
         storeQuantityList = new ArrayList<>();
     }
 
     public Store(String location) {
+        saleList = new ArrayList<>();
         promotionList = new ArrayList<>();
         employeesList = new ArrayList<>();
         storeQuantityList = new ArrayList<>();
