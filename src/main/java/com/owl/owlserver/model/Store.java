@@ -6,7 +6,6 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name = "store")
@@ -17,8 +16,17 @@ public class Store implements Serializable {
     @Column(name = "STORE_ID", nullable = false)
     private int storeId;
 
-    @Column(name = "LOCATION", nullable = false)
-    private String location;
+    @Column(name = "NAME", nullable = false)
+    private String name;
+
+    @Column(name = "ADDRESS", nullable = false)
+    private String address;
+
+    @Column(name = "CITY", nullable = false)
+    private String city;
+
+    @Column(name = "PHONE_NUMBER", nullable = false)
+    private String phone_number;
 
     @JsonIgnore
     @ManyToMany
@@ -48,12 +56,15 @@ public class Store implements Serializable {
         storeQuantityList = new ArrayList<>();
     }
 
-    public Store(String location) {
+    public Store(String name, String address, String city, String phone_number) {
         saleList = new ArrayList<>();
         promotionList = new ArrayList<>();
         employeesList = new ArrayList<>();
         storeQuantityList = new ArrayList<>();
-        this.location = location;
+        this.name = name;
+        this.address = address;
+        this.city = city;
+        this.phone_number = phone_number;
     }
 
     public List<Promotion> getPromotionList() {
@@ -108,12 +119,46 @@ public class Store implements Serializable {
         return storeId;
     }
 
-    public String getLocation() {
-        return location;
+    public String getName() {
+        return name;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setName(String name) {
+        this.name = name;
     }
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getPhone_number() {
+        return phone_number;
+    }
+
+    public void setPhone_number(String phone_number) {
+        this.phone_number = phone_number;
+    }
+
+    @Override
+    public String toString() {
+        return "Store{" +
+                "storeId=" + storeId +
+                ", name='" + name + '\'' +
+                ", address='" + address + '\'' +
+                ", city='" + city + '\'' +
+                ", phone_number='" + phone_number + '\'' +
+                '}';
+    }
 }

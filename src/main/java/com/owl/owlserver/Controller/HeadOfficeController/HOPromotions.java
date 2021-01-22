@@ -111,7 +111,7 @@ public class HOPromotions {
             promotion.addStore(store);
             storeRepository.save(store);
             promotionRepository.save(promotion);
-            return new ResponseEntity<>("successfully added promotion " + promotion.getPromotionName() + " from store " + store.getLocation(), HttpStatus.OK);
+            return new ResponseEntity<>("successfully added promotion " + promotion.getPromotionName() + " from store " + store.getAddress(), HttpStatus.OK);
         }
     }
 
@@ -130,7 +130,7 @@ public class HOPromotions {
             promotion.removeStore(store);
             storeRepository.save(store);
             promotionRepository.save(promotion);
-            return new ResponseEntity<>("successfully removed promotion " + promotion.getPromotionName() + " from store " + store.getLocation(), HttpStatus.OK);
+            return new ResponseEntity<>("successfully removed promotion " + promotion.getPromotionName() + " from store " + store.getAddress(), HttpStatus.OK);
         }
     }
 

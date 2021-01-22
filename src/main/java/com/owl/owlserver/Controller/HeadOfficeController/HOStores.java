@@ -1,5 +1,8 @@
 package com.owl.owlserver.Controller.HeadOfficeController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.List;
 
@@ -46,14 +48,14 @@ public class HOStores {
         return storeRepository.findAll();
     }
 
-    @GetMapping("/getStoreLocation")
-    public ResponseEntity<String> getStoreLocation(int storeId) {
+    @GetMapping("/getStore")
+    public Store getStore(int storeId) {
         Store store = storeRepository.findById(storeId).orElse(null);
         if (store==null){
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Store doesnt Exist!");
         }
         else {
-            return new ResponseEntity<>(store.getLocation(), HttpStatus.OK);
+            return store;
         }
     }
 
@@ -90,17 +92,19 @@ public class HOStores {
         }
     }
 
-    @GetMapping("/addStore")
-    public ResponseEntity<String> addStore(String location) {
-        boolean alreadyExists = storeRepository.existsByLocation(location);
-        if (alreadyExists){
-            throw new ResponseStatusException(HttpStatus.valueOf(400), "Store already Exists!");
-        }
-        else {
-            Store store = new Store(location);
-            storeRepository.saveAndFlush(store);
-            return new ResponseEntity<>("successfully added new store:\n"+store.toString(),HttpStatus.CREATED);
-        }
+    @PostMapping("/addStore")
+    public ResponseEntity<String> addStore(@RequestBody String jsonString) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+        String name = wholeJSON.get("name").asText();
+        String address = wholeJSON.get("address").asText();
+        String city = wholeJSON.get("city").asText();
+        String phoneNumber = wholeJSON.get("phoneNumber").asText();
+
+        Store store = new Store(name,address,city,phoneNumber);
+        storeRepository.saveAndFlush(store);
+        return new ResponseEntity<>("successfully added new store:\n"+store.toString(),HttpStatus.CREATED);
+
     }
 
     @GetMapping("/deleteStore")
@@ -110,9 +114,9 @@ public class HOStores {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Store doesnt Exist!");
         }
         else {
-            String location = store.getLocation();
+            String address = store.getAddress();
             storeRepository.deleteById(storeId);
-            return new ResponseEntity<>("successfully deleted store:\n"+location,HttpStatus.OK);
+            return new ResponseEntity<>("successfully deleted store:\n"+address,HttpStatus.OK);
         }
     }
 
@@ -132,7 +136,7 @@ public class HOStores {
             storeQuantityRepository.save(storeQuantity);
             store.addStoreQuantity(storeQuantity);
             storeRepository.save(store);
-            return new ResponseEntity<>("successfully added product: "+product.getProductName()+" into store: "+store.getLocation(),HttpStatus.OK);
+            return new ResponseEntity<>("successfully added product: "+product.getProductName()+" into store: "+store.getAddress(),HttpStatus.OK);
         }
     }
 
@@ -155,7 +159,7 @@ public class HOStores {
             storeQuantityRepository.save(storeQuantity);
             store.removeStoreQuantity(storeQuantity);
             storeRepository.save(store);
-            return new ResponseEntity<>("successfully removed product: "+product.getProductName()+" from store: "+store.getLocation(),HttpStatus.OK);
+            return new ResponseEntity<>("successfully removed product: "+product.getProductName()+" from store: "+store.getAddress(),HttpStatus.OK);
         }
     }
 
