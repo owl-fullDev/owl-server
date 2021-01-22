@@ -1,5 +1,8 @@
 package com.owl.owlserver.Controller.HeadOfficeController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,26 +48,12 @@ public class HOPromotions {
         return promotionRepository.findAll();
     }
 
-    @GetMapping("/addPromotion")
-    public ResponseEntity<String> addPromotion(int percentage, String promotionName) {
-        boolean alreadyExists = promotionRepository.existsDistinctByPercentageAndPromotionName(percentage, promotionName);
-        if (alreadyExists){
-            throw new ResponseStatusException(HttpStatus.valueOf(400), "Promotion already Exists!");
-        }
-        else {
-            Promotion promotion = new Promotion(percentage,promotionName);
-            promotionRepository.saveAndFlush(promotion);
-            return new ResponseEntity<>("successfully added new promotion:\n"+promotion.toString(),HttpStatus.CREATED);
-        }
-    }
-
     @GetMapping("/getPromotionActiveStoreList")
     public List<Store> getPromotionActiveStoreList(int promotionId) {
         Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
-        if (promotion==null){
+        if (promotion == null) {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Promotion doesnt Exist!");
-        }
-        else {
+        } else {
             return promotion.getStoreList();
         }
     }
@@ -72,41 +61,38 @@ public class HOPromotions {
     @GetMapping("/setPromotionAllStores")
     public ResponseEntity<String> setPromotionAllStores(int promotionId) {
         Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
-        if (promotion==null){
+        if (promotion == null) {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Promotion doesnt Exist!");
-        }
-        else if (promotion.isActiveInAllStores()){
+        } else if (promotion.isActiveInAllStores()) {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Promotion is already active in all stores!");
-        }
-        else {
+        } else {
             List<Store> storeList = storeRepository.findAll();
-            for (Store store:storeList){
+            for (Store store : storeList) {
                 store.addPromotion(promotion);
                 promotion.addStore(store);
             }
             promotion.setActiveInAllStores(true);
             storeRepository.saveAll(storeList);
             promotionRepository.save(promotion);
-            return new ResponseEntity<>("successfully added promotion "+promotion.getPromotionName()+" to all stores", HttpStatus.OK);
+            return new ResponseEntity<>("successfully added promotion " + promotion.getPromotionName() + " to all stores", HttpStatus.OK);
         }
     }
 
     @GetMapping("/removePromotionAllStores")
     public ResponseEntity<String> removePromotionAllStores(int promotionId) {
         Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
-        if (promotion==null){
+        if (promotion == null) {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Promotion doesnt Exist!");
-        }
-        else {
+        } else {
             List<Store> storeList = storeRepository.findAll();
-            for (Store store:storeList){
+            for (Store store : storeList) {
                 store.removePromotion(promotion);
                 promotion.removeStore(store);
             }
             promotion.setActiveInAllStores(false);
             storeRepository.saveAll(storeList);
             promotionRepository.save(promotion);
-            return new ResponseEntity<>("successfully removed promotion "+promotion.getPromotionName()+" from all stores", HttpStatus.OK);
+            return new ResponseEntity<>("successfully removed promotion " + promotion.getPromotionName() + " from all stores", HttpStatus.OK);
         }
     }
 
@@ -114,16 +100,13 @@ public class HOPromotions {
     public ResponseEntity<String> setPromotionOneStore(int promotionId, int storeId) {
         Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
         Store store = storeRepository.findById(storeId).orElse(null);
-        if (store==null){
+        if (store == null) {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Store doesnt Exist!");
-        }
-        else if (promotion==null){
+        } else if (promotion == null) {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Promotion doesnt Exist!");
-        }
-        else if (promotion.getStoreList().contains(store)){
+        } else if (promotion.getStoreList().contains(store)) {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Promotion is already active in that store!");
-        }
-        else {
+        } else {
             store.addPromotion(promotion);
             promotion.addStore(store);
             storeRepository.save(store);
@@ -136,21 +119,38 @@ public class HOPromotions {
     public ResponseEntity<String> removePromotionOneStore(int promotionId, int storeId) {
         Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
         Store store = storeRepository.findById(storeId).orElse(null);
-        if (store==null){
+        if (store == null) {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Store doesnt Exist!");
-        }
-        else if (promotion==null){
+        } else if (promotion == null) {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Promotion doesnt Exist!");
-        }
-        else if (!promotion.getStoreList().contains(store)){
+        } else if (!promotion.getStoreList().contains(store)) {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Promotion is not active in that store!");
-        }
-        else {
+        } else {
             store.removePromotion(promotion);
             promotion.removeStore(store);
             storeRepository.save(store);
             promotionRepository.save(promotion);
             return new ResponseEntity<>("successfully removed promotion " + promotion.getPromotionName() + " from store " + store.getLocation(), HttpStatus.OK);
+        }
+    }
+
+    @PostMapping("/addPromotion")
+    public ResponseEntity<String> addPromotion(@RequestBody String jsonString) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+        String promotionName = wholeJSON.get("promotionName").asText();
+        int percentage = wholeJSON.get("percentage").asInt(0);
+
+        boolean alreadyExists = promotionRepository.existsDistinctByPercentage(percentage);
+        boolean alreadyExistsName = promotionRepository.existsDistinctByPromotionName(promotionName);
+
+        if (alreadyExists||alreadyExistsName) {
+            throw new ResponseStatusException(HttpStatus.valueOf(400), "Promotion already Exists!");
+        }
+        else {
+            Promotion promotion = new Promotion(percentage, promotionName);
+            promotionRepository.saveAndFlush(promotion);
+            return new ResponseEntity<>("successfully added new promotion:\n" + promotion.toString(), HttpStatus.CREATED);
         }
     }
 }

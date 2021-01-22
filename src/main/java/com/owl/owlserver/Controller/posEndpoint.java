@@ -119,7 +119,10 @@ public class posEndpoint {
         LocalDateTime initialDepositDate = convertedTime.toLocalDateTime();
 
         Store store = storeRepository.findById(storeId).orElse(null);
-        Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
+
+        if(promotionId!=0) {
+            Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
+        }
 
         //full payment or deposit
         if (grandTotal > initialDepositAmount) {
@@ -129,7 +132,7 @@ public class posEndpoint {
         }
 
         //new sale
-        Sale newSale = new Sale(promotion, employeeId, store, grandTotal, initialDepositDate, initialDepositType, initialDepositAmount, fullyPaid);
+        Sale newSale = new Sale(employeeId, store, grandTotal, initialDepositDate, initialDepositType, initialDepositAmount, fullyPaid);
         customer.addSale(newSale);
         newSale.setCustomer(customer);
         saleRepository.save(newSale);

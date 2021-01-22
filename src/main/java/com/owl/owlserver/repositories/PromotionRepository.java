@@ -7,5 +7,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PromotionRepository extends JpaRepository <Promotion,Integer> {
 
-    boolean existsDistinctByPercentageAndPromotionName(int percentage, String promotionName);
+    boolean existsDistinctByPercentage(int percentage);
+    boolean existsDistinctByPromotionName(String name);
+
 }

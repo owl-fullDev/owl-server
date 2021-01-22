@@ -52,7 +52,7 @@ public class Sale implements Serializable {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "PROMOTION_ID", nullable = false)
+    @JoinColumn(name = "PROMOTION_ID")
     private Promotion promotion;
 
     @JsonIgnore
@@ -71,9 +71,8 @@ public class Sale implements Serializable {
         saleDetailList = new ArrayList<>();
     }
 
-    public Sale(Promotion promotion, int employeeId, Store store, double grandTotal, LocalDateTime initialDepositDate, String initialDepositType, double initialDepositAmount, boolean fullyPaid) {
+    public Sale(int employeeId, Store store, double grandTotal, LocalDateTime initialDepositDate, String initialDepositType, double initialDepositAmount, boolean fullyPaid) {
         saleDetailList = new ArrayList<>();
-        this.promotion = promotion;
         this.employeeId = employeeId;
         this.store = store;
         this.grandTotal = grandTotal;
