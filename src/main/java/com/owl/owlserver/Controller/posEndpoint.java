@@ -65,7 +65,8 @@ public class posEndpoint {
 
     @GetMapping("/getCustomFrameList")
     public List<Product> getCustomFrameList() {
-        return productRepository.findAllByProductIdStartsWith("cl");
+        List<Product> productList = productRepository.findAllByProductIdStartsWith("CL");
+        return productList;
     }
 
     @GetMapping("/getStorePromotions")

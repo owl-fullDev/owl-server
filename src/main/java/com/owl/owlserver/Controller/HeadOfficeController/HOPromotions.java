@@ -58,23 +58,6 @@ public class HOPromotions {
         }
     }
 
-    @GetMapping("/deletePromotion")
-    public ResponseEntity<String> deletePromotion(int promotionId) {
-        Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
-        if (promotion==null){
-            throw new ResponseStatusException(HttpStatus.valueOf(400), "Promotion doesnt Exist!");
-        }
-        else {
-            String promotionName = promotion.getPromotionName();
-            List<Store> storeList = storeRepository.findAll();
-            for (Store store:storeList){
-                store.removePromotion(promotion);
-            }
-            promotionRepository.deleteById(promotionId);
-            return new ResponseEntity<>("successfully deleted promotion: " + promotionName, HttpStatus.OK);
-        }
-    }
-
     @GetMapping("/getPromotionActiveStoreList")
     public List<Store> getPromotionActiveStoreList(int promotionId) {
         Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
@@ -113,9 +96,6 @@ public class HOPromotions {
         Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
         if (promotion==null){
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Promotion doesnt Exist!");
-        }
-        else if (!promotion.isActiveInAllStores()){
-            throw new ResponseStatusException(HttpStatus.valueOf(400), "Promotion is not active in all stores!");
         }
         else {
             List<Store> storeList = storeRepository.findAll();
