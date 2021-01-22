@@ -60,7 +60,6 @@ public class Sale implements Serializable {
     @JoinColumn(name = "STORE_ID", nullable = false)
     private Store store;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "CUSTOMER_ID", nullable = false)
     private Customer customer;
