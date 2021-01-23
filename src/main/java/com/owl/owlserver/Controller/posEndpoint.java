@@ -63,8 +63,8 @@ public class posEndpoint {
         return product;
     }
 
-    @GetMapping("/getCustomFrameList")
-    public List<Product> getCustomFrameList() {
+    @GetMapping("/getCustomLensList")
+    public List<Product> getCustomLensList() {
         List<Product> productList = productRepository.findAllByProductIdStartsWith("CL");
         return productList;
     }
