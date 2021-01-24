@@ -32,7 +32,10 @@ public class SalesAllSerializer extends StdSerializer<Sale> {
         if (sale.getPromotion()!=null) {
             jgen.writeStringField("promotion", sale.getPromotion().getPromotionName());
         }
-        jgen.writeStringField("store", sale.getStore().getAddress());
+        else {
+            jgen.writeStringField("promotion", "no promotion");
+        }
+        jgen.writeStringField("store", sale.getStore().getName());
         jgen.writeNumberField("revenue", sale.getGrandTotal());
         jgen.writeFieldName("saleDetails");
         jgen.writeStartArray();
