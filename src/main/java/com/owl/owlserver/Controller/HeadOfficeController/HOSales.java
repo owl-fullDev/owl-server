@@ -91,12 +91,19 @@ public class HOSales {
         List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenOrderByInitialDepositDate(startPeriod, endPeriod);
         ArrayNode arrayNode = mapper.createArrayNode();
 
-        for (Sale sale : saleList) {
-            String x = mapper.writeValueAsString(sale);
-            JsonNode jsonNode = mapper.readTree(x);
-            arrayNode.add(jsonNode);
+        if (saleList==null){
+            arrayNode.add("No sales for specified time period");
+            return arrayNode;
         }
-        return arrayNode;
+        else {
+            for (Sale sale : saleList) {
+                System.out.println(sale);
+                String x = mapper.writeValueAsString(sale);
+                JsonNode jsonNode = mapper.readTree(x);
+                arrayNode.add(jsonNode);
+            }
+            return arrayNode;
+        }
     }
 
     @GetMapping("/getAllSalesTodayByStore")

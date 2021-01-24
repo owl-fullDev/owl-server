@@ -29,7 +29,9 @@ public class SalesAllSerializer extends StdSerializer<Sale> {
         jgen.writeStartObject();
         jgen.writeNumberField("saleId", sale.getSaleId());
         jgen.writeStringField("time", sale.getInitialDepositDate().toString());
-        jgen.writeStringField("promotion", sale.getPromotion().getPromotionName());
+        if (sale.getPromotion()!=null) {
+            jgen.writeStringField("promotion", sale.getPromotion().getPromotionName());
+        }
         jgen.writeStringField("store", sale.getStore().getAddress());
         jgen.writeNumberField("revenue", sale.getGrandTotal());
         jgen.writeFieldName("saleDetails");
