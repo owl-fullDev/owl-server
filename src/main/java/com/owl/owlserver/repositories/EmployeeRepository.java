@@ -6,4 +6,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository <Employee,Integer> {
+
+    boolean existsDistinctByFirstName(String firstName);
+    boolean existsDistinctByLastname(String lastName);
+
 }
