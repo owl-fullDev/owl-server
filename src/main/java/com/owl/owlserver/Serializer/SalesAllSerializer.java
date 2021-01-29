@@ -5,15 +5,10 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.owl.owlserver.model.Sale;
 import com.owl.owlserver.model.SaleDetail;
-import com.owl.owlserver.repositories.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 
 public class SalesAllSerializer extends StdSerializer<Sale> {
-
-    @Autowired
-    ProductRepository productRepository;
 
     public SalesAllSerializer(){
         this(null);

@@ -13,7 +13,7 @@ public class StoreQuantity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "STORE_QUANTITY_ID", nullable = false)
-    private int promotionId;
+    private int storeQuantityId;
 
     @Column(name = "PRODUCT_ID", nullable = false)
     private String productId;
@@ -43,8 +43,8 @@ public class StoreQuantity implements Serializable {
         this.store = store;
     }
 
-    public int getPromotionId() {
-        return promotionId;
+    public int getStoreQuantityId() {
+        return storeQuantityId;
     }
 
     public String getProductId() {

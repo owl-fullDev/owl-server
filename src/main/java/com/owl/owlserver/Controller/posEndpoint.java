@@ -7,7 +7,9 @@ import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -37,6 +39,14 @@ public class posEndpoint {
     StoreQuantityRepository storeQuantityRepository;
     @Autowired
     StoreRepository storeRepository;
+    @Autowired
+    RestockShipmentRepository restockShipmentRepository;
+    @Autowired
+    RestockShipmentDetailRepository restockShipmentDetailRepository;
+    @Autowired
+    WarehouseRepository warehouseRepository;
+    @Autowired
+    WarehouseQuantityRepository warehouseQuantityRepository;
 
     //Time settings
     final DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
@@ -46,7 +56,7 @@ public class posEndpoint {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public String ping() {
-        return "Hello world! :), GET request successfully recieved";
+        return "Hello world! :), GET request successfully received";
     }
 
     @GetMapping("/getCustomerByName")
@@ -120,7 +130,7 @@ public class posEndpoint {
 
         Store store = storeRepository.findById(storeId).orElse(null);
 
-        if(promotionId!=0) {
+        if (promotionId != 0) {
             Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
         }
 
@@ -156,16 +166,8 @@ public class posEndpoint {
 
     }
 
-
-    @GetMapping("/test")
-    public String test(@RequestParam int id) {
-        Customer customer = customerRepository.findById(id).orElse(null);
-        Sale sale = saleRepository.findById(customer.getSaleList().get(0).getSaleId()).orElse(null);
-        return customer.toString() + "\n\n" + customer.getSaleList().toString() + "\n\n" + sale.getSaleDetailList().toString();
-    }
-
     @PostMapping(value = "/updateSale")
-    public String updateSale(@RequestBody String jsonString) throws JsonProcessingException, InterruptedException {
+    public String updateSale(@RequestBody String jsonString) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
         int saleId = wholeJSON.get("saleId").asInt();
@@ -176,10 +178,9 @@ public class posEndpoint {
         LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
 
         Sale sale = saleRepository.findById(saleId).orElse(null);
-        if (sale.isFullyPaid()){
+        if (sale.isFullyPaid()) {
             sale.setPickupDate(localPickUpTime);
-        }
-        else {
+        } else {
             sale.setPickupDate(localPickUpTime);
             sale.setFinalDepositDate(localPickUpTime);
             sale.setFinalDepositType(wholeJSON.get("finalPaymentType").asText());
@@ -188,4 +189,60 @@ public class posEndpoint {
         saleRepository.save(sale);
         return "Successfully updates Sale";
     }
+
+    @PostMapping(value = "/receiveRestockShipment")
+    public ResponseEntity<String> receiveRestockShipment(@RequestBody String jsonString) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+        int storeId = wholeJSON.get("storeId").asInt();
+        int restockShipmentId = wholeJSON.get("restockShipmentId").asInt();
+        String zonePickUpTime = wholeJSON.get("receivedDate").asText();
+
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonePickUpTime, formatter);
+        ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
+        LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
+
+        RestockShipment restockShipment = restockShipmentRepository.findById(restockShipmentId).orElse(null);
+
+        if (restockShipment.getReceivedTimestamp()!=null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment has already been received");
+        }
+
+        if (restockShipment==null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no restock shipment with specified ID");
+        }
+
+        Store store = storeRepository.findById(storeId).orElse(null);
+        if (store==null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no store with specified ID");
+        }
+
+        if (restockShipment.getStore().getStoreId()!=storeId){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for this store!");
+        }
+
+        List<RestockShipmentDetail> restockShipmentDetailList = restockShipment.getRestockShipmentDetailList();
+        for (RestockShipmentDetail restockShipmentDetail: restockShipmentDetailList){
+
+            Product product = restockShipmentDetail.getProduct();
+            int quantity = restockShipmentDetail.getQuantity();
+            StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(store, product.getProductId());
+
+            //first time receiving product
+            if (storeQuantity==null){
+                storeQuantity = new StoreQuantity(store,product.getProductId(),quantity);
+                storeQuantityRepository.saveAndFlush(storeQuantity);
+            }
+            else {
+                storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity()+quantity);
+                storeQuantityRepository.saveAndFlush(storeQuantity);
+            }
+        }
+
+        restockShipment.setReceivedTimestamp(localPickUpTime);
+        restockShipmentRepository.saveAndFlush(restockShipment);
+
+        return new ResponseEntity<>("Restock shipment received by store!", HttpStatus.OK);
+    }
 }
+

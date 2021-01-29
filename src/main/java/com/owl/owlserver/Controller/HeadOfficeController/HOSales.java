@@ -97,7 +97,6 @@ public class HOSales {
         }
         else {
             for (Sale sale : saleList) {
-                System.out.println(sale);
                 String x = mapper.writeValueAsString(sale);
                 JsonNode jsonNode = mapper.readTree(x);
                 arrayNode.add(jsonNode);
