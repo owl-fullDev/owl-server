@@ -160,6 +160,9 @@ public class posEndpoint {
             newSale.addSaleDetail(newSaleDetail);
             newSaleDetail.setSale(newSale);
             saleDetailRepository.save(newSaleDetail);
+            StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(store,productId);
+            storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity()-quantity);
+            storeQuantityRepository.saveAndFlush(storeQuantity);
             saleDetailList += "\n" + newSaleDetail.toString();
         }
         return customer.toString() + "\n\n" + customer.getSale(newSale).toString() + "\n\n" + saleDetailList;
