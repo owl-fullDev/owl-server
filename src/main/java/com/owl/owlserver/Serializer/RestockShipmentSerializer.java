@@ -68,12 +68,9 @@ public class RestockShipmentSerializer extends StdSerializer<RestockShipment> {
         jgen.writeStartArray();
         for (RestockShipmentDetail restockShipmentDetail : restockShipment.getRestockShipmentDetailList()){
             jgen.writeStartObject();
-            jgen.writeFieldName("product");
-            jgen.writeStartObject();
             jgen.writeStringField("productId", restockShipmentDetail.getProduct().getProductId());
             jgen.writeStringField("productName", restockShipmentDetail.getProduct().getProductName());
             jgen.writeNumberField("quantity", restockShipmentDetail.getQuantity());
-            jgen.writeEndObject();
             jgen.writeEndObject();
         }
         jgen.writeEndArray();
