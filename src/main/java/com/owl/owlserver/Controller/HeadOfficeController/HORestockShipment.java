@@ -77,6 +77,18 @@ public class HORestockShipment {
         }
     }
 
+    @GetMapping("/checkProductId")
+    public ResponseEntity<String> checkProductId(String productId) throws JsonProcessingException {
+        Product product = productRepository.findById(productId).orElse(null);
+        if (product==null){
+            return new ResponseEntity<>("Product ID invalid",HttpStatus.NOT_FOUND);
+        }
+        else{
+            return new ResponseEntity<>("Product found ",HttpStatus.OK);
+        }
+    }
+
+
     @GetMapping("/checkWarehouseQuantity")
     public ResponseEntity<Boolean> checkWarehouseQuantity(int warehouseId, String productId, int quantity) throws JsonProcessingException {
         Warehouse warehouse = warehouseRepository.findById(warehouseId).orElse(null);
