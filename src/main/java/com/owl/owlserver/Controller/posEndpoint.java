@@ -204,12 +204,12 @@ public class posEndpoint {
 
         RestockShipment restockShipment = restockShipmentRepository.findById(restockShipmentId).orElse(null);
 
-        if (restockShipment.getReceivedTimestamp()!=null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment has already been received");
-        }
-
         if (restockShipment==null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no restock shipment with specified ID");
+        }
+
+        if (restockShipment.getReceivedTimestamp()!=null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment has already been received");
         }
 
         Store store = storeRepository.findById(storeId).orElse(null);

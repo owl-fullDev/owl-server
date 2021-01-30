@@ -19,11 +19,11 @@ public class Warehouse implements Serializable {
     @Column(name = "NAME", nullable = false)
     private String name;
 
-    @Column(name = "PHONE_NUMBER", nullable = false)
-    private String phone_number;
-
     @Column(name = "ADDRESS", nullable = false)
     private String address;
+
+    @Column(name = "PHONE_NUMBER", nullable = false)
+    private String phone_number;
 
     @JsonIgnore
     @OneToMany(mappedBy = "warehouse")
@@ -32,7 +32,7 @@ public class Warehouse implements Serializable {
     public Warehouse() {
     }
 
-    public Warehouse(String name, String phone_number, String address) {
+    public Warehouse(String name, String address, String phone_number) {
         this.name = name;
         this.phone_number = phone_number;
         this.address = address;
