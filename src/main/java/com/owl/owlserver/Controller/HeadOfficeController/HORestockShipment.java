@@ -67,8 +67,7 @@ public class HORestockShipment {
 
         if (restockShipmentList == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There are currently no active restock shipments");
-        }
-        else {
+        } else {
             for (RestockShipment restockShipment : restockShipmentList) {
                 String x = mapper.writeValueAsString(restockShipment);
                 JsonNode jsonNode = mapper.readTree(x);
@@ -76,6 +75,21 @@ public class HORestockShipment {
             }
             return arrayNode;
         }
+    }
+
+    @GetMapping("/checkWarehouseQuantity")
+    public ResponseEntity<Boolean> checkWarehouseQuantity(int warehouseId, String productId, int quantity) throws JsonProcessingException {
+        Warehouse warehouse = warehouseRepository.findById(warehouseId).orElse(null);
+        if (warehouse == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no warehouse with specified ID");
+        }
+        if (warehouseQuantityRepository.findByProductId(productId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no product with specified ID in stock in warehouse");
+        }
+        else if (warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity() < quantity) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is not enough quantity of product with specified ID in warehouse, Requested quantity: "+quantity+" Current Quantity in warehouse: "+warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity());
+        }
+        return new ResponseEntity<>(true,HttpStatus.OK);
     }
 
     @PostMapping("/addRestockShipment")
@@ -96,7 +110,7 @@ public class HORestockShipment {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no store with specified ID");
         }
 
-        RestockShipment restockShipment = new RestockShipment(warehouse,store);
+        RestockShipment restockShipment = new RestockShipment(warehouse, store);
         restockShipmentRepository.save(restockShipment);
 
         //restockShipmentDetails
@@ -106,23 +120,17 @@ public class HORestockShipment {
             int quantity = products.get(i).get("quantity").asInt();
 
             Product product = productRepository.findById(productId).orElse(null);
-            if (product==null){
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no product with specified ID");
-            }
-
-            else if (warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity()<quantity){
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is not enough quantity of product with specified ID in warehouse");
-            }
-
-            else if (warehouseQuantityRepository.findByProductId(productId)==null){
+            if (warehouseQuantityRepository.findByProductId(productId) == null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no product with specified ID in stock in warehouse");
             }
-
+            else if (warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity() < quantity) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is not enough quantity of product with specified ID in warehouse, Requested quantity: "+quantity+" Current Quantity in warehouse: "+warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity());
+            }
             else {
-                WarehouseQuantity warehouseQuantity = warehouseQuantityRepository.findByWarehouseAndProductId(warehouse,productId);
-                warehouseQuantity.setInWarehouseQuantity(warehouseQuantity.getInWarehouseQuantity()-quantity);
+                WarehouseQuantity warehouseQuantity = warehouseQuantityRepository.findByWarehouseAndProductId(warehouse, productId);
+                warehouseQuantity.setInWarehouseQuantity(warehouseQuantity.getInWarehouseQuantity() - quantity);
                 warehouseQuantityRepository.saveAndFlush(warehouseQuantity);
-                RestockShipmentDetail restockShipmentDetail = new RestockShipmentDetail(restockShipment,product,quantity);
+                RestockShipmentDetail restockShipmentDetail = new RestockShipmentDetail(restockShipment, product, quantity);
                 restockShipment.addRestockShipmentDetail(restockShipmentDetail);
                 restockShipmentDetailRepository.saveAndFlush(restockShipmentDetail);
             }
