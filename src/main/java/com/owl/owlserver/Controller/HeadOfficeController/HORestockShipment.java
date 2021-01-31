@@ -66,7 +66,7 @@ public class HORestockShipment {
         ArrayNode arrayNode = mapper.createArrayNode();
 
         if (restockShipmentList == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There are currently no active restock shipments");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND ,"There are currently no active restock shipments");
         } else {
             for (RestockShipment restockShipment : restockShipmentList) {
                 String x = mapper.writeValueAsString(restockShipment);
@@ -90,18 +90,18 @@ public class HORestockShipment {
 
 
     @GetMapping("/checkWarehouseQuantity")
-    public ResponseEntity<Boolean> checkWarehouseQuantity(int warehouseId, String productId, int quantity) throws JsonProcessingException {
+    public ResponseEntity<String> checkWarehouseQuantity(int warehouseId, String productId, int quantity) throws JsonProcessingException {
         Warehouse warehouse = warehouseRepository.findById(warehouseId).orElse(null);
         if (warehouse == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no warehouse with specified ID");
+            return new ResponseEntity<>("There is no warehouse with specified ID",HttpStatus.NOT_FOUND);
         }
         if (warehouseQuantityRepository.findByProductId(productId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no product with specified ID in stock in warehouse");
+            return new ResponseEntity<>("There is no product with specified ID in stock in warehouse",HttpStatus.NOT_FOUND);
         }
         if (warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity() < quantity) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is not enough quantity of product with specified ID in warehouse");
+            return new ResponseEntity<>("There is not enough quantity of product with specified ID in warehouse",HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(true,HttpStatus.OK);
+        return new ResponseEntity<>("ProductId and quantity ok",HttpStatus.OK);
     }
 
     @PostMapping("/addRestockShipment")
@@ -114,12 +114,12 @@ public class HORestockShipment {
 
         Warehouse warehouse = warehouseRepository.findById(warehouseId).orElse(null);
         if (warehouse == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no warehouse with specified ID");
+            return new ResponseEntity<>("There is no warehouse with specified ID",HttpStatus.NOT_FOUND);
         }
 
         Store store = storeRepository.findById(storeId).orElse(null);
         if (store == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no store with specified ID");
+            return new ResponseEntity<>("There is no store with specified ID",HttpStatus.NOT_FOUND);
         }
 
         RestockShipment restockShipment = new RestockShipment(warehouse, store);
@@ -133,10 +133,10 @@ public class HORestockShipment {
 
             Product product = productRepository.findById(productId).orElse(null);
             if (warehouseQuantityRepository.findByProductId(productId) == null) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no product with specified ID in stock in warehouse");
+                return new ResponseEntity<>("There is no product with specified ID in stock in warehouse",HttpStatus.NOT_FOUND);
             }
             else if (warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity() < quantity) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is not enough quantity of product with specified ID in warehouse, Requested quantity: "+quantity+" Current Quantity in warehouse: "+warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity());
+                return new ResponseEntity<>("There is not enough quantity of product with specified ID in warehouse, Requested quantity: "+quantity+" Current Quantity in warehouse: "+warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity(),HttpStatus.NOT_FOUND);
             }
             else {
                 WarehouseQuantity warehouseQuantity = warehouseQuantityRepository.findByWarehouseAndProductId(warehouse, productId);
