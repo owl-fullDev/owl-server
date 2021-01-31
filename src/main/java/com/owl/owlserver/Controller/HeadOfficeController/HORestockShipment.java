@@ -99,9 +99,7 @@ public class HORestockShipment {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no product with specified ID in stock in warehouse");
         }
         else if (warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity() < quantity) {
-            int currQuantity = warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity();
-            String errorMsg = "There is not enough quantity of product with specified ID in warehouse, Current Quantity in warehouse: "+currQuantity;
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMsg);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "There is not enough quantity of product with specified ID in warehouse");
         }
         return new ResponseEntity<>(true,HttpStatus.OK);
     }
