@@ -99,7 +99,7 @@ public class HORestockShipment {
             return new ResponseEntity<>("There is no product with specified ID in stock in warehouse",HttpStatus.NOT_FOUND);
         }
         if (warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity() < quantity) {
-            return new ResponseEntity<>("There is not enough quantity of product with specified ID in warehouse",HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("There is not enough quantity of product with specified ID in warehouse, Requested quantity: "+quantity+" Current Quantity in warehouse: "+warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity(),HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>("ProductId and quantity ok",HttpStatus.OK);
     }
@@ -133,7 +133,7 @@ public class HORestockShipment {
 
             Product product = productRepository.findById(productId).orElse(null);
             if (warehouseQuantityRepository.findByProductId(productId) == null) {
-                return new ResponseEntity<>("There is no product with specified ID in stock in warehouseRequested quantity: "+quantity+" Current Quantity in warehouse: "+warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity(),HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("There is no product with specified ID in stock in warehouse",HttpStatus.NOT_FOUND);
             }
             else if (warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity() < quantity) {
                 return new ResponseEntity<>("There is not enough quantity of product with specified ID in warehouse, Requested quantity: "+quantity+" Current Quantity in warehouse: "+warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity(),HttpStatus.NOT_FOUND);
