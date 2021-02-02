@@ -3,6 +3,7 @@ package com.owl.owlserver.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -62,6 +61,11 @@ public class posEndpoint {
     @GetMapping("/getCustomerByName")
     public List<Customer> getCustomerByName(@RequestParam String firstName, String lastName) {
         return customerRepository.findAllByFirstNameAndLastName(firstName, lastName);
+    }
+
+    @GetMapping("/getCustomerByPhoneNumber")
+    public List<Customer> getCustomerByPhoneNumber(@RequestParam String phoneNumber) {
+        return customerRepository.findAllByPhoneNumber(phoneNumber);
     }
 
     @GetMapping({"/getStoreFrameQuantity", "/getStoreLensQuantity"})
@@ -246,6 +250,40 @@ public class posEndpoint {
         restockShipmentRepository.saveAndFlush(restockShipment);
 
         return new ResponseEntity<>("Restock shipment received by store!", HttpStatus.OK);
+    }
+
+    @GetMapping("/getRecentSalesList")
+    public ResponseEntity<List<Sale>> getRecentSalesList(int storeId) {
+
+            LocalDate localDateStart = LocalDate.now().minusDays(7);
+            LocalDate localDateEnd = LocalDate.now();
+
+            LocalDateTime startPeriod = localDateStart.atStartOfDay();
+            LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
+
+            List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndStoreStoreIdOrderByInitialDepositDate(startPeriod,endPeriod,storeId);
+
+            return new ResponseEntity<>(saleList, HttpStatus.OK);
+    }
+
+    @GetMapping("/refundSale")
+    public ResponseEntity<String> refundSale(int saleId) {
+
+        saleRepository.deleteById(saleId);
+
+        return new ResponseEntity<>("Sale sucesfully voided", HttpStatus.OK);
+    }
+
+    @GetMapping("/test")
+    public Store test(int s) {
+
+        Store store = storeRepository.findById(s).orElse(null);
+        if(store==null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No store exists");
+        }
+        else {
+            return store;
+        }
     }
 }
 
