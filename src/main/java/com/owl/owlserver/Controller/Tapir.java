@@ -43,4 +43,16 @@ public class Tapir {
     public String b() {
         return "Happy birthday broooooooooooo";
     }
+
+//    //to set custom field in deserializing
+//    @GetMapping("/getProduct")
+//    public String getProduct(@RequestParam String productId){
+//        Product product = productService.getById(productId);
+//        JsonNode node = objectMapper.convertValue(product, JsonNode.class);
+//        ((ObjectNode)node).put("customVariable", "somethingsomething");
+//        return node.toString();
+//    }
+
+    //to throw proper errors:
+//    orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No Sale with specified ID exists"));
 }

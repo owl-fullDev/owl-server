@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface StoreQuantityRepository extends JpaRepository <StoreQuantity,Integer> {
 
     StoreQuantity findByStoreAndProductId(Store store, String productId);
+    StoreQuantity findByStoreStoreIdAndProductId(int storeId, String productId);
 }

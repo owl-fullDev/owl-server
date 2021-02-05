@@ -6,13 +6,13 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "RESTOCK_SHIPMENT_DETAIL")
-public class RestockShipmentDetail implements Serializable {
+@Table(name = "SHIPMENT_DETAIL")
+public class ShipmentDetail implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "RESTOCK_SHIPMENT_DETAIL_ID", nullable = false)
-    private int restockShipmentDetailId;
+    @Column(name = "SHIPMENT_DETAIL_ID", nullable = false)
+    private int ShipmentDetailId;
 
     @Column(name = "QUANTITY", nullable = false)
     private int quantity;
@@ -24,20 +24,20 @@ public class RestockShipmentDetail implements Serializable {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "RESTOCK_SHIPMENT_ID", nullable = false)
-    private RestockShipment restockShipment;
+    @JoinColumn(name = "SHIPMENT_ID", nullable = false)
+    private Shipment shipment;
 
-    public RestockShipmentDetail() {
+    public ShipmentDetail() {
     }
 
-    public RestockShipmentDetail(RestockShipment restockShipment, Product product, int quantity) {
+    public ShipmentDetail(Shipment shipment, Product product, int quantity) {
         this.quantity = quantity;
         this.product = product;
-        this.restockShipment = restockShipment;
+        this.shipment = shipment;
     }
 
-    public int getRestockShipmentDetailId() {
-        return restockShipmentDetailId;
+    public int getShipmentDetailId() {
+        return ShipmentDetailId;
     }
 
     public int getQuantity() {
@@ -56,18 +56,18 @@ public class RestockShipmentDetail implements Serializable {
         this.product = product;
     }
 
-    public RestockShipment getRestockShipment() {
-        return restockShipment;
+    public Shipment getShipment() {
+        return shipment;
     }
 
-    public void setRestockShipment(RestockShipment restockShipment) {
-        this.restockShipment = restockShipment;
+    public void setShipment(Shipment shipment) {
+        this.shipment = shipment;
     }
 
     @Override
     public String toString() {
-        return "RestockShipmentDetail{" +
-                "restockShipmentDetailId=" + restockShipmentDetailId +
+        return "ShipmentDetail{" +
+                "ShipmentDetailId=" + ShipmentDetailId +
                 ", quantity=" + quantity +
                 ", product=" + product +
                 '}';

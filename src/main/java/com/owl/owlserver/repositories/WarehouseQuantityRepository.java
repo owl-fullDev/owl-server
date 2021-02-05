@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
 public interface WarehouseQuantityRepository extends JpaRepository<WarehouseQuantity,Integer> {
 
     WarehouseQuantity findByProductId (String productId);
-    WarehouseQuantity findByWarehouseAndProductId(Warehouse warehouse, String productId);
+    WarehouseQuantity findByWarehouseWarehouseIdAndProductId(int warehouseId, String productId);
 
 }

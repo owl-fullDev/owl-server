@@ -3,7 +3,6 @@ package com.owl.owlserver.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,9 +38,9 @@ public class posEndpoint {
     @Autowired
     StoreRepository storeRepository;
     @Autowired
-    RestockShipmentRepository restockShipmentRepository;
+    ShipmentRepository shipmentRepository;
     @Autowired
-    RestockShipmentDetailRepository restockShipmentDetailRepository;
+    ShipmentDetailRepository shipmentDetailRepository;
     @Autowired
     WarehouseRepository warehouseRepository;
     @Autowired
@@ -206,53 +205,53 @@ public class posEndpoint {
         return "Successfully updates Sale";
     }
 
-    @PostMapping(value = "/receiveRestockShipment")
-    public ResponseEntity<String> receiveRestockShipment(@RequestBody String jsonString) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode wholeJSON = objectMapper.readTree(jsonString);
-        int storeId = wholeJSON.get("storeId").asInt();
-        int restockShipmentId = wholeJSON.get("restockShipmentId").asInt();
-        String zonePickUpTime = wholeJSON.get("receivedDate").asText();
-
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonePickUpTime, formatter);
-        ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
-        LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
-
-        RestockShipment restockShipment = restockShipmentRepository.findById(restockShipmentId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No restock shipment with specified ID exists"));
-
-        if (restockShipment.getReceivedTimestamp()!=null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment has already been received");
-        }
-
-        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
-
-        if (restockShipment.getStore().getStoreId()!=storeId){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for this store!");
-        }
-
-        List<RestockShipmentDetail> restockShipmentDetailList = restockShipment.getRestockShipmentDetailList();
-        for (RestockShipmentDetail restockShipmentDetail: restockShipmentDetailList){
-
-            Product product = restockShipmentDetail.getProduct();
-            int quantity = restockShipmentDetail.getQuantity();
-            StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(store, product.getProductId());
-
-            //first time receiving product
-            if (storeQuantity==null){
-                storeQuantity = new StoreQuantity(store,product.getProductId(),quantity);
-                storeQuantityRepository.saveAndFlush(storeQuantity);
-            }
-            else {
-                storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity()+quantity);
-                storeQuantityRepository.saveAndFlush(storeQuantity);
-            }
-        }
-
-        restockShipment.setReceivedTimestamp(localPickUpTime);
-        restockShipmentRepository.saveAndFlush(restockShipment);
-
-        return new ResponseEntity<>("Restock shipment received by store!", HttpStatus.OK);
-    }
+//    @PostMapping(value = "/receiveShipment")
+//    public ResponseEntity<String> receiveShipment(@RequestBody String jsonString) throws JsonProcessingException {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+//        int storeId = wholeJSON.get("storeId").asInt();
+//        int ShipmentId = wholeJSON.get("ShipmentId").asInt();
+//        String zonePickUpTime = wholeJSON.get("receivedDate").asText();
+//
+//        ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonePickUpTime, formatter);
+//        ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
+//        LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
+//
+//        Shipment shipment = shipmentRepository.findById(ShipmentId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No  shipment with specified ID exists"));
+//
+//        if (shipment.getReceivedTimestamp()!=null){
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment has already been received");
+//        }
+//
+//        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
+//
+//        if (shipment.getStore().getStoreId()!=storeId){
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for this store!");
+//        }
+//
+//        List<ShipmentDetail> shipmentDetailList = shipment.getShipmentDetailList();
+//        for (ShipmentDetail shipmentDetail : shipmentDetailList){
+//
+//            Product product = shipmentDetail.getProduct();
+//            int quantity = shipmentDetail.getQuantity();
+//            StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(store, product.getProductId());
+//
+//            //first time receiving product
+//            if (storeQuantity==null){
+//                storeQuantity = new StoreQuantity(store,product.getProductId(),quantity);
+//                storeQuantityRepository.saveAndFlush(storeQuantity);
+//            }
+//            else {
+//                storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity()+quantity);
+//                storeQuantityRepository.saveAndFlush(storeQuantity);
+//            }
+//        }
+//
+//        shipment.setReceivedTimestamp(localPickUpTime);
+//        shipmentRepository.saveAndFlush(shipment);
+//
+//        return new ResponseEntity<>("Shipment received by store!", HttpStatus.OK);
+//    }
 
     @GetMapping("/getRecentSalesList")
     public ResponseEntity<List<Sale>> getRecentSalesList(int storeId) {

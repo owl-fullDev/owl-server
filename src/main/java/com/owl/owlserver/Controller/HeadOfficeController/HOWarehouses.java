@@ -37,9 +37,9 @@ public class HOWarehouses {
     @Autowired
     StoreRepository storeRepository;
     @Autowired
-    RestockShipmentRepository restockShipmentRepository;
+    ShipmentRepository ShipmentRepository;
     @Autowired
-    RestockShipmentDetailRepository restockShipmentDetailRepository;
+    ShipmentDetailRepository ShipmentDetailRepository;
     @Autowired
     WarehouseRepository warehouseRepository;
     @Autowired
