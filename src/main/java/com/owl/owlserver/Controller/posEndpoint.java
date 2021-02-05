@@ -205,53 +205,53 @@ public class posEndpoint {
         return "Successfully updates Sale";
     }
 
-//    @PostMapping(value = "/receiveShipment")
-//    public ResponseEntity<String> receiveShipment(@RequestBody String jsonString) throws JsonProcessingException {
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        JsonNode wholeJSON = objectMapper.readTree(jsonString);
-//        int storeId = wholeJSON.get("storeId").asInt();
-//        int ShipmentId = wholeJSON.get("ShipmentId").asInt();
-//        String zonePickUpTime = wholeJSON.get("receivedDate").asText();
-//
-//        ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonePickUpTime, formatter);
-//        ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
-//        LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
-//
-//        Shipment shipment = shipmentRepository.findById(ShipmentId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No  shipment with specified ID exists"));
-//
-//        if (shipment.getReceivedTimestamp()!=null){
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment has already been received");
-//        }
-//
-//        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
-//
-//        if (shipment.getStore().getStoreId()!=storeId){
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for this store!");
-//        }
-//
-//        List<ShipmentDetail> shipmentDetailList = shipment.getShipmentDetailList();
-//        for (ShipmentDetail shipmentDetail : shipmentDetailList){
-//
-//            Product product = shipmentDetail.getProduct();
-//            int quantity = shipmentDetail.getQuantity();
-//            StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(store, product.getProductId());
-//
-//            //first time receiving product
-//            if (storeQuantity==null){
-//                storeQuantity = new StoreQuantity(store,product.getProductId(),quantity);
-//                storeQuantityRepository.saveAndFlush(storeQuantity);
-//            }
-//            else {
-//                storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity()+quantity);
-//                storeQuantityRepository.saveAndFlush(storeQuantity);
-//            }
-//        }
-//
-//        shipment.setReceivedTimestamp(localPickUpTime);
-//        shipmentRepository.saveAndFlush(shipment);
-//
-//        return new ResponseEntity<>("Shipment received by store!", HttpStatus.OK);
-//    }
+    @PostMapping(value = "/receiveShipment")
+    public ResponseEntity<String> receiveShipment(@RequestBody String jsonString) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+        int storeId = wholeJSON.get("storeId").asInt();
+        int ShipmentId = wholeJSON.get("ShipmentId").asInt();
+        String zonePickUpTime = wholeJSON.get("receivedDate").asText();
+
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonePickUpTime, formatter);
+        ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
+        LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
+
+        Shipment shipment = shipmentRepository.findById(ShipmentId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No  shipment with specified ID exists"));
+
+        if (shipment.getReceivedTimestamp()!=null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment has already been received");
+        }
+
+        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
+
+        if (shipment.getDestinationId()!=storeId){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for this store!");
+        }
+
+        List<ShipmentDetail> shipmentDetailList = shipment.getShipmentDetailList();
+        for (ShipmentDetail shipmentDetail : shipmentDetailList){
+
+            Product product = shipmentDetail.getProduct();
+            int quantity = shipmentDetail.getQuantity();
+            StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(store, product.getProductId());
+
+            //first time receiving product
+            if (storeQuantity==null){
+                storeQuantity = new StoreQuantity(store,product.getProductId(),quantity);
+                storeQuantityRepository.saveAndFlush(storeQuantity);
+            }
+            else {
+                storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity()+quantity);
+                storeQuantityRepository.saveAndFlush(storeQuantity);
+            }
+        }
+
+        shipment.setReceivedTimestamp(localPickUpTime);
+        shipmentRepository.saveAndFlush(shipment);
+
+        return new ResponseEntity<>("Shipment received by store!", HttpStatus.OK);
+    }
 
     @GetMapping("/getRecentSalesList")
     public ResponseEntity<List<Sale>> getRecentSalesList(int storeId) {
