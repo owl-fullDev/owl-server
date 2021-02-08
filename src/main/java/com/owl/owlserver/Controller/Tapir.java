@@ -1,5 +1,7 @@
 package com.owl.owlserver.Controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.model.Customer;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -48,8 +50,8 @@ public class Tapir {
 //    @GetMapping("/getProduct")
 //    public String getProduct(@RequestParam String productId){
 //        Product product = productService.getById(productId);
-//        JsonNode node = objectMapper.convertValue(product, JsonNode.class);
-//        ((ObjectNode)node).put("customVariable", "somethingsomething");
+//          JsonNode jsonNode = objectMapper.convertValue(product, JsonNode.class);
+//        ((ObjectNode)jsonNode).put("quantity",storeQuantity.getInstoreQuantity());
 //        return node.toString();
 //    }
 

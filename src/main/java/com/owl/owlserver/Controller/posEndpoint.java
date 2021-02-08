@@ -3,6 +3,7 @@ package com.owl.owlserver.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,8 @@ public class posEndpoint {
     @Autowired
     WarehouseQuantityRepository warehouseQuantityRepository;
 
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     //Time settings
     final DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
     final ZoneId serverLocalTime = ZoneId.systemDefault();
@@ -53,99 +56,127 @@ public class posEndpoint {
     //REST endpoints
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public String ping() {
-        return "Hello world! :), GET request successfully received";
+    public ResponseEntity<String> ping() {
+        return new ResponseEntity<>("Hello world! :), GET request successfully received", HttpStatus.OK);
     }
 
     @GetMapping("/getCustomerByName")
-    public List<Customer> getCustomerByName(@RequestParam String firstName, String lastName) {
-        return customerRepository.findAllByFirstNameAndLastName(firstName, lastName);
+    public ResponseEntity<List<Customer>> getCustomerByName(@RequestParam String firstName, String lastName) {
+        List<Customer> customerList = customerRepository.findAllByFirstNameAndLastName(firstName, lastName);
+        if (customerList.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No customers with specified name found");
+        }
+        else return new ResponseEntity<>(customerList, HttpStatus.OK);
     }
 
     @GetMapping("/getCustomerByPhoneNumber")
-    public List<Customer> getCustomerByPhoneNumber(@RequestParam String phoneNumber) {
-        return customerRepository.findAllByPhoneNumber(phoneNumber);
+    public ResponseEntity<List<Customer>> getCustomerByPhoneNumber(@RequestParam String phoneNumber) {
+        List<Customer> customerList = customerRepository.findAllByPhoneNumber(phoneNumber);
+        if (customerList.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No customers with specified phone number found");
+        }
+        else return new ResponseEntity<>(customerList, HttpStatus.OK);
     }
 
     @GetMapping("/getInStoreProductQuantity")
-    public Product getInStoreProductQuantity(@RequestParam int storeId, String productId) {
+    public ResponseEntity<JsonNode> getInStoreProductQuantity(@RequestParam int storeId, String productId) {
         Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID"));
+        Product product = productRepository.findById(productId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with specified ID exists"));
         StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(store,productId);
         if (storeQuantity==null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with specified ID in stock in store");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product with specified ID not in stock in store");
         }
-        int quantity = storeQuantity.getInstoreQuantity();
-        Product product = productRepository.findById(productId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with specified ID exists"));
-        product.setStoreQuantity(quantity);
-        return product;
+        JsonNode jsonNode = objectMapper.convertValue(product, JsonNode.class);
+        ((ObjectNode)jsonNode).put("quantity", storeQuantity.getInstoreQuantity());
+        return new ResponseEntity<>(jsonNode, HttpStatus.OK);
     }
 
     @GetMapping("/getCustomLensList")
-    public List<Product> getCustomLensList() {
-        List<Product> productList = productRepository.findAllByProductIdStartsWith("CL");
-        return productList;
+    public ResponseEntity<List<Product>> getCustomLensList() {
+        List<Product> customLensList = productRepository.findAllByProductIdStartsWith("CL");
+        if (customLensList.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No custom lenses found");
+        }
+        return new ResponseEntity<>(customLensList, HttpStatus.OK);
     }
 
     @GetMapping("/getStorePromotions")
-    public List<Promotion> getStorePromotions(@RequestParam int storeId) {
+    public ResponseEntity<List<Promotion>> getStorePromotions(@RequestParam int storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
-        return store.getPromotionList();
+        List<Promotion> storePromotionList = store.getPromotionList();
+        if (storePromotionList.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No active promotions for this store");
+        }
+        return new ResponseEntity<>(storePromotionList, HttpStatus.OK);
     }
 
     @GetMapping("/getStoreEmployees")
-    public List<Employee> getStoreEmployees(@RequestParam int storeId) {
+    public ResponseEntity<List<Employee>> getStoreEmployees(@RequestParam int storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
-        return store.getEmployeesList();
+        List<Employee> storeEmployeeList = store.getEmployeesList();
+        if (storeEmployeeList.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No employees working for this store");
+        }
+        return new ResponseEntity<>(storeEmployeeList, HttpStatus.OK);
     }
 
     @GetMapping("/getPendingSaleList")
-    public List<Sale> getPendingSaleList(@RequestParam int storeId) {
-        List<Sale> pendingSaleList = saleRepository.getAllByStoreStoreIdAndPickupDateEquals(storeId, null);
-        return pendingSaleList;
+    public ResponseEntity<List<Sale>> getPendingSaleList(@RequestParam int storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
+        List<Sale> storePendingSaleList = saleRepository.getAllByStoreStoreIdAndPickupDateEquals(storeId, null);
+        if (storePendingSaleList.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There are no pending sales for this store");
+        }
+        return new ResponseEntity<>(storePendingSaleList, HttpStatus.OK);
     }
 
     @PostMapping(value = "/newSale")
-    public String newSale(@RequestBody String jsonString) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
+    public ResponseEntity<String> newSale(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
+
+        //new customer or existing customer validation
         int customerId = wholeJSON.get("customerId").asInt();
         Customer customer;
-
-        //new customer or existing customer
         if (customerId == 0) {
             JsonNode customerJSON = wholeJSON.get("newCustomer");
             customer = objectMapper.treeToValue(customerJSON, Customer.class);
             customerRepository.save(customer);
         }
         else {
-            customer = customerRepository.findById(customerId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No customer with specified details exist"));
+            customer = customerRepository.findById(customerId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No customer with specified ID exist"));
         }
 
         //sale deserialization
         JsonNode sale = wholeJSON.get("sale");
-        int promotionId = sale.get("promotionId").asInt(0);
-        int employeeId = sale.get("employeeId").asInt(0);
-        int storeId = sale.get("storeId").asInt(0);
-        double grandTotal = sale.get("grandTotal").asDouble(0);
-        String initialDepositDateStr = sale.get("initialDepositDate").asText();
         String initialDepositType = sale.get("initialDepositType").asText();
-        double initialDepositAmount = sale.get("initialDepositAmount").asDouble(0);
-        boolean fullyPaid;
 
+        String initialDepositDateStr = sale.get("initialDepositDate").asText();
         ZonedDateTime zonedDateTime = ZonedDateTime.parse(initialDepositDateStr, formatter);
         ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
         LocalDateTime initialDepositDate = convertedTime.toLocalDateTime();
 
-        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
+        //store check
+        int storeId = sale.get("storeId").asInt();
+        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No store with specified ID exists"));
 
+        //employee check
+        int employeeId = sale.get("employeeId").asInt();
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No employee with specified ID exists"));
+
+        //promotion check
+        int promotionId = sale.get("promotionId").asInt();
         if (promotionId != 0) {
-            Promotion promotion = promotionRepository.findById(promotionId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No promotion with specified ID exists"));
+            promotionRepository.findById(promotionId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No promotion with specified ID exists"));
         }
 
         //full payment or deposit
+        double grandTotal = sale.get("grandTotal").asDouble();
+        double initialDepositAmount = sale.get("initialDepositAmount").asDouble();
+        boolean fullyPaid;
         if (grandTotal > initialDepositAmount) {
             fullyPaid = false;
-        } else {
+        }
+        else {
             fullyPaid = true;
         }
 
@@ -155,43 +186,47 @@ public class posEndpoint {
         newSale.setCustomer(customer);
         saleRepository.save(newSale);
 
-        //saleDetails
+        //saleDetails deserialization
         JsonNode products = wholeJSON.get("products");
         int itemList = wholeJSON.get("itemsSold").asInt();
         String saleDetailList = "";
 
         for (int i = 0; i < itemList; i++) {
-            String productId = wholeJSON.get("products").get(i).get("productId").asText();
-            int quantity = wholeJSON.get("products").get(i).get("quantity").asInt();
-            Product product = productRepository.findById(productId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with specified ID exists"));
+            String productId = products.get(i).get("productId").asText();
+            int quantity = products.get(i).get("quantity").asInt();
+            Product product = productRepository.findById(productId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No product with specified ID exists"));
             SaleDetail newSaleDetail = new SaleDetail(product, quantity);
             newSale.addSaleDetail(newSaleDetail);
             newSaleDetail.setSale(newSale);
             saleDetailRepository.save(newSaleDetail);
 
-            //if product purchased is NOT a custom lens
+            //if product purchased is NOT a custom lens, decrease in-store quantity
             if (!(product.getProductId().startsWith("CL"))){
                 StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(store, productId);
+                if (storeQuantity.getInstoreQuantity()-quantity<0){
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough of product in stock in store");
+                }
                 storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity() - quantity);
-                storeQuantityRepository.saveAndFlush(storeQuantity);
+                storeQuantityRepository.save(storeQuantity);
             }
             saleDetailList += "\n" + newSaleDetail.toString();
         }
-        return customer.toString() + "\n\n" + customer.getSale(newSale).toString() + "\n\n" + saleDetailList;
+
+        return new ResponseEntity<>(customer.toString() + "\n\n" + customer.getSale(newSale).toString() + "\n\n" + saleDetailList, HttpStatus.OK);
     }
 
     @PostMapping(value = "/updateSale")
-    public String updateSale(@RequestBody String jsonString) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
+    public ResponseEntity<String> updateSale(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
-        int saleId = wholeJSON.get("saleId").asInt();
-        String zonePickUpTime = wholeJSON.get("pickUpDate").asText();
 
+        int saleId = wholeJSON.get("saleId").asInt();
+        Sale sale = saleRepository.findById(saleId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Sale with specified ID exists"));
+
+        String zonePickUpTime = wholeJSON.get("pickUpDate").asText();
         ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonePickUpTime, formatter);
         ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
         LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
 
-        Sale sale = saleRepository.findById(saleId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No Sale with specified ID exists"));
         if (sale.isFullyPaid()) {
             sale.setPickupDate(localPickUpTime);
         }
@@ -199,39 +234,40 @@ public class posEndpoint {
             sale.setPickupDate(localPickUpTime);
             sale.setFinalDepositDate(localPickUpTime);
             sale.setFinalDepositType(wholeJSON.get("finalPaymentType").asText());
+            if (sale.getGrandTotal()-sale.getInitialDepositAmount()-wholeJSON.get("finalPaymentAmount").asDouble()>sale.getGrandTotal()*0.01){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Final payment does not cover amount due!");
+            }
             sale.setFinalDepositAmount(wholeJSON.get("finalPaymentAmount").asDouble());
         }
         saleRepository.save(sale);
-        return "Successfully updates Sale";
+        return new ResponseEntity<>("Successfully updated Sale", HttpStatus.OK);
     }
 
     @PostMapping(value = "/receiveShipment")
     public ResponseEntity<String> receiveShipment(@RequestBody String jsonString) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
-        int storeId = wholeJSON.get("storeId").asInt();
+
         int ShipmentId = wholeJSON.get("ShipmentId").asInt();
-        String zonePickUpTime = wholeJSON.get("receivedDate").asText();
+        Shipment shipment = shipmentRepository.findById(ShipmentId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No shipment with specified ID exists"));
 
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonePickUpTime, formatter);
-        ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
-        LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
-
-        Shipment shipment = shipmentRepository.findById(ShipmentId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No  shipment with specified ID exists"));
+        int storeId = wholeJSON.get("storeId").asInt();
+        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
 
         if (shipment.getReceivedTimestamp()!=null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment has already been received");
         }
 
-        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
-
         if (shipment.getDestinationId()!=storeId){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for this store!");
         }
 
+        String zonePickUpTime = wholeJSON.get("receivedDate").asText();
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonePickUpTime, formatter);
+        ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
+        LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
+
         List<ShipmentDetail> shipmentDetailList = shipment.getShipmentDetailList();
         for (ShipmentDetail shipmentDetail : shipmentDetailList){
-
             Product product = shipmentDetail.getProduct();
             int quantity = shipmentDetail.getQuantity();
             StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(store, product.getProductId());
@@ -280,17 +316,6 @@ public class posEndpoint {
 
         return new ResponseEntity<>("Sale successfully voided", HttpStatus.OK);
     }
-
-    @GetMapping("/test")
-    public Store test(int s) {
-
-        Store store = storeRepository.findById(s).orElse(null);
-        if(store==null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No store exists");
-        }
-        else {
-            return store;
-        }
-    }
+    
 }
 

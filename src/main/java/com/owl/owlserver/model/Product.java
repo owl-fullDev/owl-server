@@ -23,9 +23,6 @@ public class Product implements Serializable {
     @Column(name = "IMAGE_LINK")
     private String imageLink;
 
-    @Transient
-    private int storeQuantity;
-
     public Product() {
     }
 
@@ -65,27 +62,6 @@ public class Product implements Serializable {
 
     public void setImageLink(String imageLink) {
         this.imageLink = imageLink;
-    }
-
-    public int getStoreQuantity() {
-        return storeQuantity;
-    }
-
-    public void setStoreQuantity(int storeQuantity) {
-        this.storeQuantity = storeQuantity;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Product product = (Product) o;
-        return Double.compare(product.productPrice, productPrice) == 0 && productId.equals(product.productId) && productName.equals(product.productName) && Objects.equals(imageLink, product.imageLink);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(productId, productName, productPrice, imageLink);
     }
 
     @Override
