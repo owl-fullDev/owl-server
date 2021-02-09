@@ -18,7 +18,7 @@ import java.util.List;
 @CrossOrigin
 @RestController
 @RequestMapping("/hoShipmentsEndpoint")
-public class HOShipment {
+public class HOShipments {
 
     //injecting repositories for database access
     @Autowired

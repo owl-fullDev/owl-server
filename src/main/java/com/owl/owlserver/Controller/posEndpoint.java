@@ -47,6 +47,7 @@ public class posEndpoint {
     @Autowired
     WarehouseQuantityRepository warehouseQuantityRepository;
 
+    //JACKSON object Mapper
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     //Time settings

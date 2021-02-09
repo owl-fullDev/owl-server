@@ -19,20 +19,19 @@ public class Supplier implements Serializable {
     private String address;
 
     @Column(name = "PHONE_NUMBER", nullable = false)
-    private String city;
+    private String phoneNumber;
 
     @Column(name = "EMAIL", nullable = false)
-    private String phone_number;
+    private String email;
 
     public Supplier() {
     }
 
-    public Supplier(int supplierId, String name, String address, String city, String phone_number) {
-        this.supplierId = supplierId;
+    public Supplier(String name, String address, String phoneNumber, String email) {
         this.name = name;
         this.address = address;
-        this.city = city;
-        this.phone_number = phone_number;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
     }
 
     public int getSupplierId() {
@@ -55,20 +54,20 @@ public class Supplier implements Serializable {
         this.address = address;
     }
 
-    public String getCity() {
-        return city;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setCity(String city) {
-        this.city = city;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
-    public String getPhone_number() {
-        return phone_number;
+    public String getEmail() {
+        return email;
     }
 
-    public void setPhone_number(String phone_number) {
-        this.phone_number = phone_number;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     @Override
@@ -77,8 +76,8 @@ public class Supplier implements Serializable {
                 "supplierId=" + supplierId +
                 ", name='" + name + '\'' +
                 ", address='" + address + '\'' +
-                ", city='" + city + '\'' +
-                ", phone_number='" + phone_number + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", email='" + email + '\'' +
                 '}';
     }
 }
