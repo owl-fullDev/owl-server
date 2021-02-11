@@ -51,7 +51,6 @@ public class HOSuppliers {
     //JACKSON object Mapper
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-
     //REST endpoints
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
