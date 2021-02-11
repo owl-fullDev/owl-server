@@ -17,7 +17,6 @@ public class ShipmentDetail implements Serializable {
     @Column(name = "QUANTITY", nullable = false)
     private int quantity;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "PRODUCT_ID", nullable = false)
     private Product product;
