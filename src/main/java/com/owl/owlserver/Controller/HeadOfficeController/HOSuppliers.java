@@ -62,7 +62,7 @@ public class HOSuppliers {
     public ResponseEntity<List<Supplier>> getAllSuppliers() {
         List<Supplier> supplierList = supplierRespository.findAll();
         if (supplierList.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No suppliers saves");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No suppliers saved");
         }
         return new ResponseEntity<>(supplierList, HttpStatus.OK);
     }
