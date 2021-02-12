@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.owl.owlserver.model.Employee;
 import com.owl.owlserver.model.Product;
+import com.owl.owlserver.model.Store;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,19 @@ public class HOEmployees {
     StoreQuantityRepository storeQuantityRepository;
     @Autowired
     StoreRepository storeRepository;
+    @Autowired
+    ShipmentRepository shipmentRepository;
+    @Autowired
+    ShipmentDetailRepository shipmentDetailRepository;
+    @Autowired
+    WarehouseRepository warehouseRepository;
+    @Autowired
+    WarehouseQuantityRepository warehouseQuantityRepository;
+    @Autowired
+    SupplierRespository supplierRespository;
+
+    //JACKSON object Mapper
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     //REST endpoints
     @GetMapping
@@ -49,7 +63,7 @@ public class HOEmployees {
         return employeeRepository.findAll();
     }
 
-    @PostMapping("/addEmployee")
+    @PostMapping("/addNewEmployee")
     public ResponseEntity<String> addEmployee(@RequestBody String jsonString) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
@@ -57,10 +71,9 @@ public class HOEmployees {
         String lastName = wholeJSON.get("lastName").asText();
         String jobTitle = wholeJSON.get("jobTitle").asText();
 
-        boolean alreadyExistsFirstName = employeeRepository.existsDistinctByFirstName(firstName);
-        boolean alreadyExistsLastName = employeeRepository.existsDistinctByLastname(lastName);
+        boolean alreadyExists = employeeRepository.existsByFirstNameAndLastname(firstName, lastName);
 
-        if (alreadyExistsFirstName||alreadyExistsFirstName) {
+        if (alreadyExists) {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Employee already Exists!");
         }
         else {
@@ -70,5 +83,33 @@ public class HOEmployees {
         }
     }
 
+    @PostMapping("/modifyEmployee")
+    public ResponseEntity<String> modifyEmployee(@RequestBody String jsonString) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+        int employeeId = wholeJSON.get("employeeId").asInt();
+        String jobTitle = wholeJSON.get("jobTitle").asText();
+        String email = wholeJSON.get("email").asText();
+        String phoneNumber = wholeJSON.get("phoneNumber").asText();
+        int storeId = wholeJSON.get("storeId").asInt();
+
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No employee with specified ID exists"));
+
+        if (!jobTitle.equals("")){
+            employee.setJobTitle(jobTitle);
+        }
+        if (!email.equals("")){
+            employee.setEmail(email);
+        }
+        if (!phoneNumber.equals("")){
+            employee.setPhoneNumber(phoneNumber);
+        }
+        if (!(storeId==0)){
+            Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No store with specified ID exists"));
+            employee.setStore(store);
+        }
+        employeeRepository.saveAndFlush(employee);
+        return new ResponseEntity<>("Successfully modified employee details", HttpStatus.OK);
+    }
 
 }

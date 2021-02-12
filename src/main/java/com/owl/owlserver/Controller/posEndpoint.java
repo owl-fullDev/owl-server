@@ -251,6 +251,10 @@ public class posEndpoint {
         int ShipmentId = wholeJSON.get("ShipmentId").asInt();
         Shipment shipment = shipmentRepository.findById(ShipmentId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No shipment with specified ID exists"));
 
+        if (shipment.getDestinationType()!=3){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for a store!");
+        }
+
         int storeId = wholeJSON.get("storeId").asInt();
         Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
 
