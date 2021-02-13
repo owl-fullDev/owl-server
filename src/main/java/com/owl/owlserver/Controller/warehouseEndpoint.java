@@ -58,12 +58,17 @@ public class warehouseEndpoint {
 
     //REST endpoints
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> ping() {
         return new ResponseEntity<>("Hello world! :), GET request successfully received", HttpStatus.OK);
     }
 
-    @PostMapping(value = "/receiveShipment")
+    @GetMapping("/getAllWarehouseShipments")
+    public ResponseEntity<List<Shipment>> getAllWarehouseShipments() {
+        List<Shipment> shipmentList = shipmentRepository.findAllByReceivedTimestampIsNullAndDestinationTypeEquals(2);
+        return new ResponseEntity<>(shipmentList, HttpStatus.OK);
+    }
+
+    @PostMapping("/receiveShipment")
     public ResponseEntity<String> receiveShipment(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
 
