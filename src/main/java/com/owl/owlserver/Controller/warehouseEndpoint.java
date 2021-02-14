@@ -3,6 +3,8 @@ package com.owl.owlserver.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,8 @@ public class warehouseEndpoint {
     WarehouseRepository warehouseRepository;
     @Autowired
     WarehouseQuantityRepository warehouseQuantityRepository;
+    @Autowired
+    SupplierRespository supplierRespository;
 
     //JACKSON object Mapper
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -59,13 +63,23 @@ public class warehouseEndpoint {
     //REST endpoints
     @GetMapping
     public ResponseEntity<String> ping() {
-        return new ResponseEntity<>("Hello world! :), GET request successfully received", HttpStatus.OK);
+        return new ResponseEntity<>("This is the end point for warehouses, GET request successfully received", HttpStatus.OK);
     }
 
-    @GetMapping("/getAllWarehouseShipments")
-    public ResponseEntity<List<Shipment>> getAllWarehouseShipments() {
-        List<Shipment> shipmentList = shipmentRepository.findAllByReceivedTimestampIsNullAndDestinationTypeEquals(2);
-        return new ResponseEntity<>(shipmentList, HttpStatus.OK);
+    @GetMapping("/getAllSupplierShipments")
+    public ResponseEntity<ArrayNode> getAllSupplierShipments() throws JsonProcessingException {
+        List<Shipment> shipmentList = shipmentRepository.findAllByReceivedTimestampIsNullAndOriginTypeEquals(1);
+        ArrayNode arrayNode = objectMapper.createArrayNode();
+
+        for (Shipment shipment: shipmentList){
+            JsonNode jsonNode = objectMapper.convertValue(shipment, JsonNode.class);
+            Supplier supplier = supplierRespository.findById(shipment.getOriginId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getOriginId()+" exists!"));
+            ((ObjectNode) jsonNode).put("supplierName", supplier.getName());
+            ((ObjectNode) jsonNode).put("supplierAddress", supplier.getAddress());
+            arrayNode.add(jsonNode);
+        }
+
+        return new ResponseEntity<>(arrayNode, HttpStatus.OK);
     }
 
     @PostMapping("/receiveShipment")

@@ -10,6 +10,6 @@ import java.util.List;
 public interface ShipmentRepository extends JpaRepository<Shipment,Integer> {
 
     List<Shipment> findAllByReceivedTimestampIsNull();
-    List<Shipment> findAllByReceivedTimestampIsNullAndDestinationTypeEquals(int destinationType);
+    List<Shipment> findAllByReceivedTimestampIsNullAndOriginTypeEquals(int originType);
 
 }

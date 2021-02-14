@@ -1,5 +1,7 @@
 package com.owl.owlserver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ public class Product implements Serializable {
     @Column(name = "PRODUCT_PRICE", nullable = false)
     private double productPrice;
 
+    @JsonIgnore
     @Column(name = "IMAGE_LINK")
     private String imageLink;
 
