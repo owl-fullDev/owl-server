@@ -3,6 +3,8 @@ package com.owl.owlserver.Controller.HeadOfficeController;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.model.Employee;
 import com.owl.owlserver.model.Product;
 import com.owl.owlserver.model.Store;
@@ -59,8 +61,21 @@ public class HOEmployees {
     }
 
     @GetMapping("/getAllEmployees")
-    public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
+    public ResponseEntity<ArrayNode> getAllEmployees() {
+        List<Employee> employeeList = employeeRepository.findAll();
+        ArrayNode arrayNode = objectMapper.createArrayNode();
+        if (employeeList.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No employees exists");
+        }
+        for (Employee employee: employeeList){
+            JsonNode jsonNode = objectMapper.convertValue(employee, JsonNode.class);
+            if (employee.getStore()!=null) {
+                ((ObjectNode) jsonNode).put("storeId", employee.getStore().getStoreId());
+                ((ObjectNode) jsonNode).put("storeName", employee.getStore().getName());
+            }
+            arrayNode.add(jsonNode);
+        }
+        return new ResponseEntity<>(arrayNode, HttpStatus.OK);
     }
 
     @PostMapping("/addNewEmployee")
@@ -83,6 +98,7 @@ public class HOEmployees {
         }
     }
 
+    //todo change into whole emplpoyee object
     @PostMapping("/modifyEmployee")
     public ResponseEntity<String> modifyEmployee(@RequestBody String jsonString) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();

@@ -82,6 +82,22 @@ public class warehouseEndpoint {
         return new ResponseEntity<>(arrayNode, HttpStatus.OK);
     }
 
+    @GetMapping("/getAllWarehouseAndStoreShipments")
+    public ResponseEntity<ArrayNode> getAllWarehouseAndStoreShipments() throws JsonProcessingException {
+        List<Shipment> shipmentList = shipmentRepository.findAllByReceivedTimestampIsNullAndOriginTypeEquals(1);
+        ArrayNode arrayNode = objectMapper.createArrayNode();
+
+        for (Shipment shipment: shipmentList){
+            JsonNode jsonNode = objectMapper.convertValue(shipment, JsonNode.class);
+            Supplier supplier = supplierRespository.findById(shipment.getOriginId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getOriginId()+" exists!"));
+            ((ObjectNode) jsonNode).put("supplierName", supplier.getName());
+            ((ObjectNode) jsonNode).put("supplierAddress", supplier.getAddress());
+            arrayNode.add(jsonNode);
+        }
+
+        return new ResponseEntity<>(arrayNode, HttpStatus.OK);
+    }
+
     @PostMapping("/receiveShipment")
     public ResponseEntity<String> receiveShipment(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);

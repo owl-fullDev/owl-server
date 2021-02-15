@@ -248,7 +248,7 @@ public class posEndpoint {
     public ResponseEntity<String> receiveShipment(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
 
-        int ShipmentId = wholeJSON.get("ShipmentId").asInt();
+        int ShipmentId = wholeJSON.get("shipmentId").asInt();
         Shipment shipment = shipmentRepository.findById(ShipmentId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No shipment with specified ID exists"));
 
         if (shipment.getDestinationType()!=3){
