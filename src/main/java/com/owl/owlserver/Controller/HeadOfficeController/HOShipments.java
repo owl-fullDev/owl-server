@@ -106,7 +106,7 @@ public class HOShipments {
                 }
                 else if (shipment.getDestinationType()==3) {
                     ((ObjectNode) jsonNode).put("destinationType", "Store");
-                    Store store = storeRepository.findById(shipment.getOriginId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getOriginId()+" exists!"));
+                    Store store = storeRepository.findById(shipment.getDestinationId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getOriginId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationName", store.getName());
                 }
 
