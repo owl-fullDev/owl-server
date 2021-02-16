@@ -20,6 +20,9 @@ public class ShipmentDetail implements Serializable {
     @Column(name = "RECEIVED_QUANTITY")
     private int receivedQuantity;
 
+    @Column(name = "COMMENT")
+    private String comment;
+
     @ManyToOne
     @JoinColumn(name = "PRODUCT_ID", nullable = false)
     private Product product;
@@ -58,6 +61,14 @@ public class ShipmentDetail implements Serializable {
         this.receivedQuantity = receivedQuantity;
     }
 
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
     public Product getProduct() {
         return product;
     }
@@ -80,6 +91,7 @@ public class ShipmentDetail implements Serializable {
                 "ShipmentDetailId=" + ShipmentDetailId +
                 ", quantity=" + quantity +
                 ", receivedQuantity=" + receivedQuantity +
+                ", comment='" + comment + '\'' +
                 ", product=" + product +
                 ", shipment=" + shipment +
                 '}';

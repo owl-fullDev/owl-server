@@ -158,6 +158,8 @@ public class warehouseEndpoint {
             }
             int receivedQuantity = receivedQuantityList.get(i).get("receivedQuantity").asInt();
             shipmentDetail.setReceivedQuantity(receivedQuantity);
+            String comment = receivedQuantityList.get(i).get("comment").asText();
+            shipmentDetail.setComment(comment);
             shipmentDetailRepository.save(shipmentDetail);
 
             WarehouseQuantity warehouseQuantity = warehouseQuantityRepository.findByWarehouseWarehouseIdAndProductId(warehouseId, shipmentDetail.getProduct().getProductId());
