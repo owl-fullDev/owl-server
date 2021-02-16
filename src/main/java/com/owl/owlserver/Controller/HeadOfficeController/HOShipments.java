@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @CrossOrigin
@@ -179,6 +180,7 @@ public class HOShipments {
         }
 
         Shipment shipment = new Shipment(originType, destinationType, originId, destinationId);
+        shipment.setSendTimestamp(LocalDateTime.now());
         shipmentRepository.save(shipment);
 
         //ShipmentDetails
