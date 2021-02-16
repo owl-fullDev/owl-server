@@ -17,9 +17,11 @@ public class Shipment implements Serializable {
     @Column(name = "SHIPMENT_ID", nullable = false)
     private int ShipmentId;
 
+    @JsonIgnore
     @Column(name = "OUTGOING_DATE")
     private java.time.LocalDateTime sendTimestamp;
 
+    @JsonIgnore
     @Column(name = "RECEIVED_DATE")
     private java.time.LocalDateTime receivedTimestamp;
 

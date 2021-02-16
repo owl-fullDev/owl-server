@@ -80,6 +80,7 @@ public class warehouseEndpoint {
             Supplier supplier = supplierRespository.findById(shipment.getOriginId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getOriginId()+" exists!"));
             ((ObjectNode) jsonNode).put("supplierName", supplier.getName());
             ((ObjectNode) jsonNode).put("supplierAddress", supplier.getAddress());
+            ((ObjectNode) jsonNode).put("sendTimestamp", shipment.getSendTimestamp().toString());
             arrayNode.add(jsonNode);
         }
 
@@ -103,6 +104,7 @@ public class warehouseEndpoint {
                 Warehouse warehouse = warehouseRepository.findById(shipment.getOriginId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: " + shipment.getOriginId() + " exists!"));
                 ((ObjectNode) jsonNode).put("warehouseName", warehouse.getName());
                 ((ObjectNode) jsonNode).put("warehouseAddress", warehouse.getAddress());
+                ((ObjectNode) jsonNode).put("sendTimestamp", shipment.getSendTimestamp().toString());
                 arrayNode.add(jsonNode);
             }
 
@@ -110,6 +112,7 @@ public class warehouseEndpoint {
                 Store store = storeRepository.findById(shipment.getOriginId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: " + shipment.getOriginId() + " exists!"));
                 ((ObjectNode) jsonNode).put("storeName", store.getName());
                 ((ObjectNode) jsonNode).put("storeAddress", store.getAddress());
+                ((ObjectNode) jsonNode).put("sendTimestamp", shipment.getSendTimestamp().toString());
                 arrayNode.add(jsonNode);
             }
         }
