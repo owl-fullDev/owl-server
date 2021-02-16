@@ -233,7 +233,7 @@ public class HOShipments {
             }
         }
         shipmentRepository.saveAndFlush(shipment);
-        return new ResponseEntity<>("successfully created new Shipment:\n" + shipment.toString(), HttpStatus.CREATED);
+        return new ResponseEntity<>("successfully created new Shipment:", HttpStatus.CREATED);
     }
 
 

@@ -98,7 +98,6 @@ public class HOEmployees {
         }
     }
 
-    //todo change into whole emplpoyee object
     @PostMapping("/modifyEmployee")
     public ResponseEntity<String> modifyEmployee(@RequestBody String jsonString) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();

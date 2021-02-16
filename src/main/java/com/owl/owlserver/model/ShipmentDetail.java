@@ -17,6 +17,9 @@ public class ShipmentDetail implements Serializable {
     @Column(name = "QUANTITY", nullable = false)
     private int quantity;
 
+    @Column(name = "RECEIVED_QUANTITY")
+    private int receivedQuantity;
+
     @ManyToOne
     @JoinColumn(name = "PRODUCT_ID", nullable = false)
     private Product product;
@@ -47,6 +50,14 @@ public class ShipmentDetail implements Serializable {
         this.quantity = quantity;
     }
 
+    public int getReceivedQuantity() {
+        return receivedQuantity;
+    }
+
+    public void setReceivedQuantity(int receivedQuantity) {
+        this.receivedQuantity = receivedQuantity;
+    }
+
     public Product getProduct() {
         return product;
     }
@@ -68,7 +79,9 @@ public class ShipmentDetail implements Serializable {
         return "ShipmentDetail{" +
                 "ShipmentDetailId=" + ShipmentDetailId +
                 ", quantity=" + quantity +
+                ", receivedQuantity=" + receivedQuantity +
                 ", product=" + product +
+                ", shipment=" + shipment +
                 '}';
     }
 }
