@@ -39,6 +39,7 @@ public class ShipmentDetail implements Serializable {
         this.quantity = quantity;
         this.product = product;
         this.shipment = shipment;
+        this.comment = "";
     }
 
     public int getShipmentDetailId() {
