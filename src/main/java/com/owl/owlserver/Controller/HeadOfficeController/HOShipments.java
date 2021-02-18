@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @CrossOrigin
@@ -57,8 +59,8 @@ public class HOShipments {
         return "Head office api for shipments, GET request received";
     }
 
-    @GetMapping("/getAllShipments")
-    public ResponseEntity<ArrayNode> getAllShipments(){
+    @GetMapping("/getAllActiveShipments")
+    public ResponseEntity<ArrayNode> getAllActiveShipments(){
 
         ObjectMapper mapper = new ObjectMapper();
         List<Shipment> shipmentList = shipmentRepository.findAllByReceivedTimestampIsNull();
@@ -118,15 +120,26 @@ public class HOShipments {
         }
     }
 
-    @GetMapping("/getAllReceivedShipments")
-    public ResponseEntity<ArrayNode> getAllReceivedShipments(){
+    @GetMapping("/getReceivedShipmentsPeriod")
+    public ResponseEntity<ArrayNode> getReceivedSupplierShipmentsPeriod(String start, String end, boolean isSupplier){
+
+        LocalDate localDateStart = LocalDate.parse(start);
+        LocalDate localDateEnd = LocalDate.parse(end);
+        LocalDateTime startPeriod = localDateStart.atStartOfDay();
+        LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
 
         ObjectMapper mapper = new ObjectMapper();
-        List<Shipment> shipmentList = shipmentRepository.findAllByReceivedTimestampIsNotNull();
+        List<Shipment> shipmentList;
+        if (isSupplier) {
+            shipmentList = shipmentRepository.findAllByReceivedTimestampIsNotNullAndReceivedTimestampIsBetweenAndOriginTypeIsOrderByReceivedTimestamp(startPeriod, endPeriod, 1);
+        }
+        else {
+            shipmentList = shipmentRepository.findAllByReceivedTimestampIsNotNullAndReceivedTimestampIsBetweenAndOriginTypeIsNotOrderByReceivedTimestamp(startPeriod, endPeriod, 1);
+        }
         ArrayNode arrayNode = mapper.createArrayNode();
 
         if (shipmentList == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND ,"There are currently no received shipments");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND ,"There are no received supplier shipments for specified date rage");
         }
         else {
             for (Shipment shipment : shipmentList) {
@@ -178,12 +191,6 @@ public class HOShipments {
             }
             return new ResponseEntity<>(arrayNode, HttpStatus.OK);
         }
-    }
-
-    @GetMapping("/checkProductId")
-    public ResponseEntity<String> checkProductId(String productId){
-        Product product = productRepository.findById(productId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with ID of: "+productId+" exists!"));
-        return new ResponseEntity<>("Product found ",HttpStatus.OK);
     }
 
     @GetMapping("/checkWarehouseQuantity")
