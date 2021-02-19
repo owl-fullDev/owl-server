@@ -193,6 +193,12 @@ public class HOShipments {
         }
     }
 
+    @GetMapping("/checkProductId")
+    public ResponseEntity<String> checkProductId(String productId){
+        Product product = productRepository.findById(productId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with ID of: "+productId+" exists!"));
+        return new ResponseEntity<>("Product ID ok",HttpStatus.OK);
+    }
+
     @GetMapping("/checkWarehouseQuantity")
     public ResponseEntity<String> checkWarehouseQuantity(int warehouseId, String productId, int quantity){
         Warehouse warehouse = warehouseRepository.findById(warehouseId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+warehouseId+" exists!"));
