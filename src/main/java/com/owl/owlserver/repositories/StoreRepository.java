@@ -13,4 +13,7 @@ public interface StoreRepository extends JpaRepository <Store,Integer> {
     @Query(value = "SELECT SUM(grand_total) FROM sale where store_id = :storeId and initial_deposit_date between :startDate and :endDate ", nativeQuery = true)
     double totalStoreRevenue(int storeId, String startDate, String endDate);
 
+    @Query(value = "SELECT COUNT(*) FROM sale where store_id = :storeId and initial_deposit_date between :startDate and :endDate ", nativeQuery = true)
+    int storeSaleCount(int storeId, String startDate, String endDate);
+
 }

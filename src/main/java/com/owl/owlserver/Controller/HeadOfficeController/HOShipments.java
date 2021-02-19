@@ -128,6 +128,7 @@ public class HOShipments {
         LocalDateTime startPeriod = localDateStart.atStartOfDay();
         LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
 
+
         ObjectMapper mapper = new ObjectMapper();
         List<Shipment> shipmentList;
         if (isSupplier) {

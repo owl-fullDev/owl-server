@@ -120,11 +120,15 @@ public class HOSales {
         for (Store store : storeList) {
             ObjectNode objectNode = mapper.valueToTree(store);
             try {
-                double total = storeRepository.totalStoreRevenue(store.getStoreId(), startOfDay.toString(), endOfDay.toString());
+                int storeId = store.getStoreId();
+                double total = storeRepository.totalStoreRevenue(storeId, startOfDay.toString(), endOfDay.toString());
                 objectNode.put("totalRevenue", total);
+                int saleCount = storeRepository.storeSaleCount(storeId, startOfDay.toString(), endOfDay.toString());
+                objectNode.put("saleCount", saleCount);
             }
             catch (AopInvocationException error) {
                 objectNode.put("totalRevenue", 0);
+                objectNode.put("saleCount", 0);
             }
             arrayNode.add(objectNode);
         }
@@ -149,11 +153,16 @@ public class HOSales {
         for (Store store : storeList) {
             ObjectNode objectNode = mapper.valueToTree(store);
             try {
-                double total = storeRepository.totalStoreRevenue(store.getStoreId(), startPeriod.toString(), endPeriod.toString());
+                int storeId = store.getStoreId();
+                double total = storeRepository.totalStoreRevenue(storeId, startPeriod.toString(), endPeriod.toString());
                 objectNode.put("totalRevenue", total);
+                int saleCount = storeRepository.storeSaleCount(storeId, startPeriod.toString(), endPeriod.toString());
+                objectNode.put("saleCount", saleCount);
             }
             catch (AopInvocationException error) {
                 objectNode.put("totalRevenue", 0);
+                objectNode.put("saleCount", 0);
+
             }
             arrayNode.add(objectNode);
         }
