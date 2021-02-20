@@ -102,21 +102,22 @@ public class warehouseEndpoint {
 
             if (shipment.getOriginType()==2) {
                 Warehouse warehouse = warehouseRepository.findById(shipment.getOriginId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: " + shipment.getOriginId() + " exists!"));
-                ((ObjectNode) jsonNode).put("warehouseName", warehouse.getName());
-                ((ObjectNode) jsonNode).put("warehouseAddress", warehouse.getAddress());
+                ((ObjectNode) jsonNode).put("originType", "warehouse");
+                ((ObjectNode) jsonNode).put("originName", warehouse.getName());
+                ((ObjectNode) jsonNode).put("originAddress", warehouse.getAddress());
                 ((ObjectNode) jsonNode).put("sendTimestamp", shipment.getSendTimestamp().toString());
                 arrayNode.add(jsonNode);
             }
 
             else if (shipment.getOriginType()==3){
                 Store store = storeRepository.findById(shipment.getOriginId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: " + shipment.getOriginId() + " exists!"));
-                ((ObjectNode) jsonNode).put("storeName", store.getName());
-                ((ObjectNode) jsonNode).put("storeAddress", store.getAddress());
+                ((ObjectNode) jsonNode).put("originType", "store");
+                ((ObjectNode) jsonNode).put("originName", store.getName());
+                ((ObjectNode) jsonNode).put("originAddress", store.getAddress());
                 ((ObjectNode) jsonNode).put("sendTimestamp", shipment.getSendTimestamp().toString());
                 arrayNode.add(jsonNode);
             }
         }
-
         return new ResponseEntity<>(arrayNode, HttpStatus.OK);
     }
 
