@@ -17,8 +17,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 import java.time.*;
-        import java.time.format.DateTimeFormatter;
-        import java.util.List;
+import java.util.List;
 
 @CrossOrigin
 @RestController
