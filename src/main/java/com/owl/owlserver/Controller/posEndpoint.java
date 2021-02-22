@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.transaction.Transactional;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -63,20 +64,12 @@ public class posEndpoint {
 
     @GetMapping("/getCustomerByName")
     public ResponseEntity<List<Customer>> getCustomerByName(@RequestParam String firstName, String lastName) {
-        List<Customer> customerList = customerRepository.findAllByFirstNameAndLastName(firstName, lastName);
-        if (customerList.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No customers with specified name found");
-        }
-        else return new ResponseEntity<>(customerList, HttpStatus.OK);
+        return new ResponseEntity<>(customerRepository.findAllByFirstNameAndLastName(firstName, lastName), HttpStatus.OK);
     }
 
     @GetMapping("/getCustomerByPhoneNumber")
     public ResponseEntity<List<Customer>> getCustomerByPhoneNumber(@RequestParam String phoneNumber) {
-        List<Customer> customerList = customerRepository.findAllByPhoneNumber(phoneNumber);
-        if (customerList.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No customers with specified phone number found");
-        }
-        else return new ResponseEntity<>(customerList, HttpStatus.OK);
+        return new ResponseEntity<>(customerRepository.findAllByPhoneNumber(phoneNumber), HttpStatus.OK);
     }
 
     @GetMapping("/getInStoreProductQuantity")
@@ -94,43 +87,28 @@ public class posEndpoint {
 
     @GetMapping("/getCustomLensList")
     public ResponseEntity<List<Product>> getCustomLensList() {
-        List<Product> customLensList = productRepository.findAllByProductIdStartsWith("CL");
-        if (customLensList.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No custom lenses found");
-        }
-        return new ResponseEntity<>(customLensList, HttpStatus.OK);
+        return new ResponseEntity<>(productRepository.findAllByProductIdStartsWith("CL"), HttpStatus.OK);
     }
 
     @GetMapping("/getStorePromotions")
     public ResponseEntity<List<Promotion>> getStorePromotions(@RequestParam int storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
-        List<Promotion> storePromotionList = store.getPromotionList();
-        if (storePromotionList.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No active promotions for this store");
-        }
-        return new ResponseEntity<>(storePromotionList, HttpStatus.OK);
+        return new ResponseEntity<>(store.getPromotionList(), HttpStatus.OK);
     }
 
     @GetMapping("/getStoreEmployees")
     public ResponseEntity<List<Employee>> getStoreEmployees(@RequestParam int storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
-        List<Employee> storeEmployeeList = store.getEmployeesList();
-        if (storeEmployeeList.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No employees working for this store");
-        }
-        return new ResponseEntity<>(storeEmployeeList, HttpStatus.OK);
+        return new ResponseEntity<>(store.getEmployeesList(), HttpStatus.OK);
     }
 
     @GetMapping("/getPendingSaleList")
     public ResponseEntity<List<Sale>> getPendingSaleList(@RequestParam int storeId) {
-        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
-        List<Sale> storePendingSaleList = saleRepository.getAllByStoreStoreIdAndPickupDateEquals(storeId, null);
-        if (storePendingSaleList.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There are no pending sales for this store");
-        }
-        return new ResponseEntity<>(storePendingSaleList, HttpStatus.OK);
+        storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
+        return new ResponseEntity<>(saleRepository.getAllByStoreStoreIdAndPickupDateEquals(storeId, null), HttpStatus.OK);
     }
 
+    @Transactional
     @PostMapping(value = "/newSale")
     public ResponseEntity<String> newSale(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
@@ -174,12 +152,7 @@ public class posEndpoint {
         double grandTotal = sale.get("grandTotal").asDouble();
         double initialDepositAmount = sale.get("initialDepositAmount").asDouble();
         boolean fullyPaid;
-        if (grandTotal > initialDepositAmount) {
-            fullyPaid = false;
-        }
-        else {
-            fullyPaid = true;
-        }
+        fullyPaid = !(grandTotal > initialDepositAmount);
 
         //new sale
         Sale newSale = new Sale(employeeId, store, grandTotal, initialDepositDate, initialDepositType, initialDepositAmount, fullyPaid);
@@ -190,7 +163,6 @@ public class posEndpoint {
         //saleDetails deserialization
         JsonNode products = wholeJSON.get("products");
         int itemList = wholeJSON.get("itemsSold").asInt();
-        String saleDetailList = "";
 
         for (int i = 0; i < itemList; i++) {
             String productId = products.get(i).get("productId").asText();
@@ -210,12 +182,11 @@ public class posEndpoint {
                 storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity() - quantity);
                 storeQuantityRepository.save(storeQuantity);
             }
-            saleDetailList += "\n" + newSaleDetail.toString();
         }
-
-        return new ResponseEntity<>(customer.toString() + "\n\n" + customer.getSale(newSale).toString() + "\n\n" + saleDetailList, HttpStatus.OK);
+        return new ResponseEntity<>("new sale created", HttpStatus.OK);
     }
 
+    @Transactional
     @PostMapping(value = "/updateSale")
     public ResponseEntity<String> updateSale(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
@@ -244,6 +215,7 @@ public class posEndpoint {
         return new ResponseEntity<>("Successfully updated Sale", HttpStatus.OK);
     }
 
+    @Transactional
     @PostMapping(value = "/receiveShipment")
     public ResponseEntity<String> receiveShipment(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
@@ -275,39 +247,39 @@ public class posEndpoint {
         for (ShipmentDetail shipmentDetail : shipmentDetailList){
             Product product = shipmentDetail.getProduct();
             int quantity = shipmentDetail.getQuantity();
+            shipmentDetail.setReceivedQuantity(quantity);
+            shipmentDetailRepository.save(shipmentDetail);
             StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(store, product.getProductId());
 
             //first time receiving product
             if (storeQuantity==null){
                 storeQuantity = new StoreQuantity(store,product.getProductId(),quantity);
-                storeQuantityRepository.saveAndFlush(storeQuantity);
+                storeQuantityRepository.save(storeQuantity);
             }
             else {
                 storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity()+quantity);
-                storeQuantityRepository.saveAndFlush(storeQuantity);
+                storeQuantityRepository.save(storeQuantity);
             }
         }
-
         shipment.setReceivedTimestamp(localPickUpTime);
-        shipmentRepository.saveAndFlush(shipment);
-
+        shipmentRepository.save(shipment);
         return new ResponseEntity<>("Shipment received by store!", HttpStatus.OK);
     }
 
     @GetMapping("/getRecentSalesList")
     public ResponseEntity<List<Sale>> getRecentSalesList(int storeId) {
 
-            LocalDate localDateStart = LocalDate.now().minusDays(7);
-            LocalDate localDateEnd = LocalDate.now();
+        LocalDate localDateStart = LocalDate.now().minusDays(2);
+        LocalDate localDateEnd = LocalDate.now();
 
-            LocalDateTime startPeriod = localDateStart.atStartOfDay();
-            LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
+        LocalDateTime startPeriod = localDateStart.atStartOfDay();
+        LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
 
-            List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndStoreStoreIdOrderByInitialDepositDate(startPeriod,endPeriod,storeId);
-
-            return new ResponseEntity<>(saleList, HttpStatus.OK);
+        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndStoreStoreIdOrderByInitialDepositDate(startPeriod, endPeriod, storeId);
+        return new ResponseEntity<>(saleList, HttpStatus.OK);
     }
 
+    @Transactional
     @GetMapping("/refundSale")
     public ResponseEntity<String> refundSale(int saleId) {
 
@@ -315,10 +287,10 @@ public class posEndpoint {
         if(sale==null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No sale exists");
         }
+
         List<SaleDetail> saleDetailList = sale.getSaleDetailList();
         saleDetailRepository.deleteAll(saleDetailList);
         saleRepository.deleteById(saleId);
-
         return new ResponseEntity<>("Sale successfully voided", HttpStatus.OK);
     }
     
