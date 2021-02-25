@@ -11,6 +11,7 @@ import java.util.List;
 public interface ShipmentRepository extends JpaRepository<Shipment,Integer> {
     List<Shipment> findAllByReceivedTimestampIsNotNullAndReceivedTimestampIsBetweenAndOriginTypeIsOrderByReceivedTimestamp(LocalDateTime start, LocalDateTime end, int originType);
     List<Shipment> findAllByReceivedTimestampIsNotNullAndReceivedTimestampIsBetweenAndOriginTypeIsNotOrderByReceivedTimestamp(LocalDateTime start, LocalDateTime end, int originType);
+    List<Shipment> findAllByReceivedTimestampIsNullAndSendTimestampIsNullAndOriginTypeIsAndOriginIdIs(int originType, int originId);
     List<Shipment> findAllByReceivedTimestampIsNull();
     List<Shipment> findAllByReceivedTimestampIsNullAndOriginTypeEqualsAndDestinationTypeEquals(int originType, int destinationType);
     List<Shipment> findAllByReceivedTimestampIsNullAndOriginTypeIsNotAndDestinationTypeIs(int originType, int destinationType);

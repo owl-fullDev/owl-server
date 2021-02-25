@@ -120,6 +120,42 @@ public class warehouseEndpoint {
         return new ResponseEntity<>(arrayNode, HttpStatus.OK);
     }
 
+    @GetMapping("/getAllOrderedShipments")
+    public ResponseEntity<ArrayNode> getAllOrderedShipments(@RequestParam int warehouseId) throws JsonProcessingException {
+        Warehouse warehouse = warehouseRepository.findById(warehouseId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No Warehouse with ID of: " +warehouseId+ " exists!"));
+        List<Shipment> shipmentList = shipmentRepository.findAllByReceivedTimestampIsNullAndSendTimestampIsNullAndOriginTypeIsAndOriginIdIs(2, warehouseId);
+
+        ArrayNode arrayNode = objectMapper.createArrayNode();
+        if (shipmentList.isEmpty()){
+            return new ResponseEntity<>(arrayNode, HttpStatus.OK);
+        }
+
+        for (Shipment shipment: shipmentList){
+            JsonNode jsonNode = objectMapper.convertValue(shipment, JsonNode.class);
+
+            ((ObjectNode) jsonNode).put("originType", "warehouse");
+            ((ObjectNode) jsonNode).put("originName", warehouse.getName());
+            ((ObjectNode) jsonNode).put("originAddress", warehouse.getAddress());
+
+            if (shipment.getDestinationType()==2) {
+                Warehouse warehouse2 = warehouseRepository.findById(warehouseId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No Warehouse with ID of: " +warehouseId+ " exists!"));
+                ((ObjectNode) jsonNode).put("destinationType", "warehouse");
+                ((ObjectNode) jsonNode).put("destinationName", warehouse2.getName());
+                ((ObjectNode) jsonNode).put("destinationAddress", warehouse2.getAddress());
+                arrayNode.add(jsonNode);
+            }
+
+            else if (shipment.getDestinationType()==3){
+                Store store = storeRepository.findById(shipment.getDestinationId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: " + shipment.getOriginId() + " exists!"));
+                ((ObjectNode) jsonNode).put("destinationType", "store");
+                ((ObjectNode) jsonNode).put("destinationName", store.getName());
+                ((ObjectNode) jsonNode).put("destinationAddress", store.getAddress());
+                arrayNode.add(jsonNode);
+            }
+        }
+        return new ResponseEntity<>(arrayNode, HttpStatus.OK);
+    }
+
     @PostMapping("/receiveShipment")
     public ResponseEntity<String> receiveShipment(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
