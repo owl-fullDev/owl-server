@@ -133,13 +133,12 @@ public class warehouseEndpoint {
         for (Shipment shipment: shipmentList){
             JsonNode jsonNode = objectMapper.convertValue(shipment, JsonNode.class);
 
-            ((ObjectNode) jsonNode).put("originType", "warehouse");
             ((ObjectNode) jsonNode).put("originName", warehouse.getName());
             ((ObjectNode) jsonNode).put("originAddress", warehouse.getAddress());
 
             if (shipment.getDestinationType()==2) {
                 Warehouse warehouse2 = warehouseRepository.findById(warehouseId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No Warehouse with ID of: " +warehouseId+ " exists!"));
-                ((ObjectNode) jsonNode).put("destinationType", "warehouse");
+                ((ObjectNode) jsonNode).put("destinationType", "Gudang");
                 ((ObjectNode) jsonNode).put("destinationName", warehouse2.getName());
                 ((ObjectNode) jsonNode).put("destinationAddress", warehouse2.getAddress());
                 arrayNode.add(jsonNode);
@@ -147,7 +146,7 @@ public class warehouseEndpoint {
 
             else if (shipment.getDestinationType()==3){
                 Store store = storeRepository.findById(shipment.getDestinationId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: " + shipment.getOriginId() + " exists!"));
-                ((ObjectNode) jsonNode).put("destinationType", "store");
+                ((ObjectNode) jsonNode).put("destinationType", "Toko");
                 ((ObjectNode) jsonNode).put("destinationName", store.getName());
                 ((ObjectNode) jsonNode).put("destinationAddress", store.getAddress());
                 arrayNode.add(jsonNode);
