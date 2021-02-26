@@ -206,4 +206,16 @@ public class warehouseEndpoint {
         shipmentRepository.saveAndFlush(shipment);
         return new ResponseEntity<>("Shipment received by warehouse!", HttpStatus.OK);
     }
+
+    @PostMapping("/sendShipment")
+    public ResponseEntity<String> sendShipment(@RequestBody String jsonString) throws JsonProcessingException {
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+
+        int shipmentId = wholeJSON.get("shipmentId").asInt();
+        Shipment shipment = shipmentRepository.findById(shipmentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No shipment with specified ID exists"));
+
+        shipment.setSendTimestamp(LocalDateTime.now());
+        shipmentRepository.saveAndFlush(shipment);
+        return new ResponseEntity<>("Shipment has been sent", HttpStatus.OK);
+    }
 }
