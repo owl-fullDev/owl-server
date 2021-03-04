@@ -15,7 +15,7 @@ public class Shipment implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "SHIPMENT_ID", nullable = false)
-    private int ShipmentId;
+    private int shipmentId;
 
     @JsonIgnore
     @Column(name = "OUTGOING_DATE")
@@ -53,7 +53,7 @@ public class Shipment implements Serializable {
     }
 
     public int getShipmentId() {
-        return ShipmentId;
+        return shipmentId;
     }
 
     public LocalDateTime getSendTimestamp() {
@@ -119,7 +119,7 @@ public class Shipment implements Serializable {
     @Override
     public String toString() {
         return "Shipment{" +
-                "ShipmentId=" + ShipmentId +
+                "ShipmentId=" + shipmentId +
                 ", sendTimestamp=" + sendTimestamp +
                 ", receivedTimestamp=" + receivedTimestamp +
                 ", originType=" + originType +

@@ -12,7 +12,7 @@ public class ShipmentDetail implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "SHIPMENT_DETAIL_ID", nullable = false)
-    private int ShipmentDetailId;
+    private int shipmentDetailId;
 
     @Column(name = "QUANTITY", nullable = false)
     private int quantity;
@@ -43,7 +43,7 @@ public class ShipmentDetail implements Serializable {
     }
 
     public int getShipmentDetailId() {
-        return ShipmentDetailId;
+        return shipmentDetailId;
     }
 
     public int getQuantity() {
@@ -89,7 +89,7 @@ public class ShipmentDetail implements Serializable {
     @Override
     public String toString() {
         return "ShipmentDetail{" +
-                "ShipmentDetailId=" + ShipmentDetailId +
+                "ShipmentDetailId=" + shipmentDetailId +
                 ", quantity=" + quantity +
                 ", receivedQuantity=" + receivedQuantity +
                 ", comment='" + comment + '\'' +

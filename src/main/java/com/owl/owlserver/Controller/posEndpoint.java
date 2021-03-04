@@ -293,6 +293,57 @@ public class posEndpoint {
         saleRepository.deleteById(saleId);
         return new ResponseEntity<>("Sale successfully voided", HttpStatus.OK);
     }
-    
+
+
+    @Transactional
+    @PostMapping(value = "/newTransferShipment")
+    public ResponseEntity<String> newTransferShipment(@RequestBody String jsonString) throws JsonProcessingException {
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+
+        int originStoreId = wholeJSON.get("originStoreId").asInt();
+        Store originStore = storeRepository.findById(originStoreId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
+        int destinationStoreId = wholeJSON.get("destinationStoreId").asInt();
+        Store destinationStore = storeRepository.findById(destinationStoreId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
+
+        Shipment newShipment = new Shipment(3, 3, originStoreId, destinationStoreId);
+        shipmentRepository.save(newShipment);
+        int productCount = wholeJSON.get("productCount").asInt();
+
+        //ShipmentDetails
+        JsonNode products = wholeJSON.get("products");
+        for (int i = 0; i < productCount; i++) {
+            String productId = products.get(i).get("productId").asText();
+            int quantity = products.get(i).get("quantity").asInt();
+            Product product = productRepository.findById(productId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with ID of: " + productId + " exists!"));
+
+            ShipmentDetail newShipmentDetail = new ShipmentDetail(newShipment, product, quantity);
+            shipmentDetailRepository.save(newShipmentDetail);
+
+            StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(originStore, productId);
+            if (storeQuantity == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product not in store");
+            } else if (storeQuantity.getInstoreQuantity() - quantity < 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough of product in store  Current quantity in store: "+storeQuantity.getInstoreQuantity());
+            }
+            storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity() - quantity);
+            storeQuantityRepository.save(storeQuantity);
+        }
+
+        return new ResponseEntity<>("Transfer Shipment successfully created", HttpStatus.OK);
+    }
+
+//    @Transactional
+//    @PostMapping(value = "/test")
+//    public ResponseEntity<String> test(@RequestBody String jsonString) throws JsonProcessingException {
+//        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+//        try {
+//            Shipment shipment = objectMapper.treeToValue(wholeJSON, Shipment.class);
+//            s.save(shipmentDetail);
+//            return new ResponseEntity<>(shipmentDetail.toString(), HttpStatus.OK);
+//        }
+//        catch (Exception error){
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, error.toString());
+//        }
+//    }
 }
 
