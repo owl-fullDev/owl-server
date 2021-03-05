@@ -85,14 +85,18 @@ public class HOEmployees {
         String firstName = wholeJSON.get("firstName").asText();
         String lastName = wholeJSON.get("lastName").asText();
         String jobTitle = wholeJSON.get("jobTitle").asText();
+        String phoneNumber = wholeJSON.get("phoneNumber").asText();
+        String email = wholeJSON.get("email").asText();
+        int storeId = wholeJSON.get("storeId").asInt();
 
+        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No store with specified ID exists"));
         boolean alreadyExists = employeeRepository.existsByFirstNameAndLastname(firstName, lastName);
 
         if (alreadyExists) {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Employee already Exists!");
         }
         else {
-            Employee employee = new Employee(firstName, lastName, jobTitle);
+            Employee employee = new Employee(firstName, lastName, jobTitle, phoneNumber, email, store);
             employeeRepository.saveAndFlush(employee);
             return new ResponseEntity<>("successfully added new employee:\n" + employee.toString(), HttpStatus.CREATED);
         }
@@ -110,19 +114,18 @@ public class HOEmployees {
 
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No employee with specified ID exists"));
 
-        if (!jobTitle.equals("")){
-            employee.setJobTitle(jobTitle);
-        }
-        if (!email.equals("")){
-            employee.setEmail(email);
-        }
-        if (!phoneNumber.equals("")){
-            employee.setPhoneNumber(phoneNumber);
-        }
+        employee.setJobTitle(jobTitle);
+        employee.setEmail(email);
+        employee.setPhoneNumber(phoneNumber);
+
         if (!(storeId==0)){
             Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No store with specified ID exists"));
             employee.setStore(store);
         }
+        else {
+            employee.setStore(null);
+        }
+
         employeeRepository.saveAndFlush(employee);
         return new ResponseEntity<>("Successfully modified employee details", HttpStatus.OK);
     }

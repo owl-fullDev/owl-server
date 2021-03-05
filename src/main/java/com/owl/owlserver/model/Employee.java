@@ -38,10 +38,13 @@ public class Employee implements Serializable {
     public Employee() {
     }
 
-    public Employee(String firstName, String lastname, String jobTitle) {
+    public Employee(String firstName, String lastname, String jobTitle, String phoneNumber, String email, Store store) {
         this.firstName = firstName;
         this.lastname = lastname;
         this.jobTitle = jobTitle;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+        this.store = store;
     }
 
     public Store getStore(){
