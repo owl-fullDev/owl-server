@@ -99,18 +99,18 @@ public class HOShipments {
 
                 //find destination type
                 if (shipment.getDestinationType()==1) {
-                    Supplier supplier = supplierRespository.findById(shipment.getOriginId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getOriginId()+" exists!"));
+                    Supplier supplier = supplierRespository.findById(shipment.getDestinationId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationType", "Supplier");
                     ((ObjectNode) jsonNode).put("destinationName", supplier.getName());
                 }
                 else if (shipment.getDestinationType()==2) {
                     ((ObjectNode) jsonNode).put("destinationType", "Warehouse");
-                    Warehouse warehouse = warehouseRepository.findById(shipment.getOriginId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getOriginId()+" exists!"));
+                    Warehouse warehouse = warehouseRepository.findById(shipment.getDestinationId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationName", warehouse.getName());
                 }
                 else if (shipment.getDestinationType()==3) {
                     ((ObjectNode) jsonNode).put("destinationType", "Store");
-                    Store store = storeRepository.findById(shipment.getDestinationId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getOriginId()+" exists!"));
+                    Store store = storeRepository.findById(shipment.getDestinationId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationName", store.getName());
                 }
 
