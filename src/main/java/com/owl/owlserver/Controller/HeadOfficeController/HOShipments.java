@@ -248,13 +248,13 @@ public class HOShipments {
 
         //input checking destination type
         if (destinationType==1) {
-            Supplier supplier = supplierRespository.findById(originId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+originId+" exists!"));
+            Supplier supplier = supplierRespository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+destinationId+" exists!"));
         }
         else if (destinationType==2) {
-            Warehouse warehouse = warehouseRepository.findById(originId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+originId+" exists!"));
+            Warehouse warehouse = warehouseRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+destinationId+" exists!"));
         }
         else if (destinationType==3) {
-            Store store = storeRepository.findById(originId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+originId+" exists!"));
+            Store store = storeRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+destinationId+" exists!"));
         }
 
         Shipment shipment = new Shipment(originType, destinationType, originId, destinationId);
