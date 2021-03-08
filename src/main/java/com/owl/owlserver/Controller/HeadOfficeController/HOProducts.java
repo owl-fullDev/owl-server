@@ -106,4 +106,20 @@ public class HOProducts {
 
         return new ResponseEntity<>("Product has been added", HttpStatus.OK);
     }
+
+    @PostMapping(value = "/updateProduct")
+    public ResponseEntity<String> updateProduct(@RequestBody String jsonString) throws JsonProcessingException {
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+
+        String productId = wholeJSON.get("productId").asText();
+        String productName = wholeJSON.get("productName").asText();
+        double productPrice = wholeJSON.get("productPrice").asDouble();
+
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with ID of: " + productId + " exists!"));
+        product.setProductName(productName);
+        product.setProductPrice(productPrice);
+        productRepository.saveAndFlush(product);
+
+        return new ResponseEntity<>("Product has been updated", HttpStatus.OK);
+    }
 }

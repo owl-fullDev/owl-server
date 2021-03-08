@@ -3,7 +3,9 @@ package com.owl.owlserver.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.owl.owlserver.deserializer.ShipmentDeserializer;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -311,6 +313,7 @@ public class posEndpoint {
 
         //ShipmentDetails
         JsonNode products = wholeJSON.get("products");
+
         for (int i = 0; i < productCount; i++) {
             String productId = products.get(i).get("productId").asText();
             int quantity = products.get(i).get("quantity").asInt();
@@ -332,18 +335,38 @@ public class posEndpoint {
         return new ResponseEntity<>("Transfer Shipment successfully created", HttpStatus.OK);
     }
 
-//    @Transactional
-//    @PostMapping(value = "/test")
-//    public ResponseEntity<String> test(@RequestBody String jsonString) throws JsonProcessingException {
-//        JsonNode wholeJSON = objectMapper.readTree(jsonString);
-//        try {
-//            Shipment shipment = objectMapper.treeToValue(wholeJSON, Shipment.class);
-//            s.save(shipmentDetail);
-//            return new ResponseEntity<>(shipmentDetail.toString(), HttpStatus.OK);
-//        }
-//        catch (Exception error){
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, error.toString());
-//        }
-//    }
+    @Transactional
+    @PostMapping(value = "/test")
+    public ResponseEntity<String> test(@RequestBody String jsonString) throws JsonProcessingException {
+        JsonNode wholeJson = objectMapper.readTree(jsonString);
+        int originType = wholeJson.get("originType").asInt();
+        int destinationType = wholeJson.get("destinationType").asInt();
+        int originId = wholeJson.get("originId").asInt();
+        int destinationId = wholeJson.get("destinationId").asInt();
+        Shipment newShipment = new Shipment(originType, destinationType, originId, destinationId);
+        shipmentRepository.save(newShipment);
+
+        JsonNode shipmentDetailsArray = wholeJson.get("shipmentDetails");
+        int shipmentDetailsArrayLength = shipmentDetailsArray.size();
+        for (int c = 0; c < shipmentDetailsArrayLength; c++) {
+            JsonNode node = shipmentDetailsArray.get(c);
+            String productId = node.get("productId").asText();
+            int quantity = node.get("quantity").asInt();
+            Product product = productRepository.findById(productId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with ID of: " + productId + " exists!"));
+            ShipmentDetail shipmentDetail = new ShipmentDetail(newShipment, product, quantity);
+            shipmentDetailRepository.save(shipmentDetail);
+        }
+
+        return new ResponseEntity<>("Transfer Shipment successfully created", HttpStatus.OK);
+    }
+
+    @Transactional
+    @PostMapping(value = "/test2")
+    public ResponseEntity<String> test2(@RequestBody Shipment shipment) throws JsonProcessingException {
+
+
+        shipmentRepository.saveAndFlush(shipment);
+        return new ResponseEntity<>(shipment.toString()+shipment.getShipmentDetailList().toString(), HttpStatus.OK);
+    }
 }
 
