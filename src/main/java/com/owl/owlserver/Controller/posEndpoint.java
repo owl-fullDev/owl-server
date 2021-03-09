@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.deserializer.ShipmentDeserializer;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
+import com.sun.tools.javac.comp.Todo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.transaction.Transactional;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @CrossOrigin
@@ -339,19 +341,27 @@ public class posEndpoint {
     @PostMapping(value = "/test")
     public ResponseEntity<String> test(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJson = objectMapper.readTree(jsonString);
+
+        //todo Validation checking for JSON variables
         int originType = wholeJson.get("originType").asInt();
         int destinationType = wholeJson.get("destinationType").asInt();
         int originId = wholeJson.get("originId").asInt();
         int destinationId = wholeJson.get("destinationId").asInt();
+
+        //deserialize/instantiate new shipment entity
         Shipment newShipment = new Shipment(originType, destinationType, originId, destinationId);
         shipmentRepository.save(newShipment);
 
         JsonNode shipmentDetailsArray = wholeJson.get("shipmentDetails");
         int shipmentDetailsArrayLength = shipmentDetailsArray.size();
+
+        //deserialize/instantiate array of shipmentDetail entities
         for (int c = 0; c < shipmentDetailsArrayLength; c++) {
             JsonNode node = shipmentDetailsArray.get(c);
             String productId = node.get("productId").asText();
             int quantity = node.get("quantity").asInt();
+
+            //multiple query calls to database, expensive. Product Id validation occurs here
             Product product = productRepository.findById(productId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with ID of: " + productId + " exists!"));
             ShipmentDetail shipmentDetail = new ShipmentDetail(newShipment, product, quantity);
             shipmentDetailRepository.save(shipmentDetail);
@@ -360,13 +370,5 @@ public class posEndpoint {
         return new ResponseEntity<>("Transfer Shipment successfully created", HttpStatus.OK);
     }
 
-    @Transactional
-    @PostMapping(value = "/test2")
-    public ResponseEntity<String> test2(@RequestBody Shipment shipment) throws JsonProcessingException {
-
-
-        shipmentRepository.saveAndFlush(shipment);
-        return new ResponseEntity<>(shipment.toString()+shipment.getShipmentDetailList().toString(), HttpStatus.OK);
-    }
 }
 
