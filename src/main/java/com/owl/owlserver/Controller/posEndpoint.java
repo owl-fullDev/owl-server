@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.owl.owlserver.Service.ShipmentService;
 import com.owl.owlserver.deserializer.ShipmentDeserializer;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
-import com.sun.tools.javac.comp.Todo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +20,9 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 
 @CrossOrigin
 @RestController
@@ -51,6 +54,9 @@ public class posEndpoint {
     WarehouseRepository warehouseRepository;
     @Autowired
     WarehouseQuantityRepository warehouseQuantityRepository;
+
+    @Autowired
+    private ShipmentService shipmentService;
 
     //JACKSON object Mapper
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -301,73 +307,16 @@ public class posEndpoint {
 
     @Transactional
     @PostMapping(value = "/newTransferShipment")
-    public ResponseEntity<String> newTransferShipment(@RequestBody String jsonString) throws JsonProcessingException {
-        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+    public ResponseEntity<String> newTransferShipment(@RequestBody Shipment shipment) {
 
-        int originStoreId = wholeJSON.get("originStoreId").asInt();
-        Store originStore = storeRepository.findById(originStoreId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
-        int destinationStoreId = wholeJSON.get("destinationStoreId").asInt();
-        Store destinationStore = storeRepository.findById(destinationStoreId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
-
-        Shipment newShipment = new Shipment(3, 3, originStoreId, destinationStoreId);
-        shipmentRepository.save(newShipment);
-        int productCount = wholeJSON.get("productCount").asInt();
-
-        //ShipmentDetails
-        JsonNode products = wholeJSON.get("products");
-
-        for (int i = 0; i < productCount; i++) {
-            String productId = products.get(i).get("productId").asText();
-            int quantity = products.get(i).get("quantity").asInt();
-            Product product = productRepository.findById(productId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with ID of: " + productId + " exists!"));
-
-            ShipmentDetail newShipmentDetail = new ShipmentDetail(newShipment, product, quantity);
-            shipmentDetailRepository.save(newShipmentDetail);
-
-            StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(originStore, productId);
-            if (storeQuantity == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product not in store");
-            } else if (storeQuantity.getInstoreQuantity() - quantity < 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough of product in store  Current quantity in store: "+storeQuantity.getInstoreQuantity());
-            }
-            storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity() - quantity);
-            storeQuantityRepository.save(storeQuantity);
+        if (shipment==null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All shipment details are empty!");
         }
 
-        return new ResponseEntity<>("Transfer Shipment successfully created", HttpStatus.OK);
-    }
+        shipmentService.persistShipment(shipment);
 
-    @Transactional
-    @PostMapping(value = "/test")
-    public ResponseEntity<String> test(@RequestBody String jsonString) throws JsonProcessingException {
-        JsonNode wholeJson = objectMapper.readTree(jsonString);
+        return new ResponseEntity<>("Successfully created new transfer shipment, ID: "+shipment.getShipmentId(), HttpStatus.OK);
 
-        //todo Validation checking for JSON variables
-        int originType = wholeJson.get("originType").asInt();
-        int destinationType = wholeJson.get("destinationType").asInt();
-        int originId = wholeJson.get("originId").asInt();
-        int destinationId = wholeJson.get("destinationId").asInt();
-
-        //deserialize/instantiate new shipment entity
-        Shipment newShipment = new Shipment(originType, destinationType, originId, destinationId);
-        shipmentRepository.save(newShipment);
-
-        JsonNode shipmentDetailsArray = wholeJson.get("shipmentDetails");
-        int shipmentDetailsArrayLength = shipmentDetailsArray.size();
-
-        //deserialize/instantiate array of shipmentDetail entities
-        for (int c = 0; c < shipmentDetailsArrayLength; c++) {
-            JsonNode node = shipmentDetailsArray.get(c);
-            String productId = node.get("productId").asText();
-            int quantity = node.get("quantity").asInt();
-
-            //multiple query calls to database, expensive. Product Id validation occurs here
-            Product product = productRepository.findById(productId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with ID of: " + productId + " exists!"));
-            ShipmentDetail shipmentDetail = new ShipmentDetail(newShipment, product, quantity);
-            shipmentDetailRepository.save(shipmentDetail);
-        }
-
-        return new ResponseEntity<>("Transfer Shipment successfully created", HttpStatus.OK);
     }
 
 }

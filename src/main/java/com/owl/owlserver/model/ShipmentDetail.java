@@ -1,10 +1,14 @@
 package com.owl.owlserver.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
+@NoArgsConstructor
+@Data
 @Entity
 @Table(name = "SHIPMENT_DETAIL")
 public class ShipmentDetail implements Serializable {
@@ -27,13 +31,13 @@ public class ShipmentDetail implements Serializable {
     @JoinColumn(name = "PRODUCT_ID", nullable = false)
     private Product product;
 
+    @Transient
+    private String productId;
+
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "SHIPMENT_ID", nullable = false)
     private Shipment shipment;
-
-    public ShipmentDetail() {
-    }
 
     public ShipmentDetail(Shipment shipment, Product product, int quantity) {
         this.quantity = quantity;
@@ -42,59 +46,5 @@ public class ShipmentDetail implements Serializable {
         this.comment = "";
     }
 
-    public int getShipmentDetailId() {
-        return shipmentDetailId;
-    }
 
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public int getReceivedQuantity() {
-        return receivedQuantity;
-    }
-
-    public void setReceivedQuantity(int receivedQuantity) {
-        this.receivedQuantity = receivedQuantity;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
-    public Shipment getShipment() {
-        return shipment;
-    }
-
-    public void setShipment(Shipment shipment) {
-        this.shipment = shipment;
-    }
-
-    @Override
-    public String toString() {
-        return "ShipmentDetail{" +
-                "ShipmentDetailId=" + shipmentDetailId +
-                ", quantity=" + quantity +
-                ", receivedQuantity=" + receivedQuantity +
-                ", comment='" + comment + '\'' +
-                ", product=" + product +
-                ", shipment=" + shipment +
-                '}';
-    }
 }

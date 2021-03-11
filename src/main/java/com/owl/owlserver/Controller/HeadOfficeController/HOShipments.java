@@ -224,97 +224,97 @@ public class HOShipments {
         return new ResponseEntity<>("Product in store with enough quantity",HttpStatus.OK);
     }
 
-    @Transactional
-    @PostMapping("/addShipment")
-    public ResponseEntity<String> addPromotion(@RequestBody String jsonString) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode wholeJSON = objectMapper.readTree(jsonString);
-        int originType = wholeJSON.get("originType").asInt();
-        int originId = wholeJSON.get("originId").asInt();
-        int destinationType = wholeJSON.get("destinationType").asInt();
-        int destinationId = wholeJSON.get("destinationId").asInt();
-        int productCount = wholeJSON.get("productCount").asInt();
-
-        //input checking origin type
-        if (originType==1) {
-            Supplier supplier = supplierRespository.findById(originId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+originId+" exists!"));
-        }
-        else if (originType==2) {
-            Warehouse warehouse = warehouseRepository.findById(originId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+originId+" exists!"));
-        }
-        else if (originType==3) {
-            Store store = storeRepository.findById(originId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+originId+" exists!"));
-        }
-
-        //input checking destination type
-        if (destinationType==1) {
-            Supplier supplier = supplierRespository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+destinationId+" exists!"));
-        }
-        else if (destinationType==2) {
-            Warehouse warehouse = warehouseRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+destinationId+" exists!"));
-        }
-        else if (destinationType==3) {
-            Store store = storeRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+destinationId+" exists!"));
-        }
-
-        Shipment shipment = new Shipment(originType, destinationType, originId, destinationId);
-        shipment.setSendTimestamp(LocalDateTime.now());
-        shipmentRepository.save(shipment);
-
-        //ShipmentDetails
-        JsonNode products = wholeJSON.get("products");
-        for (int i = 0; i < productCount; i++) {
-            String productId = products.get(i).get("productId").asText();
-            int quantity = products.get(i).get("quantity").asInt();
-
-            Product product = productRepository.findById(productId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with ID of: "+productId+" exists!"));
-
-            //if origin is a supplier
-            if (originType==1){
-                ShipmentDetail shipmentDetail = new ShipmentDetail(shipment, product, quantity);
-                shipment.addShipmentDetail(shipmentDetail);
-                ShipmentDetailRepository.save(shipmentDetail);
-            }
-
-            //if origin is a warehouse
-            else if (originType==2) {
-                if (warehouseQuantityRepository.findByProductId(productId) == null) {
-                    return new ResponseEntity<>("There is no product with specified ID in stock in warehouse", HttpStatus.NOT_FOUND);
-                }
-                else if (warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity() < quantity) {
-                    return new ResponseEntity<>("There is not enough quantity of product with specified ID in warehouse, Requested quantity: " + quantity + " Current Quantity in warehouse: " + warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity(), HttpStatus.BAD_REQUEST);
-                }
-                else {
-                    WarehouseQuantity warehouseQuantity = warehouseQuantityRepository.findByWarehouseWarehouseIdAndProductId(originId, productId);
-                    warehouseQuantity.setInWarehouseQuantity(warehouseQuantity.getInWarehouseQuantity() - quantity);
-                    warehouseQuantityRepository.save(warehouseQuantity);
-                    ShipmentDetail shipmentDetail = new ShipmentDetail(shipment, product, quantity);
-                    shipment.addShipmentDetail(shipmentDetail);
-                    ShipmentDetailRepository.save(shipmentDetail);
-                }
-            }
-
-            //if origin is a store
-            else if (originType==3) {
-                if (storeQuantityRepository.findByStoreStoreIdAndProductId(originId, productId) == null) {
-                    return new ResponseEntity<>("There is no product with specified ID in stock in store", HttpStatus.NOT_FOUND);
-                }
-                else if (storeQuantityRepository.findByStoreStoreIdAndProductId(originId, productId).getInstoreQuantity() < quantity) {
-                    return new ResponseEntity<>("There is not enough quantity of product with specified ID in store, Requested quantity: " + quantity + " Current Quantity in warehouse: " + storeQuantityRepository.findByStoreStoreIdAndProductId(originId, productId).getInstoreQuantity(), HttpStatus.BAD_REQUEST);
-                }
-                else {
-                    StoreQuantity storeQuantity = storeQuantityRepository.findByStoreStoreIdAndProductId(originId, productId);
-                    storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity() - quantity);
-                    storeQuantityRepository.save(storeQuantity);
-                    ShipmentDetail shipmentDetail = new ShipmentDetail(shipment, product, quantity);
-                    shipment.addShipmentDetail(shipmentDetail);
-                    ShipmentDetailRepository.save(shipmentDetail);
-                }
-            }
-        }
-        shipmentRepository.saveAndFlush(shipment);
-        return new ResponseEntity<>("successfully created new Shipment", HttpStatus.CREATED);
-    }
+//    @Transactional
+//    @PostMapping("/addShipment")
+//    public ResponseEntity<String> addPromotion(@RequestBody String jsonString) throws JsonProcessingException {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+//        int originType = wholeJSON.get("originType").asInt();
+//        int originId = wholeJSON.get("originId").asInt();
+//        int destinationType = wholeJSON.get("destinationType").asInt();
+//        int destinationId = wholeJSON.get("destinationId").asInt();
+//        int productCount = wholeJSON.get("productCount").asInt();
+//
+//        //input checking origin type
+//        if (originType==1) {
+//            Supplier supplier = supplierRespository.findById(originId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+originId+" exists!"));
+//        }
+//        else if (originType==2) {
+//            Warehouse warehouse = warehouseRepository.findById(originId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+originId+" exists!"));
+//        }
+//        else if (originType==3) {
+//            Store store = storeRepository.findById(originId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+originId+" exists!"));
+//        }
+//
+//        //input checking destination type
+//        if (destinationType==1) {
+//            Supplier supplier = supplierRespository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+destinationId+" exists!"));
+//        }
+//        else if (destinationType==2) {
+//            Warehouse warehouse = warehouseRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+destinationId+" exists!"));
+//        }
+//        else if (destinationType==3) {
+//            Store store = storeRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+destinationId+" exists!"));
+//        }
+//
+//        Shipment shipment = new Shipment(originType, destinationType, originId, destinationId);
+//        shipment.setSendTimestamp(LocalDateTime.now());
+//        shipmentRepository.save(shipment);
+//
+//        //ShipmentDetails
+//        JsonNode products = wholeJSON.get("products");
+//        for (int i = 0; i < productCount; i++) {
+//            String productId = products.get(i).get("productId").asText();
+//            int quantity = products.get(i).get("quantity").asInt();
+//
+//            Product product = productRepository.findById(productId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with ID of: "+productId+" exists!"));
+//
+//            //if origin is a supplier
+//            if (originType==1){
+//                ShipmentDetail shipmentDetail = new ShipmentDetail(shipment, product, quantity);
+//                shipment.addShipmentDetail(shipmentDetail);
+//                ShipmentDetailRepository.save(shipmentDetail);
+//            }
+//
+//            //if origin is a warehouse
+//            else if (originType==2) {
+//                if (warehouseQuantityRepository.findByProductId(productId) == null) {
+//                    return new ResponseEntity<>("There is no product with specified ID in stock in warehouse", HttpStatus.NOT_FOUND);
+//                }
+//                else if (warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity() < quantity) {
+//                    return new ResponseEntity<>("There is not enough quantity of product with specified ID in warehouse, Requested quantity: " + quantity + " Current Quantity in warehouse: " + warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity(), HttpStatus.BAD_REQUEST);
+//                }
+//                else {
+//                    WarehouseQuantity warehouseQuantity = warehouseQuantityRepository.findByWarehouseWarehouseIdAndProductId(originId, productId);
+//                    warehouseQuantity.setInWarehouseQuantity(warehouseQuantity.getInWarehouseQuantity() - quantity);
+//                    warehouseQuantityRepository.save(warehouseQuantity);
+//                    ShipmentDetail shipmentDetail = new ShipmentDetail(shipment, product, quantity);
+//                    shipment.addShipmentDetail(shipmentDetail);
+//                    ShipmentDetailRepository.save(shipmentDetail);
+//                }
+//            }
+//
+//            //if origin is a store
+//            else if (originType==3) {
+//                if (storeQuantityRepository.findByStoreStoreIdAndProductId(originId, productId) == null) {
+//                    return new ResponseEntity<>("There is no product with specified ID in stock in store", HttpStatus.NOT_FOUND);
+//                }
+//                else if (storeQuantityRepository.findByStoreStoreIdAndProductId(originId, productId).getInstoreQuantity() < quantity) {
+//                    return new ResponseEntity<>("There is not enough quantity of product with specified ID in store, Requested quantity: " + quantity + " Current Quantity in warehouse: " + storeQuantityRepository.findByStoreStoreIdAndProductId(originId, productId).getInstoreQuantity(), HttpStatus.BAD_REQUEST);
+//                }
+//                else {
+//                    StoreQuantity storeQuantity = storeQuantityRepository.findByStoreStoreIdAndProductId(originId, productId);
+//                    storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity() - quantity);
+//                    storeQuantityRepository.save(storeQuantity);
+//                    ShipmentDetail shipmentDetail = new ShipmentDetail(shipment, product, quantity);
+//                    shipment.addShipmentDetail(shipmentDetail);
+//                    ShipmentDetailRepository.save(shipmentDetail);
+//                }
+//            }
+//        }
+//        shipmentRepository.saveAndFlush(shipment);
+//        return new ResponseEntity<>("successfully created new Shipment", HttpStatus.CREATED);
+//    }
 
 
 }

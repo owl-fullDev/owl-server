@@ -1,6 +1,7 @@
 package com.owl.owlserver.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -8,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 @Entity
 @Table(name = "SHIPMENT")
 public class Shipment implements Serializable {
@@ -44,6 +46,11 @@ public class Shipment implements Serializable {
         shipmentDetailList = new ArrayList<>();
     }
 
+    public Shipment(int shipmentId) {
+        shipmentDetailList = new ArrayList<>();
+        this.shipmentId = shipmentId;
+    }
+
     public Shipment(int originType, int destinationType, int originId, int destinationId) {
         shipmentDetailList = new ArrayList<>();
         this.originType = originType;
@@ -52,80 +59,4 @@ public class Shipment implements Serializable {
         this.destinationId = destinationId;
     }
 
-    public int getShipmentId() {
-        return shipmentId;
-    }
-
-    public LocalDateTime getSendTimestamp() {
-        return sendTimestamp;
-    }
-
-    public void setSendTimestamp(LocalDateTime sendTimestamp) {
-        this.sendTimestamp = sendTimestamp;
-    }
-
-    public LocalDateTime getReceivedTimestamp() {
-        return receivedTimestamp;
-    }
-
-    public void setReceivedTimestamp(LocalDateTime receivedTimestamp) {
-        this.receivedTimestamp = receivedTimestamp;
-    }
-
-    public int getOriginType() {
-        return originType;
-    }
-
-    public void setOriginType(int originType) {
-        this.originType = originType;
-    }
-
-    public int getDestinationType() {
-        return destinationType;
-    }
-
-    public void setDestinationType(int destinationType) {
-        this.destinationType = destinationType;
-    }
-
-    public int getOriginId() {
-        return originId;
-    }
-
-    public void setOriginId(int originId) {
-        this.originId = originId;
-    }
-
-    public int getDestinationId() {
-        return destinationId;
-    }
-
-    public void setDestinationId(int destinationId) {
-        this.destinationId = destinationId;
-    }
-
-    public List<ShipmentDetail> getShipmentDetailList() {
-        return shipmentDetailList;
-    }
-
-    public void addShipmentDetail(ShipmentDetail shipmentDetail) {
-        shipmentDetailList.add(shipmentDetail);
-    }
-
-    public void removeShipmentDetail(ShipmentDetail shipmentDetail) {
-        shipmentDetailList.remove(shipmentDetail);
-    }
-
-    @Override
-    public String toString() {
-        return "Shipment{" +
-                "ShipmentId=" + shipmentId +
-                ", sendTimestamp=" + sendTimestamp +
-                ", receivedTimestamp=" + receivedTimestamp +
-                ", originType=" + originType +
-                ", destinationType=" + destinationType +
-                ", originId=" + originId +
-                ", destinationId=" + destinationId +
-                '}';
-    }
 }
