@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -57,7 +58,7 @@ public class ShipmentService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Origin type not acceptable!, must be between 1 and 3, value received: "+originType);
         }
         else if (originType==1) {
-            Supplier supplier = supplierRespository.findById(originType).orElseThrow(()->
+            Supplier supplier = supplierRespository.findById(originId).orElseThrow(()->
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "Origin Error: No supplier with ID of: "+originId+" exists!"));
         }
         else if (originType==2) {
@@ -65,8 +66,8 @@ public class ShipmentService {
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "Origin Error: No warehouse with ID of: "+originId+" exists!"));
         }
         else {
-            Store store = storeRepository.findById(originId).orElseThrow(()->
-                    new ResponseStatusException(HttpStatus.NOT_FOUND, "Origin Error: No store with ID of: "+originId+" exists!"));
+            Store store = storeRepository.findById(originId).orElseThrow(() ->
+                    new ResponseStatusException(HttpStatus.NOT_FOUND, "Origin Error: No store with ID of: " + originId + " exists!"));
         }
 
         //input checking destination type and id
@@ -81,10 +82,6 @@ public class ShipmentService {
             Store store = storeRepository.findById(destinationId).orElseThrow(()->
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "Origin Error: No store with ID of: "+destinationId+" exists!"));
         }
-
-
-        //todo Available Quantity Checking
-
 
         //extracts all product Ids form shipmentDetailList, stream is a for loop, foreach
         List<String> productIds = emptyIfNull(shipment.getShipmentDetailList()).stream()
@@ -102,6 +99,37 @@ public class ShipmentService {
                     .filter(id -> !validProductIds.contains(id))
                     .collect(Collectors.toSet());
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The following product IDs do not exist!: ["+result.toString()+"]");
+        }
+
+        List<ShipmentDetail> shipmentDetailList = shipment.getShipmentDetailList();
+
+        //Quantity check for Warehouse
+        if (originType==2){
+            List<WarehouseQuantity> warehouseQuantityList = warehouseQuantityRepository.findAllByProductIdIn(validProductIds);
+            for (int c=0; c<warehouseQuantityList.size(); c++){
+                int available = warehouseQuantityList.get(c).getInWarehouseQuantity();
+                int requested = shipmentDetailList.get(c).getQuantity();
+                if ( available < requested ){
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough product in stock in warehouse!, Requested quantity: "+requested+", Available: "+available);
+                }
+                warehouseQuantityList.get(c).setInWarehouseQuantity(available-requested);
+            }
+            warehouseQuantityRepository.saveAll(warehouseQuantityList);
+        }
+        //Quantity check for Store
+        else {
+            List<StoreQuantity> storeQuantityList = new ArrayList<>();
+            for (ShipmentDetail shipmentDetail : shipmentDetailList){
+                StoreQuantity storeQuantity = storeQuantityRepository.findByStore_StoreIdAndProductId(originId,shipmentDetail.getProductId());
+                storeQuantityList.add(storeQuantity);
+                int available = storeQuantity.getInstoreQuantity();
+                int requested = shipmentDetail.getQuantity();
+                if ( available < requested ) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough product in stock in store!, Requested quantity: " + requested + ", Available: " + available);
+                }
+                storeQuantity.setInstoreQuantity(available-requested);
+            }
+            storeQuantityRepository.saveAll(storeQuantityList);
         }
 
         if (originType==1){

@@ -1,11 +1,12 @@
 package com.owl.owlserver.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.List;
 
+@Data
 @Entity
 @Table(name = "STORE_QUANTITY")
 public class StoreQuantity implements Serializable {
@@ -35,31 +36,4 @@ public class StoreQuantity implements Serializable {
         this.instoreQuantity = instoreQuantity;
     }
 
-    public Store getStore() {
-        return store;
-    }
-
-    public void setStore(Store store) {
-        this.store = store;
-    }
-
-    public int getStoreQuantityId() {
-        return storeQuantityId;
-    }
-
-    public String getProductId() {
-        return productId;
-    }
-
-    public void setProductId(String productId) {
-        this.productId = productId;
-    }
-
-    public int getInstoreQuantity() {
-        return instoreQuantity;
-    }
-
-    public void setInstoreQuantity(int instoreQuantity) {
-        this.instoreQuantity = instoreQuantity;
-    }
 }
