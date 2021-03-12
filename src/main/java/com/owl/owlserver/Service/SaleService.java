@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 
 @Service
-public class ShipmentService {
+public class SaleService {
 
     //injecting repositories for database access
     @Autowired
@@ -44,6 +44,10 @@ public class ShipmentService {
     WarehouseQuantityRepository warehouseQuantityRepository;
     @Autowired
     SupplierRespository supplierRespository;
+
+    public void persistSale(Sale sale) {
+
+    }
 
     public void persistShipment(Shipment shipment) {
 

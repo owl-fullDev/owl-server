@@ -11,6 +11,4 @@ import java.util.List;
 public interface StoreQuantityRepository extends JpaRepository <StoreQuantity,Integer> {
 
     StoreQuantity findByStoreAndProductId(Store store, String productId);
-    StoreQuantity findByStoreStoreIdAndProductId(int storeId, String productId);
-    List<StoreQuantity> findAllByProductId(String productId);
 }

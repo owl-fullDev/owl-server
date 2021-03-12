@@ -316,7 +316,6 @@ public class posEndpoint {
         shipmentService.persistShipment(shipment);
 
         return new ResponseEntity<>("Successfully created new transfer shipment, ID: "+shipment.getShipmentId(), HttpStatus.OK);
-
     }
 
 }

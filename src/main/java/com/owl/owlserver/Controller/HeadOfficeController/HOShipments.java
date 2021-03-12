@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.owl.owlserver.Service.ShipmentService;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,13 +45,16 @@ public class HOShipments {
     @Autowired
     ShipmentRepository shipmentRepository;
     @Autowired
-    ShipmentDetailRepository ShipmentDetailRepository;
+    ShipmentDetailRepository shipmentDetailRepository;
     @Autowired
     WarehouseRepository warehouseRepository;
     @Autowired
     WarehouseQuantityRepository warehouseQuantityRepository;
     @Autowired
     SupplierRespository supplierRespository;
+
+    @Autowired
+    private ShipmentService shipmentService;
 
     //REST endpoints
     @GetMapping
@@ -75,12 +79,10 @@ public class HOShipments {
 
                 //find origin type
                 if (shipment.getOriginType()==1) {
-                    Supplier supplier = supplierRespository.findById(shipment.getOriginId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getOriginId()+" exists!"));
+                    Supplier supplier = supplierRespository.findById(shipment.getOriginId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: " + shipment.getOriginId() + " exists!"));
                     ((ObjectNode) jsonNode).put("originType", "Supplier");
                     ((ObjectNode) jsonNode).put("originName", supplier.getName());
-                    if (shipment.getSendTimestamp()==null){
-                        ((ObjectNode) jsonNode).put("status", "This is a supplier shipment");
-                    }
+                    ((ObjectNode) jsonNode).put("status", "This is a supplier shipment");
                 }
                 else if (shipment.getOriginType()==2) {
                     Warehouse warehouse = warehouseRepository.findById(shipment.getOriginId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getOriginId()+" exists!"));
@@ -224,9 +226,23 @@ public class HOShipments {
         return new ResponseEntity<>("Product in store with enough quantity",HttpStatus.OK);
     }
 
+    @Transactional
+    @PostMapping(value = "/addShipment")
+    public ResponseEntity<String> addShipment(@RequestBody Shipment shipment) {
+
+        if (shipment==null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All shipment details are empty!");
+        }
+
+        shipmentService.persistShipment(shipment);
+
+        return new ResponseEntity<>("Successfully created new transfer shipment, ID: "+shipment.getShipmentId(), HttpStatus.OK);
+    }
+
+
 //    @Transactional
-//    @PostMapping("/addShipment")
-//    public ResponseEntity<String> addPromotion(@RequestBody String jsonString) throws JsonProcessingException {
+//    @PostMapping("/addShipmentDeprecated")
+//    public ResponseEntity<String> addShipmentDeprecated(@RequestBody String jsonString) throws JsonProcessingException {
 //        ObjectMapper objectMapper = new ObjectMapper();
 //        JsonNode wholeJSON = objectMapper.readTree(jsonString);
 //        int originType = wholeJSON.get("originType").asInt();
@@ -288,7 +304,10 @@ public class HOShipments {
 //                    WarehouseQuantity warehouseQuantity = warehouseQuantityRepository.findByWarehouseWarehouseIdAndProductId(originId, productId);
 //                    warehouseQuantity.setInWarehouseQuantity(warehouseQuantity.getInWarehouseQuantity() - quantity);
 //                    warehouseQuantityRepository.save(warehouseQuantity);
-//                    ShipmentDetail shipmentDetail = new ShipmentDetail(shipment, product, quantity);
+//                    ShipmentDetail shipmentDetail = new ShipmentDetail(shipment, product,
+//
+//
+//                    quantity);
 //                    shipment.addShipmentDetail(shipmentDetail);
 //                    ShipmentDetailRepository.save(shipmentDetail);
 //                }

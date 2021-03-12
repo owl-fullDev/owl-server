@@ -66,7 +66,7 @@ public class warehouseEndpoint {
     }
 
     @GetMapping("/getAllSupplierShipments")
-    public ResponseEntity<ArrayNode> getAllSupplierShipments() throws JsonProcessingException {
+    public ResponseEntity<ArrayNode> getAllSupplierShipments(){
         List<Shipment> shipmentList = shipmentRepository.findAllByReceivedTimestampIsNullAndOriginTypeEqualsAndDestinationTypeEquals(1,2);
         ArrayNode arrayNode = objectMapper.createArrayNode();
 
