@@ -5,12 +5,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.owl.owlserver.model.Store;
+import com.owl.owlserver.model.StoreQuantity;
 import com.owl.owlserver.model.Warehouse;
+import com.owl.owlserver.model.WarehouseQuantity;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -68,6 +71,11 @@ public class HOWarehouses {
         Warehouse warehouse = new Warehouse(name,address,phoneNumber);
         warehouseRepository.saveAndFlush(warehouse);
         return new ResponseEntity<>("successfully added new store:\n"+warehouse.toString(),HttpStatus.CREATED);
+    }
 
+    @GetMapping("/getWarehouseQuantity")
+    public List<WarehouseQuantity> getWarehouseQuantity(int warehouseId) {
+        Warehouse warehouse = warehouseRepository.findById(warehouseId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No warehouse with ID of: "+warehouseId+" exists!"));
+        return warehouse.getWarehouseQuantityList();
     }
 }
