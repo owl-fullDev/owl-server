@@ -9,8 +9,8 @@ import java.util.List;
 @Repository
 public interface WarehouseQuantityRepository extends JpaRepository<WarehouseQuantity,Integer> {
 
-    WarehouseQuantity findByProductId (String productId);
-    WarehouseQuantity findByWarehouseWarehouseIdAndProductId(int warehouseId, String productId);
-    List<WarehouseQuantity> findAllByProductIdIn(List<String> productIdList);
+    WarehouseQuantity findByProduct_ProductId(String productId);
+    WarehouseQuantity findByWarehouseWarehouseIdAndProduct_ProductId(int warehouseId, String productId);
+    List<WarehouseQuantity> findAllByProduct_ProductIdIn(List<String> productIdList);
 
 }

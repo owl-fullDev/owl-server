@@ -16,8 +16,9 @@ public class StoreQuantity implements Serializable {
     @Column(name = "STORE_QUANTITY_ID", nullable = false)
     private int storeQuantityId;
 
-    @Column(name = "PRODUCT_ID", nullable = false)
-    private String productId;
+    @ManyToOne
+    @JoinColumn(name = "PRODUCT_ID", nullable = false)
+    private Product product;
 
     @Column(name = "INSTORE_QUANTITY")
     private int instoreQuantity;
@@ -30,9 +31,9 @@ public class StoreQuantity implements Serializable {
     public StoreQuantity() {
     }
 
-    public StoreQuantity(Store store, String productId, int instoreQuantity) {
+    public StoreQuantity(Store store, Product product, int instoreQuantity) {
         this.store = store;
-        this.productId = productId;
+        this.product = product;
         this.instoreQuantity = instoreQuantity;
     }
 

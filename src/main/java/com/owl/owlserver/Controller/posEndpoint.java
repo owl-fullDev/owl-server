@@ -86,7 +86,7 @@ public class posEndpoint {
     public ResponseEntity<JsonNode> getInStoreProductQuantity(@RequestParam int storeId, String productId) {
         Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID"));
         Product product = productRepository.findById(productId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with specified ID exists"));
-        StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(store,productId);
+        StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProduct_ProductId(store,productId);
         if (storeQuantity==null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product with specified ID not in stock in store");
         }
@@ -185,7 +185,7 @@ public class posEndpoint {
 
             //if product purchased is NOT a custom lens, decrease in-store quantity
             if (!(product.getProductId().startsWith("CL"))){
-                StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(store, productId);
+                StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProduct_ProductId(store, productId);
                 if (storeQuantity.getInstoreQuantity()-quantity<0){
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough of product in stock in store");
                 }
@@ -259,11 +259,11 @@ public class posEndpoint {
             int quantity = shipmentDetail.getQuantity();
             shipmentDetail.setReceivedQuantity(quantity);
             shipmentDetailRepository.save(shipmentDetail);
-            StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(store, product.getProductId());
+            StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProduct_ProductId(store, product.getProductId());
 
             //first time receiving product
             if (storeQuantity==null){
-                storeQuantity = new StoreQuantity(store,product.getProductId(),quantity);
+                storeQuantity = new StoreQuantity(store,product,quantity);
                 storeQuantityRepository.save(storeQuantity);
             }
             else {

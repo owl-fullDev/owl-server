@@ -1,10 +1,12 @@
 package com.owl.owlserver.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
+@Data
 @Entity
 @Table(name = "WAREHOUSE_QUANTITY")
 public class WarehouseQuantity implements Serializable {
@@ -14,8 +16,9 @@ public class WarehouseQuantity implements Serializable {
     @Column(name = "WAREHOUSE_QUANTITY_ID", nullable = false)
     private int warehouseQuantityId;
 
-    @Column(name = "PRODUCT_ID")
-    private String productId;
+    @ManyToOne
+    @JoinColumn(name = "PRODUCT_ID", nullable = false)
+    private Product product;
 
     @Column(name = "INWAREHOUSE_QUANTITY", nullable = false)
     private int inWarehouseQuantity ;
@@ -28,39 +31,11 @@ public class WarehouseQuantity implements Serializable {
     public WarehouseQuantity() {
     }
 
-    public WarehouseQuantity(Warehouse warehouse, String productId, int inWarehouseQuantity) {
+    public WarehouseQuantity(Warehouse warehouse, Product product, int inWarehouseQuantity) {
         this.warehouse = warehouse;
-        this.productId = productId;
+        this.product = product;
         this.inWarehouseQuantity = inWarehouseQuantity;
     }
 
-    public int getWarehouseQuantityId() {
-        return warehouseQuantityId;
-    }
 
-    public String getProductId() {
-        return productId;
-    }
-
-    public int getInWarehouseQuantity() {
-        return inWarehouseQuantity;
-    }
-
-    public void setInWarehouseQuantity(int inWarehouseQuantity) {
-        this.inWarehouseQuantity = inWarehouseQuantity;
-    }
-
-    public Warehouse getWarehouse() {
-        return warehouse;
-    }
-
-    @Override
-    public String toString() {
-        return "WarehouseQuantity{" +
-                ", warehouse=" + warehouse.getName() +
-                "warehouseQuantityId=" + warehouseQuantityId +
-                ", productId='" + productId + '\'' +
-                ", inWarehouseQuantity=" + inWarehouseQuantity +
-                '}';
-    }
 }

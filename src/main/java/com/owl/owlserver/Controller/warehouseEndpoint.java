@@ -197,7 +197,7 @@ public class warehouseEndpoint {
             shipmentDetail.setComment(comment);
             shipmentDetailRepository.save(shipmentDetail);
 
-            WarehouseQuantity warehouseQuantity = warehouseQuantityRepository.findByWarehouseWarehouseIdAndProductId(warehouseId, shipmentDetail.getProduct().getProductId());
+            WarehouseQuantity warehouseQuantity = warehouseQuantityRepository.findByWarehouseWarehouseIdAndProduct_ProductId(warehouseId, shipmentDetail.getProduct().getProductId());
             warehouseQuantity.setInWarehouseQuantity(warehouseQuantity.getInWarehouseQuantity()+receivedQuantity);
             warehouseQuantityRepository.save(warehouseQuantity);
         }

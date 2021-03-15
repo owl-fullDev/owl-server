@@ -132,7 +132,7 @@ public class HOStores {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Product doesnt Exist!");
         }
         else {
-            StoreQuantity storeQuantity = new StoreQuantity(store,productId,0);
+            StoreQuantity storeQuantity = new StoreQuantity(store,product,0);
             storeQuantityRepository.save(storeQuantity);
             store.addStoreQuantity(storeQuantity);
             storeRepository.save(store);
@@ -143,7 +143,7 @@ public class HOStores {
     @GetMapping("/removeOneStoreProduct")
     public ResponseEntity<String> removeOneStoreProduct(int storeId, String productId) {
         Store store = storeRepository.findById(storeId).orElse(null);
-        StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProductId(store,productId);
+        StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProduct_ProductId(store,productId);
         Product product = productRepository.findById(productId).orElse(null);
         if (store==null){
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Store doesnt Exist!");

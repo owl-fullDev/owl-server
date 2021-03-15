@@ -105,7 +105,7 @@ public class ShipmentService {
 
         //Quantity check for Warehouse
         if (originType==2){
-            List<WarehouseQuantity> warehouseQuantityList = warehouseQuantityRepository.findAllByProductIdIn(validProductIds);
+            List<WarehouseQuantity> warehouseQuantityList = warehouseQuantityRepository.findAllByProduct_ProductIdIn(validProductIds);
             for (int c=0; c<warehouseQuantityList.size(); c++){
                 int available = warehouseQuantityList.get(c).getInWarehouseQuantity();
                 int requested = shipmentDetailList.get(c).getQuantity();
@@ -120,7 +120,7 @@ public class ShipmentService {
         else {
             List<StoreQuantity> storeQuantityList = new ArrayList<>();
             for (ShipmentDetail shipmentDetail : shipmentDetailList){
-                StoreQuantity storeQuantity = storeQuantityRepository.findByStore_StoreIdAndProductId(originId,shipmentDetail.getProductId());
+                StoreQuantity storeQuantity = storeQuantityRepository.findByStore_StoreIdAndProduct_ProductId(originId,shipmentDetail.getProductId());
                 storeQuantityList.add(storeQuantity);
                 int available = storeQuantity.getInstoreQuantity();
                 int requested = shipmentDetail.getQuantity();

@@ -205,11 +205,11 @@ public class HOShipments {
     @GetMapping("/checkWarehouseQuantity")
     public ResponseEntity<String> checkWarehouseQuantity(int warehouseId, String productId, int quantity){
         Warehouse warehouse = warehouseRepository.findById(warehouseId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+warehouseId+" exists!"));
-        if (warehouseQuantityRepository.findByProductId(productId) == null) {
+        if (warehouseQuantityRepository.findByProduct_ProductId(productId) == null) {
             return new ResponseEntity<>("There is no product with ID of: "+productId+" in stock in warehouse",HttpStatus.NOT_FOUND);
         }
-        if (warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity() < quantity) {
-            return new ResponseEntity<>("There is not enough quantity of product with specified ID in stock in the warehouse, Requested quantity: "+quantity+" Current Quantity in warehouse: "+warehouseQuantityRepository.findByProductId(productId).getInWarehouseQuantity(),HttpStatus.BAD_REQUEST);
+        if (warehouseQuantityRepository.findByProduct_ProductId(productId).getInWarehouseQuantity() < quantity) {
+            return new ResponseEntity<>("There is not enough quantity of product with specified ID in stock in the warehouse, Requested quantity: "+quantity+" Current Quantity in warehouse: "+warehouseQuantityRepository.findByProduct_ProductId(productId).getInWarehouseQuantity(),HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("Product in store with enough quantity",HttpStatus.OK);
     }
@@ -217,11 +217,11 @@ public class HOShipments {
     @GetMapping("/checkStoreQuantity")
     public ResponseEntity<String> checkStoreQuantity(int storeId, String productId, int quantity){
         Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+storeId+" exists!"));
-        if (storeQuantityRepository.findByStoreAndProductId(store, productId) == null) {
+        if (storeQuantityRepository.findByStoreAndProduct_ProductId(store, productId) == null) {
             return new ResponseEntity<>("There is no product with ID of: "+productId+" in stock in store",HttpStatus.NOT_FOUND);
         }
-        if (storeQuantityRepository.findByStoreAndProductId(store, productId).getInstoreQuantity() < quantity) {
-            return new ResponseEntity<>("There is not enough quantity of product with specified ID in stock in the store, Requested quantity: "+quantity+" Current Quantity in store: "+storeQuantityRepository.findByStoreAndProductId(store, productId).getInstoreQuantity(),HttpStatus.BAD_REQUEST);
+        if (storeQuantityRepository.findByStoreAndProduct_ProductId(store, productId).getInstoreQuantity() < quantity) {
+            return new ResponseEntity<>("There is not enough quantity of product with specified ID in stock in the store, Requested quantity: "+quantity+" Current Quantity in store: "+storeQuantityRepository.findByStoreAndProduct_ProductId(store, productId).getInstoreQuantity(),HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("Product in store with enough quantity",HttpStatus.OK);
     }
