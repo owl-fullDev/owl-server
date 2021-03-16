@@ -74,9 +74,13 @@ public class warehouseEndpoint {
             return new ResponseEntity<>(arrayNode, HttpStatus.OK);
         }
 
+        List<Supplier> supplierList = supplierRespository.findAll();
         for (Shipment shipment: shipmentList){
             JsonNode jsonNode = objectMapper.convertValue(shipment, JsonNode.class);
-            Supplier supplier = supplierRespository.findById(shipment.getOriginId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getOriginId()+" exists!"));
+            Supplier supplier = supplierList.stream()
+                    .filter(supplier1 -> supplier1.getSupplierId()==shipment.getOriginId())
+                    .findFirst()
+                    .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getOriginId()+" exists!"));
             ((ObjectNode) jsonNode).put("supplierName", supplier.getName());
             ((ObjectNode) jsonNode).put("supplierAddress", supplier.getAddress());
             ((ObjectNode) jsonNode).put("sendTimestamp", shipment.getSendTimestamp().toString());
@@ -96,11 +100,17 @@ public class warehouseEndpoint {
             return new ResponseEntity<>(arrayNode, HttpStatus.OK);
         }
 
+        List<Warehouse> warehouseList = warehouseRepository.findAll();
+        List<Store> storeList = storeRepository.findAll();
+
         for (Shipment shipment: shipmentList){
             JsonNode jsonNode = objectMapper.convertValue(shipment, JsonNode.class);
 
             if (shipment.getOriginType()==2) {
-                Warehouse warehouse = warehouseRepository.findById(shipment.getOriginId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: " + shipment.getOriginId() + " exists!"));
+                Warehouse warehouse = warehouseList.stream()
+                        .filter(warehouse1 -> warehouse1.getWarehouseId()==shipment.getOriginId())
+                        .findFirst()
+                        .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getOriginId()+" exists!"));
                 ((ObjectNode) jsonNode).put("originType", "warehouse");
                 ((ObjectNode) jsonNode).put("originName", warehouse.getName());
                 ((ObjectNode) jsonNode).put("originAddress", warehouse.getAddress());
@@ -109,7 +119,10 @@ public class warehouseEndpoint {
             }
 
             else if (shipment.getOriginType()==3){
-                Store store = storeRepository.findById(shipment.getOriginId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: " + shipment.getOriginId() + " exists!"));
+                Store store = storeList.stream()
+                        .filter(store1 -> store1.getStoreId()==shipment.getOriginId())
+                        .findFirst()
+                        .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getOriginId()+" exists!"));
                 ((ObjectNode) jsonNode).put("originType", "store");
                 ((ObjectNode) jsonNode).put("originName", store.getName());
                 ((ObjectNode) jsonNode).put("originAddress", store.getAddress());
@@ -130,6 +143,9 @@ public class warehouseEndpoint {
             return new ResponseEntity<>(arrayNode, HttpStatus.OK);
         }
 
+        List<Warehouse> warehouseList = warehouseRepository.findAll();
+        List<Store> storeList = storeRepository.findAll();
+
         for (Shipment shipment: shipmentList){
             JsonNode jsonNode = objectMapper.convertValue(shipment, JsonNode.class);
 
@@ -137,7 +153,10 @@ public class warehouseEndpoint {
             ((ObjectNode) jsonNode).put("originAddress", warehouse.getAddress());
 
             if (shipment.getDestinationType()==2) {
-                Warehouse warehouse2 = warehouseRepository.findById(warehouseId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No Warehouse with ID of: " +warehouseId+ " exists!"));
+                Warehouse warehouse2 = warehouseList.stream()
+                        .filter(warehouse1 -> warehouse1.getWarehouseId()==shipment.getDestinationId())
+                        .findFirst()
+                        .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getDestinationId()+" exists!"));
                 ((ObjectNode) jsonNode).put("destinationType", "Gudang");
                 ((ObjectNode) jsonNode).put("destinationName", warehouse2.getName());
                 ((ObjectNode) jsonNode).put("destinationAddress", warehouse2.getAddress());
@@ -145,7 +164,10 @@ public class warehouseEndpoint {
             }
 
             else if (shipment.getDestinationType()==3){
-                Store store = storeRepository.findById(shipment.getDestinationId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: " + shipment.getOriginId() + " exists!"));
+                Store store = storeList.stream()
+                        .filter(store1 -> store1.getStoreId()==shipment.getDestinationId())
+                        .findFirst()
+                        .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getDestinationId()+" exists!"));
                 ((ObjectNode) jsonNode).put("destinationType", "Toko");
                 ((ObjectNode) jsonNode).put("destinationName", store.getName());
                 ((ObjectNode) jsonNode).put("destinationAddress", store.getAddress());
@@ -198,7 +220,14 @@ public class warehouseEndpoint {
             shipmentDetailRepository.save(shipmentDetail);
 
             WarehouseQuantity warehouseQuantity = warehouseQuantityRepository.findByWarehouseWarehouseIdAndProduct_ProductId(warehouseId, shipmentDetail.getProduct().getProductId());
-            warehouseQuantity.setInWarehouseQuantity(warehouseQuantity.getInWarehouseQuantity()+receivedQuantity);
+            //first time recieving product
+            if(warehouseQuantity==null){
+                Product product = productRepository.findById(shipmentDetail.getProduct().getProductId()).orElse(null);
+                warehouseQuantity = new WarehouseQuantity(warehouse,product,receivedQuantity);
+            }
+            else {
+                warehouseQuantity.setInWarehouseQuantity(warehouseQuantity.getInWarehouseQuantity() + receivedQuantity);
+            }
             warehouseQuantityRepository.save(warehouseQuantity);
         }
 

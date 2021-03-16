@@ -13,5 +13,6 @@ public interface StoreQuantityRepository extends JpaRepository <StoreQuantity,In
 
     StoreQuantity findByStoreAndProduct_ProductId(Store store, String productId);
     StoreQuantity findByStore_StoreIdAndProduct_ProductId(int storeId, String productId);
+    List<StoreQuantity> findAllByStore_StoreId(int storeId);
 
 }

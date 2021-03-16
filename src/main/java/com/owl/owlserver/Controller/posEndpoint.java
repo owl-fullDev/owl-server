@@ -254,22 +254,25 @@ public class posEndpoint {
         LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
 
         List<ShipmentDetail> shipmentDetailList = shipment.getShipmentDetailList();
+        List<StoreQuantity> storeQuantityList = storeQuantityRepository.findAllByStore_StoreId(storeId);
         for (ShipmentDetail shipmentDetail : shipmentDetailList){
             Product product = shipmentDetail.getProduct();
             int quantity = shipmentDetail.getQuantity();
             shipmentDetail.setReceivedQuantity(quantity);
-            shipmentDetailRepository.save(shipmentDetail);
-            StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProduct_ProductId(store, product.getProductId());
+            StoreQuantity storeQuantity = storeQuantityList.stream()
+                    .filter(storeQuantity1 -> storeQuantity1.getProduct().getProductId().equals(product.getProductId()))
+                    .findFirst()
+                    .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No storeQuantity exists!"));
 
             //first time receiving product
             if (storeQuantity==null){
                 storeQuantity = new StoreQuantity(store,product,quantity,quantity);
-                storeQuantityRepository.save(storeQuantity);
             }
             else {
                 storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity()+quantity);
-                storeQuantityRepository.save(storeQuantity);
             }
+            shipmentDetailRepository.saveAll(shipmentDetailList);
+            storeQuantityRepository.saveAll(storeQuantityList);
         }
         shipment.setReceivedTimestamp(localPickUpTime);
         shipmentRepository.save(shipment);
