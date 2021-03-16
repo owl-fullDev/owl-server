@@ -115,7 +115,7 @@ public class HOShipments {
                 //find destination type
                 if (shipment.getDestinationType()==1) {
                     Supplier supplier = supplierList.stream()
-                            .filter(supplier1 -> supplier1.getSupplierId()==shipment.getOriginId())
+                            .filter(supplier1 -> supplier1.getSupplierId()==shipment.getDestinationId())
                             .findFirst()
                             .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationType", "Supplier");
@@ -124,7 +124,7 @@ public class HOShipments {
                 else if (shipment.getDestinationType()==2) {
                     ((ObjectNode) jsonNode).put("destinationType", "Warehouse");
                     Warehouse warehouse = warehouseList.stream()
-                            .filter(warehouse1 -> warehouse1.getWarehouseId()==shipment.getOriginId())
+                            .filter(warehouse1 -> warehouse1.getWarehouseId()==shipment.getDestinationId())
                             .findFirst()
                             .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationName", warehouse.getName());
@@ -132,7 +132,7 @@ public class HOShipments {
                 else if (shipment.getDestinationType()==3) {
                     ((ObjectNode) jsonNode).put("destinationType", "Store");
                     Store store = storeList.stream()
-                            .filter(store1 -> store1.getStoreId()==shipment.getOriginId())
+                            .filter(store1 -> store1.getStoreId()==shipment.getDestinationId())
                             .findFirst()
                             .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationName", store.getName());
@@ -204,7 +204,7 @@ public class HOShipments {
                 //find destination type
                 if (shipment.getDestinationType()==1) {
                     Supplier supplier = supplierList.stream()
-                            .filter(supplier1 -> supplier1.getSupplierId()==shipment.getOriginId())
+                            .filter(supplier1 -> supplier1.getSupplierId()==shipment.getDestinationId())
                             .findFirst()
                             .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationType", "Supplier");
@@ -215,7 +215,7 @@ public class HOShipments {
                 else if (shipment.getDestinationType()==2) {
                     ((ObjectNode) jsonNode).put("destinationType", "Warehouse");
                     Warehouse warehouse = warehouseList.stream()
-                            .filter(warehouse1 -> warehouse1.getWarehouseId()==shipment.getOriginId())
+                            .filter(warehouse1 -> warehouse1.getWarehouseId()==shipment.getDestinationId())
                             .findFirst()
                             .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationName", warehouse.getName());
@@ -225,7 +225,7 @@ public class HOShipments {
                 else if (shipment.getDestinationType()==3) {
                     ((ObjectNode) jsonNode).put("destinationType", "Store");
                     Store store = storeList.stream()
-                            .filter(store1 -> store1.getStoreId()==shipment.getOriginId())
+                            .filter(store1 -> store1.getStoreId()==shipment.getDestinationId())
                             .findFirst()
                             .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationName", store.getName());
