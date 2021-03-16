@@ -117,7 +117,7 @@ public class ShipmentService {
             warehouseQuantityRepository.saveAll(warehouseQuantityList);
         }
         //Quantity check for Store
-        else {
+        else if (originType==3){
             List<StoreQuantity> storeQuantityList = new ArrayList<>();
             for (ShipmentDetail shipmentDetail : shipmentDetailList){
                 StoreQuantity storeQuantity = storeQuantityRepository.findByStore_StoreIdAndProduct_ProductId(originId,shipmentDetail.getProductId());
@@ -144,5 +144,7 @@ public class ShipmentService {
                 .peek(shipmentDetail -> shipmentDetail.setProduct(new Product(shipmentDetail.getProductId())))
                 .peek(shipmentDetail -> shipmentDetail.setShipment(shipment))
                 .collect(Collectors.toList()));
+
+
     }
 }
