@@ -22,34 +22,7 @@ public class HOSuppliers {
 
     //injecting repositories for database access
     @Autowired
-    CustomerRepository customerRepository;
-    @Autowired
-    EmployeeRepository employeeRepository;
-    @Autowired
-    ProductRepository productRepository;
-    @Autowired
-    PromotionRepository promotionRepository;
-    @Autowired
-    SaleDetailRepository saleDetailRepository;
-    @Autowired
-    SaleRepository saleRepository;
-    @Autowired
-    StoreQuantityRepository storeQuantityRepository;
-    @Autowired
-    StoreRepository storeRepository;
-    @Autowired
-    ShipmentRepository shipmentRepository;
-    @Autowired
-    ShipmentDetailRepository shipmentDetailRepository;
-    @Autowired
-    WarehouseRepository warehouseRepository;
-    @Autowired
-    WarehouseQuantityRepository warehouseQuantityRepository;
-    @Autowired
     SupplierRespository supplierRespository;
-
-    //JACKSON object Mapper
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     //REST endpoints
     @GetMapping
@@ -61,14 +34,12 @@ public class HOSuppliers {
     @GetMapping("/getAllSuppliers")
     public ResponseEntity<List<Supplier>> getAllSuppliers() {
         List<Supplier> supplierList = supplierRespository.findAll();
-        if (supplierList.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No suppliers saved");
-        }
         return new ResponseEntity<>(supplierList, HttpStatus.OK);
     }
 
     @PostMapping(value = "/addNewSupplier")
     public ResponseEntity<String> addNewSupplier(@RequestBody String jsonString) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
 
         String supplierName = wholeJSON.get("supplierName").asText();

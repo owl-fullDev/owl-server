@@ -24,35 +24,14 @@ public class HOWarehouses {
 
     //injecting repositories for database access
     @Autowired
-    CustomerRepository customerRepository;
-    @Autowired
-    EmployeeRepository employeeRepository;
-    @Autowired
-    ProductRepository productRepository;
-    @Autowired
-    PromotionRepository promotionRepository;
-    @Autowired
-    SaleDetailRepository saleDetailRepository;
-    @Autowired
-    SaleRepository saleRepository;
-    @Autowired
-    StoreQuantityRepository storeQuantityRepository;
-    @Autowired
-    StoreRepository storeRepository;
-    @Autowired
-    ShipmentRepository ShipmentRepository;
-    @Autowired
-    ShipmentDetailRepository ShipmentDetailRepository;
-    @Autowired
     WarehouseRepository warehouseRepository;
     @Autowired
     WarehouseQuantityRepository warehouseQuantityRepository;
 
     //REST endpoints
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public String ping() {
-        return "Head office api for warehouses, GET request received";
+    public ResponseEntity<String> ping() {
+        return new ResponseEntity<>("Head office api for warehouses, GET request received",HttpStatus.OK);
     }
 
     @GetMapping("/getAllWarehouses")
@@ -64,13 +43,14 @@ public class HOWarehouses {
     public ResponseEntity<String> addWarehouse(@RequestBody String jsonString) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
+
         String name = wholeJSON.get("name").asText();
         String address = wholeJSON.get("address").asText();
         String phoneNumber = wholeJSON.get("phoneNumber").asText();
 
         Warehouse warehouse = new Warehouse(name,address,phoneNumber);
-        warehouseRepository.saveAndFlush(warehouse);
-        return new ResponseEntity<>("successfully added new store:\n"+warehouse.toString(),HttpStatus.CREATED);
+        warehouseRepository.save(warehouse);
+        return new ResponseEntity<>("successfully added new warehouse",HttpStatus.CREATED);
     }
 
     @GetMapping("/getWarehouseQuantity")
