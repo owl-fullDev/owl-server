@@ -263,7 +263,7 @@ public class posEndpoint {
 
             //first time receiving product
             if (storeQuantity==null){
-                storeQuantity = new StoreQuantity(store,product,quantity);
+                storeQuantity = new StoreQuantity(store,product,quantity,quantity);
                 storeQuantityRepository.save(storeQuantity);
             }
             else {

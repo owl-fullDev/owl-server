@@ -132,7 +132,7 @@ public class HOStores {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Product doesnt Exist!");
         }
         else {
-            StoreQuantity storeQuantity = new StoreQuantity(store,product,0);
+            StoreQuantity storeQuantity = new StoreQuantity(store,product,0,0);
             storeQuantityRepository.save(storeQuantity);
             store.addStoreQuantity(storeQuantity);
             storeRepository.save(store);
