@@ -74,18 +74,28 @@ public class HOShipments {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND ,"There are currently no active shipments");
         }
         else {
+            List<Supplier> supplierList = supplierRespository.findAll();
+            List<Warehouse> warehouseList = warehouseRepository.findAll();
+            List<Store> storeList = storeRepository.findAll();
+
             for (Shipment shipment : shipmentList) {
                 JsonNode jsonNode = mapper.convertValue(shipment, JsonNode.class);
 
                 //find origin type
                 if (shipment.getOriginType()==1) {
-                    Supplier supplier = supplierRespository.findById(shipment.getOriginId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: " + shipment.getOriginId() + " exists!"));
+                    Supplier supplier = supplierList.stream()
+                            .filter(supplier1 -> supplier1.getSupplierId()==shipment.getOriginId())
+                            .findFirst()
+                            .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getOriginId()+" exists!"));
                     ((ObjectNode) jsonNode).put("originType", "Supplier");
                     ((ObjectNode) jsonNode).put("originName", supplier.getName());
                     ((ObjectNode) jsonNode).put("status", "This is a supplier shipment");
                 }
                 else if (shipment.getOriginType()==2) {
-                    Warehouse warehouse = warehouseRepository.findById(shipment.getOriginId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getOriginId()+" exists!"));
+                    Warehouse warehouse = warehouseList.stream()
+                            .filter(warehouse1 -> warehouse1.getWarehouseId()==shipment.getOriginId())
+                            .findFirst()
+                            .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getOriginId()+" exists!"));
                     ((ObjectNode) jsonNode).put("originType", "Warehouse");
                     ((ObjectNode) jsonNode).put("originName", warehouse.getName());
                     if (shipment.getSendTimestamp()==null){
@@ -93,7 +103,10 @@ public class HOShipments {
                     }
                 }
                 else if (shipment.getOriginType()==3) {
-                    Store store = storeRepository.findById(shipment.getOriginId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getOriginId()+" exists!"));
+                    Store store = storeList.stream()
+                            .filter(store1 -> store1.getStoreId()==shipment.getOriginId())
+                            .findFirst()
+                            .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getOriginId()+" exists!"));
                     ((ObjectNode) jsonNode).put("originType", "store");
                     ((ObjectNode) jsonNode).put("originName", store.getName());
                     ((ObjectNode) jsonNode).put("status", "Shipment has not left origin store");
@@ -101,18 +114,27 @@ public class HOShipments {
 
                 //find destination type
                 if (shipment.getDestinationType()==1) {
-                    Supplier supplier = supplierRespository.findById(shipment.getDestinationId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getDestinationId()+" exists!"));
+                    Supplier supplier = supplierList.stream()
+                            .filter(supplier1 -> supplier1.getSupplierId()==shipment.getOriginId())
+                            .findFirst()
+                            .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationType", "Supplier");
                     ((ObjectNode) jsonNode).put("destinationName", supplier.getName());
                 }
                 else if (shipment.getDestinationType()==2) {
                     ((ObjectNode) jsonNode).put("destinationType", "Warehouse");
-                    Warehouse warehouse = warehouseRepository.findById(shipment.getDestinationId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getDestinationId()+" exists!"));
+                    Warehouse warehouse = warehouseList.stream()
+                            .filter(warehouse1 -> warehouse1.getWarehouseId()==shipment.getOriginId())
+                            .findFirst()
+                            .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationName", warehouse.getName());
                 }
                 else if (shipment.getDestinationType()==3) {
                     ((ObjectNode) jsonNode).put("destinationType", "Store");
-                    Store store = storeRepository.findById(shipment.getDestinationId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getDestinationId()+" exists!"));
+                    Store store = storeList.stream()
+                            .filter(store1 -> store1.getStoreId()==shipment.getOriginId())
+                            .findFirst()
+                            .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationName", store.getName());
                 }
 
@@ -145,31 +167,46 @@ public class HOShipments {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND ,"There are no received supplier shipments for specified date rage");
         }
         else {
+            List<Supplier> supplierList = supplierRespository.findAll();
+            List<Warehouse> warehouseList = warehouseRepository.findAll();
+            List<Store> storeList = storeRepository.findAll();
+
             for (Shipment shipment : shipmentList) {
                 JsonNode jsonNode = mapper.convertValue(shipment, JsonNode.class);
 
                 //find origin type
                 if (shipment.getOriginType()==1) {
-                    Supplier supplier = supplierRespository.findById(shipment.getOriginId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getOriginId()+" exists!"));
+                    Supplier supplier = supplierList.stream()
+                            .filter(supplier1 -> supplier1.getSupplierId()==shipment.getOriginId())
+                            .findFirst()
+                            .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getOriginId()+" exists!"));
                     ((ObjectNode) jsonNode).put("originType", "Supplier");
                     ((ObjectNode) jsonNode).put("originName", supplier.getName());
-
                 }
                 else if (shipment.getOriginType()==2) {
-                    Warehouse warehouse = warehouseRepository.findById(shipment.getOriginId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getOriginId()+" exists!"));
+                    Warehouse warehouse = warehouseList.stream()
+                            .filter(warehouse1 -> warehouse1.getWarehouseId()==shipment.getOriginId())
+                            .findFirst()
+                            .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getOriginId()+" exists!"));
                     ((ObjectNode) jsonNode).put("originType", "Warehouse");
                     ((ObjectNode) jsonNode).put("originName", warehouse.getName());
 
                 }
                 else if (shipment.getOriginType()==3) {
-                    Store store = storeRepository.findById(shipment.getOriginId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getOriginId()+" exists!"));
+                    Store store = storeList.stream()
+                            .filter(store1 -> store1.getStoreId()==shipment.getOriginId())
+                            .findFirst()
+                            .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getOriginId()+" exists!"));
                     ((ObjectNode) jsonNode).put("originType", "store");
                     ((ObjectNode) jsonNode).put("originName", store.getName());
                 }
 
                 //find destination type
                 if (shipment.getDestinationType()==1) {
-                    Supplier supplier = supplierRespository.findById(shipment.getDestinationId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getDestinationId()+" exists!"));
+                    Supplier supplier = supplierList.stream()
+                            .filter(supplier1 -> supplier1.getSupplierId()==shipment.getOriginId())
+                            .findFirst()
+                            .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationType", "Supplier");
                     ((ObjectNode) jsonNode).put("destinationName", supplier.getName());
                     ((ObjectNode) jsonNode).put("sendTimestamp", shipment.getSendTimestamp().toString());
@@ -177,14 +214,20 @@ public class HOShipments {
                 }
                 else if (shipment.getDestinationType()==2) {
                     ((ObjectNode) jsonNode).put("destinationType", "Warehouse");
-                    Warehouse warehouse = warehouseRepository.findById(shipment.getDestinationId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getDestinationId()+" exists!"));
+                    Warehouse warehouse = warehouseList.stream()
+                            .filter(warehouse1 -> warehouse1.getWarehouseId()==shipment.getOriginId())
+                            .findFirst()
+                            .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationName", warehouse.getName());
                     ((ObjectNode) jsonNode).put("sendTimestamp", shipment.getSendTimestamp().toString());
                     ((ObjectNode) jsonNode).put("receivedTimestamp", shipment.getReceivedTimestamp().toString());
                 }
                 else if (shipment.getDestinationType()==3) {
                     ((ObjectNode) jsonNode).put("destinationType", "Store");
-                    Store store = storeRepository.findById(shipment.getDestinationId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getDestinationId()+" exists!"));
+                    Store store = storeList.stream()
+                            .filter(store1 -> store1.getStoreId()==shipment.getOriginId())
+                            .findFirst()
+                            .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getDestinationId()+" exists!"));
                     ((ObjectNode) jsonNode).put("destinationName", store.getName());
                     ((ObjectNode) jsonNode).put("sendTimestamp", shipment.getSendTimestamp().toString());
                     ((ObjectNode) jsonNode).put("receivedTimestamp", shipment.getReceivedTimestamp().toString());
