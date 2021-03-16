@@ -50,46 +50,44 @@ public class HOStores {
 
     @GetMapping("/getStore")
     public Store getStore(int storeId) {
-        Store store = storeRepository.findById(storeId).orElse(null);
-        if (store==null){
-            throw new ResponseStatusException(HttpStatus.valueOf(400), "Store doesnt Exist!");
-        }
-        else {
-            return store;
-        }
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No store with ID of :" + storeId + " exists"));
+        return store;
     }
 
     @GetMapping("/getStorePromotions")
     public List<Promotion> getStorePromotions(int storeId) {
-        Store store = storeRepository.findById(storeId).orElse(null);
-        if (store==null){
-            throw new ResponseStatusException(HttpStatus.valueOf(400), "Store doesnt Exist!");
-        }
-        else {
-            return store.getPromotionList();
-        }
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No store with ID of :" + storeId + " exists"));
+        return store.getPromotionList();
     }
 
     @GetMapping("/getStoreEmployees")
     public List<Employee> getStoreEmployees(int storeId) {
-        Store store = storeRepository.findById(storeId).orElse(null);
-        if (store==null){
-            throw new ResponseStatusException(HttpStatus.valueOf(400), "Store doesnt Exist!");
-        }
-        else {
-            return store.getEmployeesList();
-        }
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No store with ID of :" + storeId + " exists"));
+        return store.getEmployeesList();
     }
 
     @GetMapping("/getStoreQuantity")
     public List<StoreQuantity> getStoreQuantity(int storeId) {
-        Store store = storeRepository.findById(storeId).orElse(null);
-        if (store==null){
-            throw new ResponseStatusException(HttpStatus.valueOf(400), "Store doesnt Exist!");
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No store with ID of :" + storeId + " exists"));
+        return store.getStoreQuantityList();
+    }
+
+    @PostMapping("/updateSetStoreQuantity")
+    public ResponseEntity<String> updateSetStoreQuantity(@RequestBody String jsonString) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+        int storeId = wholeJSON.get("storeId").asInt();
+        String productId = wholeJSON.get("productId").asText();
+        int setQuantity = wholeJSON.get("setQuantity").asInt();
+
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No store with ID of :" + storeId + " exists"));
+        StoreQuantity storeQuantity = storeQuantityRepository.findByStore_StoreIdAndProduct_ProductId(storeId,productId);
+        if (storeQuantity==null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"no such product in store at store");
         }
-        else {
-            return store.getStoreQuantityList();
-        }
+        storeQuantity.setSetQuantity(setQuantity);
+        storeQuantityRepository.save(storeQuantity);
+        return new ResponseEntity<>("successfully added new store:\n"+store.toString(),HttpStatus.CREATED);
     }
 
     @PostMapping("/addStore")
@@ -104,51 +102,39 @@ public class HOStores {
         Store store = new Store(name,address,city,phoneNumber);
         storeRepository.saveAndFlush(store);
         return new ResponseEntity<>("successfully added new store:\n"+store.toString(),HttpStatus.CREATED);
-
     }
 
     @GetMapping("/deleteStore")
     public ResponseEntity<String> deleteStore(int storeId) {
-        Store store = storeRepository.findById(storeId).orElse(null);
-        if (store==null){
-            throw new ResponseStatusException(HttpStatus.valueOf(400), "Store doesnt Exist!");
-        }
-        else {
-            String address = store.getAddress();
-            storeRepository.deleteById(storeId);
-            return new ResponseEntity<>("successfully deleted store:\n"+address,HttpStatus.OK);
-        }
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No product with ID of :" + storeId + " exists"));
+
+        String address = store.getAddress();
+        storeRepository.deleteById(storeId);
+        return new ResponseEntity<>("successfully deleted store:\n" + address, HttpStatus.OK);
     }
 
 
     @GetMapping("/addOneStoreProduct")
     public ResponseEntity<String> addOneStoreProduct(int storeId, String productId) {
-        Store store = storeRepository.findById(storeId).orElse(null);
-        Product product = productRepository.findById(productId).orElse(null);
-        if (store==null){
-            throw new ResponseStatusException(HttpStatus.valueOf(400), "Store doesnt Exist!");
-        }
-        else if (product==null){
-            throw new ResponseStatusException(HttpStatus.valueOf(400), "Product doesnt Exist!");
-        }
-        else {
-            StoreQuantity storeQuantity = new StoreQuantity(store,product,0,0);
-            storeQuantityRepository.save(storeQuantity);
-            store.addStoreQuantity(storeQuantity);
-            storeRepository.save(store);
-            return new ResponseEntity<>("successfully added product: "+product.getProductName()+" into store: "+store.getAddress(),HttpStatus.OK);
-        }
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No product with ID of :" + storeId + " exists"));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No product with ID of :" + productId + " exists"));
+
+        StoreQuantity storeQuantity = new StoreQuantity(store, product, 0, 0);
+        storeQuantityRepository.save(storeQuantity);
+        store.addStoreQuantity(storeQuantity);
+        storeRepository.save(store);
+        return new ResponseEntity<>("successfully added product: " + product.getProductName() + " into store: " + store.getAddress(), HttpStatus.OK);
     }
+
+
 
     @GetMapping("/removeOneStoreProduct")
     public ResponseEntity<String> removeOneStoreProduct(int storeId, String productId) {
-        Store store = storeRepository.findById(storeId).orElse(null);
+        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No product with ID of :"+storeId+" exists"));
         StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProduct_ProductId(store,productId);
-        Product product = productRepository.findById(productId).orElse(null);
-        if (store==null){
-            throw new ResponseStatusException(HttpStatus.valueOf(400), "Store doesnt Exist!");
-        }
-        else if (storeQuantity==null){
+        Product product = productRepository.findById(productId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No product with ID of :"+productId+" exists"));
+
+        if (storeQuantity==null){
             throw new ResponseStatusException(HttpStatus.valueOf(400), "Product not in this store!");
         }
         else if (storeQuantity.getInstoreQuantity()!=0){

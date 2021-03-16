@@ -299,10 +299,8 @@ public class posEndpoint {
     @GetMapping("/refundSale")
     public ResponseEntity<String> refundSale(int saleId) {
 
-        Sale sale = saleRepository.findById(saleId).orElse(null);
-        if(sale==null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No sale exists");
-        }
+        Sale sale = saleRepository.findById(saleId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No sale exists"));
+
 
         List<SaleDetail> saleDetailList = sale.getSaleDetailList();
         saleDetailRepository.deleteAll(saleDetailList);
