@@ -31,7 +31,6 @@ public class ShipmentDetail implements Serializable {
     @JoinColumn(name = "PRODUCT_ID", nullable = false)
     private Product product;
 
-    @JsonIgnore
     @Transient
     private String productId;
 

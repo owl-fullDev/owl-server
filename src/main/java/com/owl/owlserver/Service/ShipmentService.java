@@ -76,15 +76,17 @@ public class ShipmentService {
 
         //input checking destination type and id
         if (destinationType < 2 || destinationType > 3) {
-            throw
-                    new ResponseStatusException(HttpStatus.BAD_REQUEST, "Destination type not acceptable!, must be between 3 and 3, value received: " + destinationType);
-        } else if (destinationType == 2) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Destination type not acceptable!, must be between 3 and 3, value received: " + destinationType);
+        }
+        else if (destinationType == 2) {
             Warehouse warehouse = warehouseRepository.findById(destinationId).orElseThrow(() ->
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "Origin Error: No warehouse with ID of: " + destinationId + " exists!"));
-        } else {
+        }
+        else {
             Store store = storeRepository.findById(destinationId).orElseThrow(() ->
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "Origin Error: No store with ID of: " + destinationId + " exists!"));
         }
+        System.out.println(shipment.toString());
 
         //extracts all product Ids form shipmentDetailList, stream is a for loop, foreach
         List<String> productIds = emptyIfNull(shipment.getShipmentDetailList()).stream()
