@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.Serializer.SalesAllSerializer;
+import com.owl.owlserver.model.Refund;
 import com.owl.owlserver.model.Sale;
 import com.owl.owlserver.model.Store;
 import com.owl.owlserver.repositories.*;
@@ -43,6 +44,9 @@ public class HOSales {
     StoreQuantityRepository storeQuantityRepository;
     @Autowired
     StoreRepository storeRepository;
+    @Autowired
+    RefundRepository refundRepository;
+
 
     //REST endpoints
     @GetMapping
@@ -72,6 +76,37 @@ public class HOSales {
             arrayNode.add(jsonNode);
         }
         return arrayNode;
+    }
+
+    @GetMapping("/getAllRefundsForSpecificPeriod")
+    public ArrayNode getAllRefundsForSpecificPeriod(String start, String end) {
+
+        LocalDate localDateStart = LocalDate.parse(start);
+        LocalDate localDateEnd = LocalDate.parse(end);
+
+        LocalDateTime startPeriod = localDateStart.atStartOfDay();
+        LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
+
+        List<Refund> refundList = refundRepository.getAllByRefundDateIsBetween(startPeriod, endPeriod);
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayNode arrayNode = mapper.createArrayNode();
+
+        if (refundList==null){
+            arrayNode.add("No refunds for specified time period");
+            return arrayNode;
+        }
+        else {
+            for (Refund refund : refundList) {
+                ObjectNode jsonNode = mapper.createObjectNode();
+                jsonNode.put("refundId",refund.getRefundId());
+                jsonNode.put("refundDate",refund.getRefundDate().toString());
+                jsonNode.put("refundRemarks",refund.getRemarks());
+                jsonNode.put("sale",refund.getRefundDetails());
+                System.out.println(refund.getRefundDetails());
+                arrayNode.add(jsonNode);
+            }
+            return arrayNode;
+        }
     }
 
     @GetMapping("/getAllSalesForSpecificPeriod")

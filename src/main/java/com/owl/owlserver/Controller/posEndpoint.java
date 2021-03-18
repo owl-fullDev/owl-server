@@ -3,10 +3,9 @@ package com.owl.owlserver.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.owl.owlserver.Service.RefundService;
 import com.owl.owlserver.Service.ShipmentService;
-import com.owl.owlserver.deserializer.ShipmentDeserializer;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.transaction.Transactional;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 
 @CrossOrigin
 @RestController
@@ -57,6 +52,8 @@ public class posEndpoint {
 
     @Autowired
     private ShipmentService shipmentService;
+    @Autowired
+    private RefundService refundService;
 
     //JACKSON object Mapper
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -229,7 +226,6 @@ public class posEndpoint {
     @PostMapping(value = "/receiveShipment")
     public ResponseEntity<String> receiveShipment(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
-
         int ShipmentId = wholeJSON.get("shipmentId").asInt();
         Shipment shipment = shipmentRepository.findById(ShipmentId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No shipment with specified ID exists"));
 
@@ -296,15 +292,14 @@ public class posEndpoint {
     }
 
     @Transactional
-    @GetMapping("/refundSale")
-    public ResponseEntity<String> refundSale(int saleId) {
+    @PostMapping("/refundSale")
+    public ResponseEntity<String> refundSale(@RequestBody String jsonString) throws JsonProcessingException {
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+        int saleId = wholeJSON.get("saleId").asInt();
+        String remarks = wholeJSON.get("remarks").asText();
 
-        Sale sale = saleRepository.findById(saleId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No sale exists"));
-
-
-        List<SaleDetail> saleDetailList = sale.getSaleDetailList();
-        saleDetailRepository.deleteAll(saleDetailList);
-        saleRepository.deleteById(saleId);
+        Sale sale = saleRepository.findById(saleId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No sale with Id of: "+saleId+" found"));
+        refundService.newRefund(sale,remarks);
         return new ResponseEntity<>("Sale successfully voided", HttpStatus.OK);
     }
 
@@ -316,9 +311,7 @@ public class posEndpoint {
         if (shipment==null){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All shipment details are empty!");
         }
-
         shipmentService.persistShipment(shipment);
-
         return new ResponseEntity<>("Successfully created new transfer shipment, ID: "+shipment.getShipmentId(), HttpStatus.OK);
     }
 
