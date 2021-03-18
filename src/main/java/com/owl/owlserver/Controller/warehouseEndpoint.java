@@ -220,7 +220,7 @@ public class warehouseEndpoint {
             shipmentDetailRepository.save(shipmentDetail);
 
             WarehouseQuantity warehouseQuantity = warehouseQuantityRepository.findByWarehouseWarehouseIdAndProduct_ProductId(warehouseId, shipmentDetail.getProduct().getProductId());
-            //first time recieving product
+            //first time receiving product
             if(warehouseQuantity==null){
                 Product product = productRepository.findById(shipmentDetail.getProduct().getProductId()).orElse(null);
                 warehouseQuantity = new WarehouseQuantity(warehouse,product,receivedQuantity);

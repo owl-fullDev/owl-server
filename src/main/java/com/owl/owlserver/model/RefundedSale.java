@@ -1,9 +1,6 @@
 package com.owl.owlserver.model;
 
-import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
-import com.owl.owlserver.repositories.PromotionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -12,14 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "SALE")
-public class Sale implements Serializable {
+@Table(name = "REFUNDED_SALE")
+public class RefundedSale implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "SALE_ID", nullable = false)
-    private int saleId;
-    
+    @Column(name = "REFUNDED_SALE_ID", nullable = false)
+    private int refundedSaleId;
+
     @Column(name = "EMPLOYEE_ID", nullable = false)
     private int employeeId;
 
@@ -27,10 +24,10 @@ public class Sale implements Serializable {
     private double grandTotal;
 
     @Column(name = "PICKUP_DATE")
-    private java.time.LocalDateTime pickupDate;
+    private LocalDateTime pickupDate;
 
     @Column(name = "INITIAL_DEPOSIT_DATE", nullable = false)
-    private java.time.LocalDateTime initialDepositDate;
+    private LocalDateTime initialDepositDate;
 
     @Column(name = "INITIAL_DEPOSIT_TYPE", nullable = false)
     private String initialDepositType;
@@ -39,7 +36,7 @@ public class Sale implements Serializable {
     private double initialDepositAmount;
 
     @Column(name = "FINAL_DEPOSIT_DATE")
-    private java.time.LocalDateTime finalDepositDate;
+    private LocalDateTime finalDepositDate;
 
     @Column(name = "FINAL_DEPOSIT_TYPE")
     private String finalDepositType;
@@ -67,15 +64,11 @@ public class Sale implements Serializable {
     @OneToMany(mappedBy = "sale", fetch = FetchType.EAGER)
     private List<SaleDetail> saleDetailList;
 
-    @OneToOne
-    @JoinColumn(name = "promo_sale_id")
-    private Sale promo_sale;
-
-    public Sale() {
+    public RefundedSale() {
         saleDetailList = new ArrayList<>();
     }
 
-    public Sale(int employeeId, Store store, double grandTotal, LocalDateTime initialDepositDate, String initialDepositType, double initialDepositAmount, boolean fullyPaid) {
+    public RefundedSale(int employeeId, Store store, double grandTotal, LocalDateTime initialDepositDate, String initialDepositType, double initialDepositAmount, boolean fullyPaid) {
         saleDetailList = new ArrayList<>();
         this.employeeId = employeeId;
         this.store = store;
@@ -106,8 +99,8 @@ public class Sale implements Serializable {
         this.customer = customer;
     }
 
-    public int getSaleId() {
-        return saleId;
+    public int getRefundedSaleId() {
+        return refundedSaleId;
     }
 
     public Promotion getPromotion() {
@@ -206,18 +199,10 @@ public class Sale implements Serializable {
         this.fullyPaid = fullyPaid;
     }
 
-    public Sale getPromo_sale() {
-        return promo_sale;
-    }
-
-    public void setPromo_sale(Sale promo_sale) {
-        this.promo_sale = promo_sale;
-    }
-
     @Override
     public String toString() {
         return "Sale{" +
-                "saleId=" + saleId +
+                "refundedSaleId=" + refundedSaleId +
                 ", employeeId=" + employeeId +
                 ", grandTotal=" + grandTotal +
                 ", pickupDate=" + pickupDate +

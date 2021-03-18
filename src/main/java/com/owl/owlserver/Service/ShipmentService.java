@@ -86,7 +86,6 @@ public class ShipmentService {
             Store store = storeRepository.findById(destinationId).orElseThrow(() ->
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "Origin Error: No store with ID of: " + destinationId + " exists!"));
         }
-        System.out.println(shipment.toString());
 
         //extracts all product Ids form shipmentDetailList, stream is a for loop, foreach
         List<String> productIds = emptyIfNull(shipment.getShipmentDetailList()).stream()
