@@ -78,37 +78,6 @@ public class HOSales {
         return arrayNode;
     }
 
-    @GetMapping("/getAllRefundsForSpecificPeriod")
-    public ArrayNode getAllRefundsForSpecificPeriod(String start, String end) {
-
-        LocalDate localDateStart = LocalDate.parse(start);
-        LocalDate localDateEnd = LocalDate.parse(end);
-
-        LocalDateTime startPeriod = localDateStart.atStartOfDay();
-        LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
-
-        List<Refund> refundList = refundRepository.getAllByRefundDateIsBetween(startPeriod, endPeriod);
-        ObjectMapper mapper = new ObjectMapper();
-        ArrayNode arrayNode = mapper.createArrayNode();
-
-        if (refundList==null){
-            arrayNode.add("No refunds for specified time period");
-            return arrayNode;
-        }
-        else {
-            for (Refund refund : refundList) {
-                ObjectNode jsonNode = mapper.createObjectNode();
-                jsonNode.put("refundId",refund.getRefundId());
-                jsonNode.put("refundDate",refund.getRefundDate().toString());
-                jsonNode.put("refundRemarks",refund.getRemarks());
-                jsonNode.put("sale",refund.getRefundDetails());
-                System.out.println(refund.getRefundDetails());
-                arrayNode.add(jsonNode);
-            }
-            return arrayNode;
-        }
-    }
-
     @GetMapping("/getAllSalesForSpecificPeriod")
     public ArrayNode getAllSalesForSpecificPeriod(String start, String end) throws JsonProcessingException {
 
@@ -203,5 +172,35 @@ public class HOSales {
         }
 
         return arrayNode;
+    }
+
+    @GetMapping("/getAllRefundsForSpecificPeriod")
+    public ArrayNode getAllRefundsForSpecificPeriod(String start, String end) {
+
+        LocalDate localDateStart = LocalDate.parse(start);
+        LocalDate localDateEnd = LocalDate.parse(end);
+
+        LocalDateTime startPeriod = localDateStart.atStartOfDay();
+        LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
+
+        List<Refund> refundList = refundRepository.getAllByRefundDateIsBetween(startPeriod, endPeriod);
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayNode arrayNode = mapper.createArrayNode();
+
+        if (refundList==null){
+            arrayNode.add("No refunds for specified time period");
+            return arrayNode;
+        }
+        else {
+            for (Refund refund : refundList) {
+                ObjectNode jsonNode = mapper.createObjectNode();
+                jsonNode.put("refundId",refund.getRefundId());
+                jsonNode.put("refundDate",refund.getRefundDate().toString());
+                jsonNode.put("refundRemarks",refund.getRemarks());
+                jsonNode.put("sale",refund.getRefundDetails());
+                arrayNode.add(jsonNode);
+            }
+            return arrayNode;
+        }
     }
 }

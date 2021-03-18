@@ -80,12 +80,12 @@ public class RefundService {
         }
 
         if (sale.getPromotion()!=null){
-            ObjectNode promotionNode = jsonNode.putObject("Promotion:");
+            ObjectNode promotionNode = jsonNode.putObject("Promotion");
             promotionNode.put("promotionId", sale.getPromotion().getPromotionId());
             promotionNode.put("promotionName", sale.getPromotion().getPromotionName());
         }
 
-        ObjectNode storeNode = jsonNode.putObject("Store:");
+        ObjectNode storeNode = jsonNode.putObject("Store");
         storeNode.put("storeId", sale.getStore().getStoreId());
         storeNode.put("storeName", sale.getStore().getName());
 
