@@ -270,9 +270,9 @@ public class posEndpoint {
                 storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity()+quantity);
                 shipmentDetail.setReceivedQuantity(quantity);
             }
-            shipmentDetailRepository.saveAll(shipmentDetailList);
-            storeQuantityRepository.saveAll(storeQuantityList);
         }
+        shipmentDetailRepository.saveAll(shipmentDetailList);
+        storeQuantityRepository.saveAll(storeQuantityList);
         shipment.setReceivedTimestamp(localPickUpTime);
         shipmentRepository.save(shipment);
         return new ResponseEntity<>("Shipment received by store!", HttpStatus.OK);

@@ -136,7 +136,7 @@ public class ShipmentService {
             storeQuantityRepository.saveAll(storeQuantityList);
         }
 
-        if (originType == 1) {
+        if (originType==1 || originType==3) {
             shipment.setSendTimestamp(LocalDateTime.now());
         }
 
