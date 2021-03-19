@@ -80,17 +80,17 @@ public class RefundService {
         }
 
         if (sale.getPromotion()!=null){
-            ObjectNode promotionNode = jsonNode.putObject("Promotion");
+            ObjectNode promotionNode = jsonNode.putObject("promotion");
             promotionNode.put("promotionId", sale.getPromotion().getPromotionId());
             promotionNode.put("promotionName", sale.getPromotion().getPromotionName());
         }
 
-        ObjectNode storeNode = jsonNode.putObject("Store");
+        ObjectNode storeNode = jsonNode.putObject("store");
         storeNode.put("storeId", sale.getStore().getStoreId());
         storeNode.put("storeName", sale.getStore().getName());
 
         ArrayNode arrayNode = objectMapper.valueToTree(sale.getSaleDetailList());
-        jsonNode.set("SaleDetails",arrayNode);
+        jsonNode.set("saleDetails",arrayNode);
 
         Refund newRefund = new Refund();
         newRefund.setRefundDetails(jsonNode.toString());
