@@ -1,11 +1,9 @@
 package com.owl.owlserver.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.owl.owlserver.model.Promotion;
 import com.owl.owlserver.model.Refund;
 import com.owl.owlserver.model.Sale;
 import com.owl.owlserver.model.SaleDetail;
@@ -23,14 +21,6 @@ import java.util.List;
 public class RefundService {
 
     //injecting repositories for database access
-    @Autowired
-    CustomerRepository customerRepository;
-    @Autowired
-    EmployeeRepository employeeRepository;
-    @Autowired
-    ProductRepository productRepository;
-    @Autowired
-    PromotionRepository promotionRepository;
     @Autowired
     SaleDetailRepository saleDetailRepository;
     @Autowired

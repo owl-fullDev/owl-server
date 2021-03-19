@@ -64,9 +64,6 @@ public class HOEmployees {
     public ResponseEntity<ArrayNode> getAllEmployees() {
         List<Employee> employeeList = employeeRepository.findAll();
         ArrayNode arrayNode = objectMapper.createArrayNode();
-        if (employeeList.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No employees exists");
-        }
         for (Employee employee: employeeList){
             JsonNode jsonNode = objectMapper.convertValue(employee, JsonNode.class);
             if (employee.getStore()!=null) {
@@ -104,20 +101,20 @@ public class HOEmployees {
 
     @PostMapping("/modifyEmployee")
     public ResponseEntity<String> modifyEmployee(@RequestBody String jsonString) throws JsonProcessingException {
+
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
         int employeeId = wholeJSON.get("employeeId").asInt();
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No employee with specified ID exists"));
+
         String jobTitle = wholeJSON.get("jobTitle").asText();
         String email = wholeJSON.get("email").asText();
         String phoneNumber = wholeJSON.get("phoneNumber").asText();
-        int storeId = wholeJSON.get("storeId").asInt();
-
-        Employee employee = employeeRepository.findById(employeeId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No employee with specified ID exists"));
-
         employee.setJobTitle(jobTitle);
         employee.setEmail(email);
         employee.setPhoneNumber(phoneNumber);
 
+        int storeId = wholeJSON.get("storeId").asInt();
         if (!(storeId==0)){
             Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No store with specified ID exists"));
             employee.setStore(store);
