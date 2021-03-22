@@ -243,49 +243,21 @@ public class posEndpoint {
         if (shipment.getDestinationType()!=3){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for a store!");
         }
-
-        int storeId = wholeJSON.get("storeId").asInt();
-        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
-
+        if (shipment.getDestinationId()!=wholeJSON.get("storeId").asInt()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for this store!");
+        }
         if (shipment.getReceivedTimestamp()!=null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment has already been received");
-        }
-
-        if (shipment.getDestinationId()!=storeId){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for this store!");
         }
 
         String zonePickUpTime = wholeJSON.get("receivedDate").asText();
         ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonePickUpTime, formatter);
         ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
         LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
-
-        List<ShipmentDetail> shipmentDetailList = shipment.getShipmentDetailList();
-        List<StoreQuantity> storeQuantityList = storeQuantityRepository.findAllByStore_StoreId(storeId);
-        for (ShipmentDetail shipmentDetail : shipmentDetailList){
-            Product product = shipmentDetail.getProduct();
-            int quantity = shipmentDetail.getQuantity();
-            shipmentDetail.setReceivedQuantity(quantity);
-            StoreQuantity storeQuantity = storeQuantityList.stream()
-                    .filter(storeQuantity1 -> storeQuantity1.getProduct().getProductId().equals(product.getProductId()))
-                    .findFirst()
-                    .orElse(null);
-
-            //first time receiving product
-            if (storeQuantity==null){
-                storeQuantity = new StoreQuantity(store,product,quantity,quantity);
-                storeQuantityList.add(storeQuantity);
-                shipmentDetail.setReceivedQuantity(quantity);
-            }
-            else {
-                storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity()+quantity);
-                shipmentDetail.setReceivedQuantity(quantity);
-            }
-        }
-        shipmentDetailRepository.saveAll(shipmentDetailList);
-        storeQuantityRepository.saveAll(storeQuantityList);
         shipment.setReceivedTimestamp(localPickUpTime);
-        shipmentRepository.save(shipment);
+
+        shipmentService.receiveInternalShipment(shipment);
+
         return new ResponseEntity<>("Shipment received by store!", HttpStatus.OK);
     }
 

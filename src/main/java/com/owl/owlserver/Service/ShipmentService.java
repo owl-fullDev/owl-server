@@ -151,14 +151,53 @@ public class ShipmentService {
                 .collect(Collectors.toList()));
     }
 
-    public void recieveShipment(Shipment shipment) {
+    public void receiveShipmentWarehouse(Shipment shipment, JsonNode receivedQuantityList) {
 
-        int destinationId = shipment.getDestinationId();
-        Warehouse destinationWarehouse = warehouseRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with specified ID exists"));
-        Store destinationStore = storeRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
 
     }
 
+    public void receiveInternalShipment(Shipment shipment) {
+
+        int destinationType = shipment.getDestinationType();
+        int destinationId = shipment.getDestinationId();
+
+        if(destinationType==2){
+            Warehouse destinationWarehouse = warehouseRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with specified ID exists"));
+
+        }
+
+        //receiving shipment in store
+        else if(destinationType==3){
+            Store destinationStore = storeRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
+
+            List<ShipmentDetail> shipmentDetailList = shipment.getShipmentDetailList();
+            List<StoreQuantity> storeQuantityList = storeQuantityRepository.findAllByStore_StoreId(destinationStore.getStoreId());
+            for (ShipmentDetail shipmentDetail : shipmentDetailList){
+                Product product = shipmentDetail.getProduct();
+                int quantity = shipmentDetail.getQuantity();
+                shipmentDetail.setReceivedQuantity(quantity);
+                StoreQuantity storeQuantity = storeQuantityList.stream()
+                        .filter(storeQuantity1 -> storeQuantity1.getProduct().getProductId().equals(product.getProductId()))
+                        .findFirst()
+                        .orElse(null);
+
+                //first time receiving product
+                if (storeQuantity==null){
+                    storeQuantity = new StoreQuantity(destinationStore,product,quantity,quantity);
+                    storeQuantityList.add(storeQuantity);
+                    shipmentDetail.setReceivedQuantity(quantity);
+                }
+                else {
+                    storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity()+quantity);
+                    shipmentDetail.setReceivedQuantity(quantity);
+                }
+            }
+            shipmentDetailRepository.saveAll(shipmentDetailList);
+            storeQuantityRepository.saveAll(storeQuantityList);
+            shipmentRepository.save(shipment);
+        }
+
+    }
 
     public ArrayNode getAllActiveShipments() {
         ObjectMapper mapper = new ObjectMapper();
