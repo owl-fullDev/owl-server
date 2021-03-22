@@ -50,7 +50,7 @@ public class Sale implements Serializable {
     @Column(name = "FULL_PAYMENT")
     private boolean fullyPaid;
 
-    @Column(name = "PROMO_SALE_ID")
+    @Column(name = "PROMO_SALE_ID", nullable = false)
     private int promotionParentSaleId;
 
     @JsonIgnore
