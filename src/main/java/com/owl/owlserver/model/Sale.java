@@ -53,7 +53,6 @@ public class Sale implements Serializable {
     @Column(name = "PROMO_SALE_ID", nullable = false)
     private int promotionParentSaleId;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "PROMOTION_ID")
     private Promotion promotion;
@@ -63,7 +62,6 @@ public class Sale implements Serializable {
     @JoinColumn(name = "STORE_ID", nullable = false)
     private Store store;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "CUSTOMER_ID", nullable = false)
     private Customer customer;
