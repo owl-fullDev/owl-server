@@ -161,9 +161,12 @@ public class ShipmentService {
         int destinationType = shipment.getDestinationType();
         int destinationId = shipment.getDestinationId();
 
+        if (shipment.getSendTimestamp()==null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Shipment has not left origin!");
+        }
+
         if(destinationType==2){
             Warehouse destinationWarehouse = warehouseRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with specified ID exists"));
-
         }
 
         //receiving shipment in store
