@@ -151,8 +151,9 @@ public class posEndpoint {
 
         //promotion check
         int promotionId = sale.get("promotionId").asInt();
+        Promotion promotion = null;
         if (promotionId != 0) {
-            promotionRepository.findById(promotionId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No promotion with specified ID exists"));
+            promotion = promotionRepository.findById(promotionId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No promotion with specified ID exists"));
         }
 
         //full payment or deposit
@@ -164,6 +165,9 @@ public class posEndpoint {
         //new sale
         Sale newSale = new Sale(employeeId, store, grandTotal, initialDepositDate, initialDepositType, initialDepositAmount, fullyPaid);
 
+        if (promotion!=null) {
+            newSale.setPromotion(promotion);
+        }
         int promotionParentSaleId = sale.get("promotionParentSaleId").asInt();
         if(promotionParentSaleId==-1) {
             if (promotionId == 1) {
