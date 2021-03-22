@@ -174,8 +174,14 @@ public class posEndpoint {
                 newSale.setPromotionParentSaleId(-1);
             }
         }
-        else{
+        else if(promotionParentSaleId!=0){
             newSale.setPromotionParentSaleId(promotionParentSaleId);
+            Sale parentSale = saleRepository.findById(promotionParentSaleId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No parent sale with specified ID exists"));
+            parentSale.setPromotionParentSaleId(0);
+            saleRepository.save(parentSale);
+        }
+        else if(promotionParentSaleId==0){
+            newSale.setPromotionParentSaleId(0);
         }
 
         customer.addSale(newSale);
