@@ -164,8 +164,14 @@ public class posEndpoint {
         //new sale
         Sale newSale = new Sale(employeeId, store, grandTotal, initialDepositDate, initialDepositType, initialDepositAmount, fullyPaid);
 
-        if(promotionId == 1){
-            newSale.setPromotionParentSaleId(0);
+        int promotionParentSaleId = sale.get("promotionParentSaleId").asInt();
+        if(promotionParentSaleId==0) {
+            if (promotionId == 1) {
+                newSale.setPromotionParentSaleId(0);
+            }
+        }
+        else{
+            newSale.setPromotionParentSaleId(promotionParentSaleId);
         }
 
         customer.addSale(newSale);
