@@ -50,6 +50,9 @@ public class Sale implements Serializable {
     @Column(name = "FULL_PAYMENT")
     private boolean fullyPaid;
 
+    @Column(name = "PROMO_SALE_ID")
+    private int promotionParentSaleId;
+
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "PROMOTION_ID")
@@ -66,10 +69,6 @@ public class Sale implements Serializable {
 
     @OneToMany(mappedBy = "sale", fetch = FetchType.EAGER)
     private List<SaleDetail> saleDetailList;
-
-    @OneToOne
-    @JoinColumn(name = "promo_sale_id")
-    private Sale promo_sale;
 
     public Sale() {
         saleDetailList = new ArrayList<>();
@@ -206,12 +205,12 @@ public class Sale implements Serializable {
         this.fullyPaid = fullyPaid;
     }
 
-    public Sale getPromo_sale() {
-        return promo_sale;
+    public int getPromotionParentSaleId() {
+        return promotionParentSaleId;
     }
 
-    public void setPromo_sale(Sale promo_sale) {
-        this.promo_sale = promo_sale;
+    public void setPromotionParentSaleId(int promotionParentSaleId) {
+        this.promotionParentSaleId = promotionParentSaleId;
     }
 
     @Override

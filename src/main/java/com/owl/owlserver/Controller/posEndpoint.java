@@ -163,6 +163,11 @@ public class posEndpoint {
 
         //new sale
         Sale newSale = new Sale(employeeId, store, grandTotal, initialDepositDate, initialDepositType, initialDepositAmount, fullyPaid);
+
+        if(promotionId == 1){
+            newSale.setPromotionParentSaleId(0);
+        }
+
         customer.addSale(newSale);
         newSale.setCustomer(customer);
         saleRepository.save(newSale);
@@ -313,6 +318,18 @@ public class posEndpoint {
         }
         shipmentService.persistShipment(shipment);
         return new ResponseEntity<>("Successfully created new transfer shipment, ID: "+shipment.getShipmentId(), HttpStatus.OK);
+    }
+
+    @GetMapping("/getPromotionalFirstSaleList")
+    public ResponseEntity<List<Sale>> getPromotionalFirstSaleList(int storeId) {
+
+        LocalDate localDate = LocalDate.now();
+
+        LocalDateTime startPeriod = localDate.atStartOfDay();
+        LocalDateTime endPeriod = localDate.atTime(LocalTime.MAX);
+
+        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndStoreStoreIdAndFullyPaidIs(startPeriod, endPeriod, storeId, true);
+        return new ResponseEntity<>(saleList, HttpStatus.OK);
     }
 
 }

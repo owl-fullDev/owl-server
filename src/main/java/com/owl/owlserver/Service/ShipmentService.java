@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -148,6 +149,14 @@ public class ShipmentService {
                 .peek(shipmentDetail -> shipmentDetail.setProduct(new Product(shipmentDetail.getProductId())))
                 .peek(shipmentDetail -> shipmentDetail.setShipment(shipment))
                 .collect(Collectors.toList()));
+    }
+
+    public void recieveShipment(Shipment shipment) {
+
+        int destinationId = shipment.getDestinationId();
+        Warehouse destinationWarehouse = warehouseRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with specified ID exists"));
+        Store destinationStore = storeRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
+
     }
 
 
