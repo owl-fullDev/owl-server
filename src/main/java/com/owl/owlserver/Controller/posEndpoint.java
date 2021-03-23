@@ -170,7 +170,6 @@ public class posEndpoint {
         }
         int promotionParentSaleId = sale.get("promotionParentSaleId").asInt();
         if(promotionParentSaleId<0) {
-            promotionParentSaleId = -promotionParentSaleId;
             newSale.setPromotionParentSaleId(promotionParentSaleId);
         }
         else if(promotionParentSaleId!=0){
