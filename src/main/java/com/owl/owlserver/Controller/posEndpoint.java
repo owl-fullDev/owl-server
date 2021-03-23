@@ -169,10 +169,8 @@ public class posEndpoint {
             newSale.setPromotion(promotion);
         }
         int promotionParentSaleId = sale.get("promotionParentSaleId").asInt();
-        if(promotionParentSaleId==-1) {
-            if (promotionId == 1) {
-                newSale.setPromotionParentSaleId(-1);
-            }
+        if(promotionParentSaleId<0) {
+            newSale.setPromotionParentSaleId(-promotionParentSaleId);
         }
         else if(promotionParentSaleId!=0){
             newSale.setPromotionParentSaleId(promotionParentSaleId);
@@ -309,14 +307,14 @@ public class posEndpoint {
     }
 
     @GetMapping("/getPromotionalFirstSaleList")
-    public ResponseEntity<List<Sale>> getPromotionalFirstSaleList(int storeId) {
+    public ResponseEntity<List<Sale>> getPromotionalFirstSaleList(int storeId, int promoId) {
 
         LocalDate localDate = LocalDate.now();
 
         LocalDateTime startPeriod = localDate.atStartOfDay();
         LocalDateTime endPeriod = localDate.atTime(LocalTime.MAX);
 
-        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndStoreStoreIdAndFullyPaidIsAndPromotionParentSaleId(startPeriod, endPeriod, storeId, true, -1);
+        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndStoreStoreIdAndFullyPaidIsAndPromotionParentSaleId(startPeriod, endPeriod, storeId, true, -promoId);
         return new ResponseEntity<>(saleList, HttpStatus.OK);
     }
 
