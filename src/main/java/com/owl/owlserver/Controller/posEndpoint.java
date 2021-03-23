@@ -170,7 +170,8 @@ public class posEndpoint {
         }
         int promotionParentSaleId = sale.get("promotionParentSaleId").asInt();
         if(promotionParentSaleId<0) {
-            newSale.setPromotionParentSaleId(-promotionParentSaleId);
+            promotionParentSaleId = -promotionParentSaleId;
+            newSale.setPromotionParentSaleId(promotionParentSaleId);
         }
         else if(promotionParentSaleId!=0){
             newSale.setPromotionParentSaleId(promotionParentSaleId);
@@ -313,6 +314,8 @@ public class posEndpoint {
 
         LocalDateTime startPeriod = localDate.atStartOfDay();
         LocalDateTime endPeriod = localDate.atTime(LocalTime.MAX);
+
+        promoId = -promoId;
 
         List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndStoreStoreIdAndFullyPaidIsAndPromotionParentSaleId(startPeriod, endPeriod, storeId, true, -promoId);
         return new ResponseEntity<>(saleList, HttpStatus.OK);
