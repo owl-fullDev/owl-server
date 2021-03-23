@@ -314,8 +314,6 @@ public class posEndpoint {
         LocalDateTime startPeriod = localDate.atStartOfDay();
         LocalDateTime endPeriod = localDate.atTime(LocalTime.MAX);
 
-        promoId = -promoId;
-
         List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndStoreStoreIdAndFullyPaidIsAndPromotionParentSaleId(startPeriod, endPeriod, storeId, true, -promoId);
         return new ResponseEntity<>(saleList, HttpStatus.OK);
     }
