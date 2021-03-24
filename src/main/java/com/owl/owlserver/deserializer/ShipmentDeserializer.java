@@ -47,7 +47,6 @@ public class ShipmentDeserializer extends StdDeserializer<Shipment> {
         JsonNode shipmentDetailsArray = wholeJson.get("shipmentDetails");
         int shipmentDetailsArrayLength = shipmentDetailsArray.size();
         List<String> productIdList = new ArrayList<>();
-        Product productx;
         for (int c = 0; c < shipmentDetailsArrayLength; c++) {
             productIdList.add(shipmentDetailsArray.get(c).get("productId").asText());
         }

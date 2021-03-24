@@ -26,7 +26,7 @@ public class Store implements Serializable {
     private String city;
 
     @Column(name = "PHONE_NUMBER", nullable = false)
-    private String phone_number;
+    private String phoneNumber;
 
     @JsonIgnore
     @ManyToMany

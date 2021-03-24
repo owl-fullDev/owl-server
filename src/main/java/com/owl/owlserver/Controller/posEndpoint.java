@@ -115,9 +115,34 @@ public class posEndpoint {
         return new ResponseEntity<>(saleRepository.getAllByStoreStoreIdAndPickupDateEquals(storeId, null), HttpStatus.OK);
     }
 
+//    @Transactional
+//    @PostMapping(value = "/newSaleTest")
+//    public ResponseEntity<String> newSaleTest(@RequestBody String jsonString) throws JsonProcessingException {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+//
+//        //new customer or existing customer validation
+//        int customerId = wholeJSON.get("customerId").asInt();
+//        Customer customer;
+//        if (customerId == 0) {
+//            JsonNode customerJSON = wholeJSON.get("newCustomer");
+//            customer = objectMapper.treeToValue(customerJSON, Customer.class);
+//        }
+//        else {
+//            customer = customerRepository.findById(customerId).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No customer with specified ID exist"));
+//        }
+//
+//        //sale deserialization
+//        Sale newSale = objectMapper.treeToValue(wholeJSON.get("sale"), Sale.class);
+//        customer.addSale(newSale);
+//        newSale.setCustomer(customer);
+//
+//        return new ResponseEntity<>("new sale created\n"+newSale+" \n\n "+newSale.getSaleDetailList().toString(), HttpStatus.OK);
+//    }
+
     @Transactional
     @PostMapping(value = "/newSale")
-    public ResponseEntity<String> newSale(@RequestBody String jsonString) throws JsonProcessingException {
+    public ResponseEntity<Integer> newSale(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
 
         //new customer or existing customer validation
@@ -209,7 +234,7 @@ public class posEndpoint {
                 storeQuantityRepository.save(storeQuantity);
             }
         }
-        return new ResponseEntity<>("new sale created", HttpStatus.OK);
+        return new ResponseEntity<>(newSale.getSaleId(), HttpStatus.OK);
     }
 
     @Transactional
