@@ -56,7 +56,7 @@ public class Store implements Serializable {
         storeQuantityList = new ArrayList<>();
     }
 
-    public Store(String name, String address, String city, String phone_number) {
+    public Store(String name, String address, String city, String phoneNumber) {
         saleList = new ArrayList<>();
         promotionList = new ArrayList<>();
         employeesList = new ArrayList<>();
@@ -64,7 +64,7 @@ public class Store implements Serializable {
         this.name = name;
         this.address = address;
         this.city = city;
-        this.phone_number = phone_number;
+        this.phoneNumber = phoneNumber;
     }
 
     public List<Promotion> getPromotionList() {
@@ -143,12 +143,12 @@ public class Store implements Serializable {
         this.city = city;
     }
 
-    public String getPhone_number() {
-        return phone_number;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setPhone_number(String phone_number) {
-        this.phone_number = phone_number;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     @Override
@@ -158,7 +158,7 @@ public class Store implements Serializable {
                 ", name='" + name + '\'' +
                 ", address='" + address + '\'' +
                 ", city='" + city + '\'' +
-                ", phone_number='" + phone_number + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
                 '}';
     }
 }
