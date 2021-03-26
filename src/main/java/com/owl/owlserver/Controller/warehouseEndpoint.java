@@ -5,8 +5,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.owl.owlserver.DTO.ShipmentDTO;
+import com.owl.owlserver.Service.ShipmentService;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
+import io.vavr.Tuple;
+import io.vavr.Tuple3;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +22,10 @@ import java.time.format.DateTimeFormatter;
 
 import java.time.*;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @CrossOrigin
 @RestController
@@ -52,6 +60,9 @@ public class warehouseEndpoint {
     @Autowired
     SupplierRespository supplierRespository;
 
+    @Autowired
+    ShipmentService shipmentService;
+
     //JACKSON object Mapper
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -66,115 +77,24 @@ public class warehouseEndpoint {
     }
 
     @GetMapping("/getAllSupplierShipments")
-    public ResponseEntity<ArrayNode> getAllSupplierShipments(){
-        List<Shipment> shipmentList = shipmentRepository.findAllByReceivedTimestampIsNullAndOriginTypeEqualsAndDestinationTypeEquals(1,2);
-        ArrayNode arrayNode = objectMapper.createArrayNode();
-
-        if (shipmentList.isEmpty()){
-            return new ResponseEntity<>(arrayNode, HttpStatus.OK);
-        }
-
-        List<Supplier> supplierList = supplierRespository.findAll();
-        for (Shipment shipment: shipmentList){
-            JsonNode jsonNode = objectMapper.convertValue(shipment, JsonNode.class);
-            Supplier supplier = supplierList.stream()
-                    .filter(supplier1 -> supplier1.getSupplierId()==shipment.getOriginId())
-                    .findFirst()
-                    .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No supplier with ID of: "+shipment.getOriginId()+" exists!"));
-            ((ObjectNode) jsonNode).put("supplierName", supplier.getName());
-            ((ObjectNode) jsonNode).put("supplierAddress", supplier.getAddress());
-            ((ObjectNode) jsonNode).put("sendTimestamp", shipment.getSendTimestamp().toString());
-            arrayNode.add(jsonNode);
-        }
-
-        return new ResponseEntity<>(arrayNode, HttpStatus.OK);
+    public List<ShipmentDTO> getAllSupplierShipments(@RequestParam int warehouseId) {
+        Warehouse warehouse = warehouseRepository.findById(warehouseId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No Warehouse with ID of: " +warehouseId+ " exists!"));
+        List<Shipment> shipmentList = shipmentRepository.findAllByReceivedTimestampIsNullAndOriginTypeEqualsAndDestinationTypeEqualsAndDestinationId(1,2, warehouseId);
+        return shipmentService.shipmentToDTO(shipmentList);
     }
 
     @GetMapping("/getAllWarehouseAndStoreShipments")
-    public ResponseEntity<ArrayNode> getAllWarehouseAndStoreShipments() throws JsonProcessingException {
-        List<Shipment> shipmentList = shipmentRepository.findAllByReceivedTimestampIsNullAndOriginTypeIsNotAndDestinationTypeIs(1, 2);
-
-        ArrayNode arrayNode = objectMapper.createArrayNode();
-
-        if (shipmentList.isEmpty()){
-            return new ResponseEntity<>(arrayNode, HttpStatus.OK);
-        }
-
-        List<Warehouse> warehouseList = warehouseRepository.findAll();
-        List<Store> storeList = storeRepository.findAll();
-
-        for (Shipment shipment: shipmentList){
-            JsonNode jsonNode = objectMapper.convertValue(shipment, JsonNode.class);
-
-            if (shipment.getOriginType()==2) {
-                Warehouse warehouse = warehouseList.stream()
-                        .filter(warehouse1 -> warehouse1.getWarehouseId()==shipment.getOriginId())
-                        .findFirst()
-                        .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getOriginId()+" exists!"));
-                ((ObjectNode) jsonNode).put("originType", "warehouse");
-                ((ObjectNode) jsonNode).put("originName", warehouse.getName());
-                ((ObjectNode) jsonNode).put("originAddress", warehouse.getAddress());
-                ((ObjectNode) jsonNode).put("sendTimestamp", shipment.getSendTimestamp().toString());
-                arrayNode.add(jsonNode);
-            }
-
-            else if (shipment.getOriginType()==3){
-                Store store = storeList.stream()
-                        .filter(store1 -> store1.getStoreId()==shipment.getOriginId())
-                        .findFirst()
-                        .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getOriginId()+" exists!"));
-                ((ObjectNode) jsonNode).put("originType", "store");
-                ((ObjectNode) jsonNode).put("originName", store.getName());
-                ((ObjectNode) jsonNode).put("originAddress", store.getAddress());
-                ((ObjectNode) jsonNode).put("sendTimestamp", shipment.getSendTimestamp().toString());
-                arrayNode.add(jsonNode);
-            }
-        }
-        return new ResponseEntity<>(arrayNode, HttpStatus.OK);
+    public List<ShipmentDTO> getAllWarehouseAndStoreShipments(@RequestParam int warehouseId) {
+        Warehouse warehouse = warehouseRepository.findById(warehouseId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No Warehouse with ID of: " +warehouseId+ " exists!"));
+        List<Shipment> shipmentList = shipmentRepository.findAllByReceivedTimestampIsNullAndOriginTypeIsNotAndDestinationTypeIsAndDestinationId(1, 2, warehouseId);
+        return shipmentService.shipmentToDTO(shipmentList);
     }
 
     @GetMapping("/getAllOrderedShipments")
-    public ResponseEntity<ArrayNode> getAllOrderedShipments(@RequestParam int warehouseId) throws JsonProcessingException {
+    public List<ShipmentDTO> getAllOrderedShipments(@RequestParam int warehouseId) {
         Warehouse warehouse = warehouseRepository.findById(warehouseId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No Warehouse with ID of: " +warehouseId+ " exists!"));
         List<Shipment> shipmentList = shipmentRepository.findAllByReceivedTimestampIsNullAndSendTimestampIsNullAndOriginTypeIsAndOriginIdIs(2, warehouseId);
-
-        ArrayNode arrayNode = objectMapper.createArrayNode();
-        if (shipmentList.isEmpty()){
-            return new ResponseEntity<>(arrayNode, HttpStatus.OK);
-        }
-
-        List<Warehouse> warehouseList = warehouseRepository.findAll();
-        List<Store> storeList = storeRepository.findAll();
-
-        for (Shipment shipment: shipmentList){
-            JsonNode jsonNode = objectMapper.convertValue(shipment, JsonNode.class);
-
-            ((ObjectNode) jsonNode).put("originName", warehouse.getName());
-            ((ObjectNode) jsonNode).put("originAddress", warehouse.getAddress());
-
-            if (shipment.getDestinationType()==2) {
-                Warehouse warehouse2 = warehouseList.stream()
-                        .filter(warehouse1 -> warehouse1.getWarehouseId()==shipment.getDestinationId())
-                        .findFirst()
-                        .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with ID of: "+shipment.getDestinationId()+" exists!"));
-                ((ObjectNode) jsonNode).put("destinationType", "Gudang");
-                ((ObjectNode) jsonNode).put("destinationName", warehouse2.getName());
-                ((ObjectNode) jsonNode).put("destinationAddress", warehouse2.getAddress());
-                arrayNode.add(jsonNode);
-            }
-
-            else if (shipment.getDestinationType()==3){
-                Store store = storeList.stream()
-                        .filter(store1 -> store1.getStoreId()==shipment.getDestinationId())
-                        .findFirst()
-                        .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with ID of: "+shipment.getDestinationId()+" exists!"));
-                ((ObjectNode) jsonNode).put("destinationType", "Toko");
-                ((ObjectNode) jsonNode).put("destinationName", store.getName());
-                ((ObjectNode) jsonNode).put("destinationAddress", store.getAddress());
-                arrayNode.add(jsonNode);
-            }
-        }
-        return new ResponseEntity<>(arrayNode, HttpStatus.OK);
+        return shipmentService.shipmentToDTO(shipmentList);
     }
 
     @PostMapping("/receiveShipment")
@@ -301,7 +221,7 @@ public class warehouseEndpoint {
         Shipment shipment = shipmentRepository.findById(shipmentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No shipment with specified ID exists"));
 
         shipment.setSendTimestamp(LocalDateTime.now());
-        shipmentRepository.saveAndFlush(shipment);
+        shipmentRepository.save(shipment);
         return new ResponseEntity<>("Shipment has been sent", HttpStatus.OK);
     }
 }

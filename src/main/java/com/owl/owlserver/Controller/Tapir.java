@@ -1,17 +1,26 @@
 package com.owl.owlserver.Controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.owl.owlserver.model.Customer;
+import com.owl.owlserver.model.Sale;
+import com.owl.owlserver.repositories.CustomerRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import javax.transaction.Transactional;
 
 @CrossOrigin
 @RestController
 @RequestMapping("/tapirRestApi")
 public class Tapir {
+
+    @Autowired
+    CustomerRepository customerRepository;
 
     //REST endpoints
     @GetMapping
@@ -46,6 +55,48 @@ public class Tapir {
         return "Happy birthday broooooooooooo";
     }
 
+    @PostMapping("/test")
+    public String test(@RequestBody TestEntity testEntity) throws JsonProcessingException {
+         return testEntity.toString();
+    }
+
+    @PostMapping("/test2")
+    public String test2(@RequestBody String jsonString) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+        JsonNode testJson = wholeJSON.get("testEntity");
+
+        try {
+            TestEntity testEntity = objectMapper.treeToValue(testJson,TestEntity.class);
+            return testEntity.toString();
+        }
+        catch (Exception e){
+            return e.toString();
+        }
+    }
+
+    @Transactional
+    @PostMapping(value = "/newSale")
+    public String newSale(@RequestBody String jsonString) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+
+        //new customer or existing customer validation
+        int customerId = wholeJSON.get("customerId").asInt();
+        Customer customer;
+        if (customerId == 0) {
+            JsonNode customerJSON = wholeJSON.get("newCustomer");
+            customer = objectMapper.treeToValue(customerJSON, Customer.class);
+        } else {
+            customer = customerRepository.findById(customerId).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No customer with specified ID exist"));
+        }
+
+        //sale deserialization
+        JsonNode sale = wholeJSON.get("sale");
+        Sale newSale = objectMapper.treeToValue(sale,Sale.class);
+        return newSale.toString();
+    }
+}
 //    //to set custom field in deserializing
 //    @GetMapping("/getProduct")
 //    public String getProduct(@RequestParam String productId){
@@ -57,4 +108,4 @@ public class Tapir {
 
     //to throw proper errors:
 //    orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No Sale with specified ID exists"));
-}
+

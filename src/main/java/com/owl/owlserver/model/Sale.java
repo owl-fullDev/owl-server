@@ -27,10 +27,10 @@ public class Sale implements Serializable {
     private double grandTotal;
 
     @Column(name = "PICKUP_DATE")
-    private java.time.LocalDateTime pickupDate;
+    private LocalDateTime pickupDate;
 
     @Column(name = "INITIAL_DEPOSIT_DATE", nullable = false)
-    private java.time.LocalDateTime initialDepositDate;
+    private LocalDateTime initialDepositDate;
 
     @Column(name = "INITIAL_DEPOSIT_TYPE", nullable = false)
     private String initialDepositType;
@@ -39,7 +39,7 @@ public class Sale implements Serializable {
     private double initialDepositAmount;
 
     @Column(name = "FINAL_DEPOSIT_DATE")
-    private java.time.LocalDateTime finalDepositDate;
+    private LocalDateTime finalDepositDate;
 
     @Column(name = "FINAL_DEPOSIT_TYPE")
     private String finalDepositType;

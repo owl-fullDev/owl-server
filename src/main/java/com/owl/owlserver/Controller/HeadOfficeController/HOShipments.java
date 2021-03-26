@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.owl.owlserver.DTO.ShipmentDTO;
 import com.owl.owlserver.Service.ShipmentService;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
@@ -54,13 +55,28 @@ public class HOShipments {
     }
 
     @GetMapping("/getAllActiveShipments")
-    public ResponseEntity<ArrayNode> getAllActiveShipments() {
-        return new ResponseEntity<>(shipmentService.getAllActiveShipments(),HttpStatus.OK);
+    public List<ShipmentDTO> getAllActiveShipments() {
+        List<Shipment> shipmentList = shipmentRepository.findAllByReceivedTimestampIsNull();
+        return shipmentService.shipmentToDTO(shipmentList);
     }
 
     @GetMapping("/getReceivedShipmentsPeriod")
-    public ResponseEntity<ArrayNode> getReceivedSupplierShipmentsPeriod(String start, String end, boolean isSupplier){
-        return new ResponseEntity<>(shipmentService.getReceivedShipmentsPeriod(start,end,isSupplier),HttpStatus.OK);
+    public List<ShipmentDTO> getReceivedSupplierShipmentsPeriod(String start, String end, boolean isSupplier){
+
+        LocalDate localDateStart = LocalDate.parse(start);
+        LocalDate localDateEnd = LocalDate.parse(end);
+        LocalDateTime startPeriod = localDateStart.atStartOfDay();
+        LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
+
+        List<Shipment> shipmentList;
+        if (isSupplier) {
+            shipmentList = shipmentRepository.findAllByReceivedTimestampIsNotNullAndReceivedTimestampIsBetweenAndOriginTypeIsOrderByReceivedTimestamp(startPeriod, endPeriod, 1);
+        }
+        else {
+            shipmentList = shipmentRepository.findAllByReceivedTimestampIsNotNullAndReceivedTimestampIsBetweenAndOriginTypeIsNotOrderByReceivedTimestamp(startPeriod, endPeriod, 1);
+        }
+
+        return shipmentService.shipmentToDTO(shipmentList);
     }
 
     @GetMapping("/checkProductId")

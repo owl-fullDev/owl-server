@@ -4,8 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.owl.owlserver.DTO.ShipmentDTO;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
+import io.vavr.Tuple;
+import io.vavr.Tuple3;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +21,10 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
@@ -148,6 +154,65 @@ public class ShipmentService {
                 //peek means accessing the element in the array, MAP means transform/modify, peek means accesing
                 .peek(shipmentDetail -> shipmentDetail.setProduct(new Product(shipmentDetail.getProductId())))
                 .peek(shipmentDetail -> shipmentDetail.setShipment(shipment))
+                .collect(Collectors.toList()));
+    }
+
+    public List<ShipmentDTO> shipmentToDTO(List<Shipment> shipmentList){
+        Map<Integer, Supplier> suppliers = supplierRespository.findAll().stream().collect(Collectors.toMap(s -> s.getSupplierId(), Function.identity()));
+        Map<Integer, Warehouse> warehouses = warehouseRepository.findAll().stream().collect(Collectors.toMap(w -> w.getWarehouseId(), Function.identity()));
+        Map<Integer, Store> stores = storeRepository.findAll().stream().collect(Collectors.toMap(s -> s.getStoreId(), Function.identity()));
+
+        BiFunction<Integer, Integer, Tuple3<String, String, String>> fun = (type, typeId) -> {
+
+            switch (type) {
+                case 1:
+                    Supplier supplier = suppliers.get(typeId);
+                    return Tuple.of("supplier", supplier.getName(), supplier.getAddress());
+
+                case 2:
+                    Warehouse warehouse = warehouses.get(typeId);
+                    return Tuple.of("warehouse", warehouse.getName(), warehouse.getAddress());
+
+                case 3:
+                    Store store = stores.get(typeId);
+                    return Tuple.of("store", store.getName(), store.getAddress());
+
+                default:
+                    throw new RuntimeException();
+            }
+        };
+
+        return (shipmentList.stream()
+                .map(shipment -> {
+                    Tuple3<String, String, String> originDetail = fun.apply(shipment.getOriginType(), shipment.getOriginId());
+                    Tuple3<String, String, String> destinationDetail = fun.apply(shipment.getDestinationType(), shipment.getDestinationId());
+
+                    String status;
+                    if (shipment.getSendTimestamp()!=null&&shipment.getReceivedTimestamp()==null){
+                        status = "Shipment is being delivered";
+                    }
+                    else if (shipment.getSendTimestamp()==null){
+                        status = "Shipment has not yet left origin";
+                    }
+                    else
+                        status = "Shipment has been received by destination";
+
+                    return ShipmentDTO.builder()
+                            .shipmentId(shipment.getShipmentId())
+                            .sendTimestamp(shipment.getSendTimestamp())
+                            .receivedTimestamp(shipment.getReceivedTimestamp())
+                            .originId(shipment.getOriginId())
+                            .originType(originDetail._1)
+                            .originName(originDetail._2)
+                            .originAddress(originDetail._3)
+                            .destinationId(shipment.getDestinationId())
+                            .destinationType(destinationDetail._1)
+                            .destinationName(destinationDetail._2)
+                            .destinationAddress(destinationDetail._3)
+                            .shipmentDetailList(shipment.getShipmentDetailList())
+                            .status(status)
+                            .build();
+                })
                 .collect(Collectors.toList()));
     }
 
