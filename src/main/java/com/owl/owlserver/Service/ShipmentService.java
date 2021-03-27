@@ -70,13 +70,16 @@ public class ShipmentService {
         //input checking origin type and id
         if (originType < 1 || originType > 3) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Origin type not acceptable!, must be between 1 and 3, value received: " + originType);
-        } else if (originType == 1) {
+        }
+        else if (originType == 1) {
             Supplier supplier = supplierRespository.findById(originId).orElseThrow(() ->
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "Origin Error: No supplier with ID of: " + originId + " exists!"));
-        } else if (originType == 2) {
+        }
+        else if (originType == 2) {
             Warehouse warehouse = warehouseRepository.findById(originId).orElseThrow(() ->
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "Origin Error: No warehouse with ID of: " + originId + " exists!"));
-        } else {
+        }
+        else {
             Store store = storeRepository.findById(originId).orElseThrow(() ->
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "Origin Error: No store with ID of: " + originId + " exists!"));
         }

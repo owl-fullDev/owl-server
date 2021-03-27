@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.DTO.NewSaleDTO;
 import com.owl.owlserver.Service.RefundService;
+import com.owl.owlserver.Service.SaleService;
 import com.owl.owlserver.Service.ShipmentService;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
@@ -55,6 +56,8 @@ public class posEndpoint {
     private ShipmentService shipmentService;
     @Autowired
     private RefundService refundService;
+    @Autowired
+    private SaleService saleService;
 
     //JACKSON object Mapper
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -117,110 +120,11 @@ public class posEndpoint {
     }
 
     @Transactional
-    @PostMapping(value = "/newSaleTest")
-    public ResponseEntity<String> newSaleTest(@RequestBody NewSaleDTO newSaleDTO) throws JsonProcessingException {
-
-
-        return new ResponseEntity<>(newSaleDTO.toString(), HttpStatus.OK);
-    }
-
-    @Transactional
     @PostMapping(value = "/newSale")
-    public ResponseEntity<Integer> newSale(@RequestBody String jsonString) throws JsonProcessingException {
-        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+    public ResponseEntity<String> newSaleTest(@RequestBody NewSaleDTO newSaleDTO)  {
 
-        //todo set customerId, and promotionId to null iff nothing to set
-
-        //new customer or existing customer validation
-        int customerId = wholeJSON.get("customerId").asInt();
-        Customer customer;
-        if (customerId == 0) {
-            JsonNode customerJSON = wholeJSON.get("newCustomer");
-            customer = objectMapper.treeToValue(customerJSON, Customer.class);
-            customerRepository.save(customer);
-        }
-        else {
-            customer = customerRepository.findById(customerId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No customer with specified ID exist"));
-        }
-
-        //sale deserialization
-        JsonNode sale = wholeJSON.get("sale");
-        String initialDepositType = sale.get("initialDepositType").asText();
-
-        String initialDepositDateStr = sale.get("initialDepositDate").asText();
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(initialDepositDateStr, formatter);
-        ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
-        LocalDateTime initialDepositDate = convertedTime.toLocalDateTime();
-
-        //store check
-        int storeId = sale.get("storeId").asInt();
-        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No store with specified ID exists"));
-
-        //employee check
-        int employeeId = sale.get("employeeId").asInt();
-        Employee employee = employeeRepository.findById(employeeId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No employee with specified ID exists"));
-
-        //promotion check
-        int promotionId = sale.get("promotionId").asInt();
-        Promotion promotion = null;
-        if (promotionId != 0) {
-            promotion = promotionRepository.findById(promotionId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No promotion with specified ID exists"));
-        }
-
-        //full payment or deposit
-        double grandTotal = sale.get("grandTotal").asDouble();
-        double initialDepositAmount = sale.get("initialDepositAmount").asDouble();
-        boolean fullyPaid;
-        fullyPaid = !(grandTotal > initialDepositAmount);
-
-        //new sale
-        Sale newSale = new Sale(employeeId, store, grandTotal, initialDepositDate, initialDepositType, initialDepositAmount, fullyPaid);
-
-        if (promotion!=null) {
-            newSale.setPromotion(promotion);
-        }
-        int promotionParentSaleId = sale.get("promotionParentSaleId").asInt();
-        if(promotionParentSaleId<0) {
-            newSale.setPromotionParentSaleId(promotionParentSaleId);
-        }
-        else if(promotionParentSaleId!=0){
-            newSale.setPromotionParentSaleId(promotionParentSaleId);
-            Sale parentSale = saleRepository.findById(promotionParentSaleId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No parent sale with specified ID exists"));
-            parentSale.setPromotionParentSaleId(0);
-            saleRepository.save(parentSale);
-        }
-        else if(promotionParentSaleId==0){
-            newSale.setPromotionParentSaleId(0);
-        }
-
-        customer.addSale(newSale);
-        newSale.setCustomer(customer);
-        saleRepository.save(newSale);
-
-        //saleDetails deserialization
-        JsonNode products = wholeJSON.get("products");
-        int itemList = wholeJSON.get("itemsSold").asInt();
-
-        for (int i = 0; i < itemList; i++) {
-            String productId = products.get(i).get("productId").asText();
-            int quantity = products.get(i).get("quantity").asInt();
-            Product product = productRepository.findById(productId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No product with specified ID exists"));
-            SaleDetail newSaleDetail = new SaleDetail(product, quantity);
-            newSale.addSaleDetail(newSaleDetail);
-            newSaleDetail.setSale(newSale);
-            saleDetailRepository.save(newSaleDetail);
-
-            //if product purchased is NOT a custom lens, decrease in-store quantity
-            if (!(product.getProductId().startsWith("CL"))){
-                StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProduct_ProductId(store, productId);
-                if (storeQuantity.getInstoreQuantity()-quantity<0){
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough of product in stock in store");
-                }
-                storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity() - quantity);
-                storeQuantityRepository.save(storeQuantity);
-            }
-        }
-        return new ResponseEntity<>(newSale.getSaleId(), HttpStatus.OK);
+        saleService.newSale(newSaleDTO);
+        return new ResponseEntity<>("New Sale sucessfull", HttpStatus.OK);
     }
 
     @Transactional

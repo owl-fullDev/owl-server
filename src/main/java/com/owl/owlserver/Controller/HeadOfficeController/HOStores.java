@@ -130,8 +130,7 @@ public class HOStores {
             throw new ResponseStatusException(HttpStatus.valueOf(400), "There still exists product in stock in the store!");
         }
         else {
-            storeQuantity.setStore(null);
-            storeQuantityRepository.save(storeQuantity);
+            storeQuantityRepository.delete(storeQuantity);
             store.removeStoreQuantity(storeQuantity);
             storeRepository.save(store);
             return new ResponseEntity<>("successfully removed product: "+product.getProductName()+" from store: "+store.getAddress(),HttpStatus.OK);

@@ -29,7 +29,8 @@ public class SaleDetail implements Serializable {
     public SaleDetail() {
     }
 
-    public SaleDetail(Product product, int quantity) {
+    public SaleDetail(Sale sale, Product product, int quantity) {
+        this.sale = sale;
         this.product = product;
         this.quantity = quantity;
     }

@@ -4,15 +4,17 @@ package com.owl.owlserver.DTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
-public class Sale {
+public class SaleDTO {
 
     @JsonProperty("promotionId")
     public Integer promotionId;
     @JsonProperty("promotionParentSaleId")
     public Integer promotionParentSaleId;
     @JsonProperty("grandTotal")
-    public String grandTotal;
+    public Double grandTotal;
     @JsonProperty("employeeId")
     public Integer employeeId;
     @JsonProperty("storeId")
@@ -22,6 +24,8 @@ public class Sale {
     @JsonProperty("initialDepositType")
     public String initialDepositType;
     @JsonProperty("initialDepositAmount")
-    public String initialDepositAmount;
+    public Double initialDepositAmount;
 
+    @JsonProperty("products")
+    public List<SaleDetailDTO> saleDetailDTOS;
 }

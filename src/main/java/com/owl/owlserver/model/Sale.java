@@ -3,6 +3,7 @@ package com.owl.owlserver.model;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import com.owl.owlserver.repositories.PromotionRepository;
+import lombok.Builder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
@@ -71,17 +72,6 @@ public class Sale implements Serializable {
 
     public Sale() {
         saleDetailList = new ArrayList<>();
-    }
-
-    public Sale(int employeeId, Store store, double grandTotal, LocalDateTime initialDepositDate, String initialDepositType, double initialDepositAmount, boolean fullyPaid) {
-        saleDetailList = new ArrayList<>();
-        this.employeeId = employeeId;
-        this.store = store;
-        this.grandTotal = grandTotal;
-        this.initialDepositDate = initialDepositDate;
-        this.initialDepositType = initialDepositType;
-        this.initialDepositAmount = initialDepositAmount;
-        this.fullyPaid = fullyPaid;
     }
 
     public List<SaleDetail> getSaleDetailList() {
