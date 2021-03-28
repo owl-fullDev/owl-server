@@ -11,7 +11,6 @@ import io.vavr.Tuple;
 import io.vavr.Tuple3;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -219,31 +218,113 @@ public class ShipmentService {
                 .collect(Collectors.toList()));
     }
 
-    public void receiveShipmentWarehouse(Shipment shipment, JsonNode receivedQuantityList) {
+    public void receiveSupplierShipment(Shipment shipment, JsonNode receivedQuantityList, int receivedDestinationId) {
+        if (shipment.getDestinationId() != receivedDestinationId) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for this warehouse, the correct warehouse has ID of: " + shipment.getDestinationId());
+        }
+        if (shipment.getReceivedTimestamp() != null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment has already been received");
+        }
+        if (shipment.getSendTimestamp() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This shipment has not left origin!");
+        }
 
+        Warehouse warehouse = warehouseRepository.findById(receivedDestinationId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with specified ID exists"));
 
+        //ShipmentDetails
+        List<ShipmentDetail> shipmentDetailList = shipment.getShipmentDetailList();
+        List<WarehouseQuantity> warehouseQuantityList = warehouseQuantityRepository.findAllByWarehouse_WarehouseId(warehouse.getWarehouseId());
+        for (int i = 0; i < shipmentDetailList.size(); i++) {
+            ShipmentDetail shipmentDetail = shipmentDetailList.get(i);
+
+            if (shipmentDetail.getShipmentDetailId()!=receivedQuantityList.get(i).get("shipmentDetailId").asInt()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This shipment detail ID does not match expected shipmentDetailId, Expected: "+shipmentDetail.getShipmentDetailId()+", Received:"+receivedQuantityList.get(i).get("shipmentDetailId").asInt());
+            }
+
+            int receivedQuantity = receivedQuantityList.get(i).get("receivedQuantity").asInt();
+            shipmentDetail.setReceivedQuantity(receivedQuantity);
+            String comment = receivedQuantityList.get(i).get("comment").asText();
+            shipmentDetail.setComment(comment);
+
+            Product product = shipmentDetail.getProduct();
+            WarehouseQuantity warehouseQuantity = warehouseQuantityList.stream()
+                    .filter(warehouseQuantity1 -> warehouseQuantity1.getProduct().getProductId().equals(product.getProductId()))
+                    .findFirst()
+                    .orElse(null);
+
+            //first time receiving product
+            if(warehouseQuantity==null){
+                warehouseQuantity = new WarehouseQuantity(warehouse,product,receivedQuantity);
+            }
+            else {
+                warehouseQuantity.setInWarehouseQuantity(warehouseQuantity.getInWarehouseQuantity() + receivedQuantity);
+            }
+        }
+
+        shipmentDetailRepository.saveAll(shipmentDetailList);
+        warehouseQuantityRepository.saveAll(warehouseQuantityList);
+        shipment.setReceivedTimestamp(LocalDateTime.now());
+        shipmentRepository.save(shipment);
     }
 
-    public void receiveInternalShipment(Shipment shipment) {
+    public void receiveInternalShipment(Shipment shipment, int receivedDestinationType, int receivedDestinationId) {
+
+        if (shipment.getDestinationType() != receivedDestinationType) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for this type of destination!");
+        }
+        if (shipment.getDestinationId() != receivedDestinationId) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for this destination, the correct destination is" + shipment.getDestinationId());
+        }
+        if (shipment.getReceivedTimestamp() != null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment has already been received");
+        }
+        if (shipment.getSendTimestamp() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This shipment has not left origin!");
+        }
 
         int destinationType = shipment.getDestinationType();
         int destinationId = shipment.getDestinationId();
 
-        if (shipment.getSendTimestamp()==null){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Shipment has not left origin!");
+        if (destinationType == 2) {
+            Warehouse destinationWarehouse = warehouseRepository.findById(destinationId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with specified ID exists"));
+
+            //receiving shipment in warehouse
+            List<ShipmentDetail> shipmentDetailList = shipment.getShipmentDetailList();
+            List<WarehouseQuantity> warehouseQuantityList = warehouseQuantityRepository.findAllByWarehouse_WarehouseId(destinationId);
+
+            for (ShipmentDetail shipmentDetail : shipmentDetailList) {
+                Product product = shipmentDetail.getProduct();
+                int quantity = shipmentDetail.getQuantity();
+                shipmentDetail.setReceivedQuantity(quantity);
+                WarehouseQuantity warehouseQuantity = warehouseQuantityList.stream()
+                        .filter(warehouseQuantity1 -> warehouseQuantity1.getProduct().getProductId().equals(product.getProductId()))
+                        .findFirst()
+                        .orElse(null);
+
+                //first time receiving product
+                if (warehouseQuantity == null) {
+                    warehouseQuantity = new WarehouseQuantity(destinationWarehouse, product, quantity);
+                    warehouseQuantityList.add(warehouseQuantity);
+                    shipmentDetail.setReceivedQuantity(quantity);
+                }
+                else {
+                    warehouseQuantity.setInWarehouseQuantity(warehouseQuantity.getInWarehouseQuantity() + quantity);
+                    shipmentDetail.setReceivedQuantity(quantity);
+                }
+            }
+            shipment.setReceivedTimestamp(LocalDateTime.now());
+            shipmentDetailRepository.saveAll(shipmentDetailList);
+            warehouseQuantityRepository.saveAll(warehouseQuantityList);
+            shipmentRepository.save(shipment);
         }
 
-        if(destinationType==2){
-            Warehouse destinationWarehouse = warehouseRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with specified ID exists"));
-        }
+        else if (destinationType == 3) {
+            Store destinationStore = storeRepository.findById(destinationId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
 
-        //receiving shipment in store
-        else if(destinationType==3){
-            Store destinationStore = storeRepository.findById(destinationId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
-
+            //receiving shipment in store
             List<ShipmentDetail> shipmentDetailList = shipment.getShipmentDetailList();
             List<StoreQuantity> storeQuantityList = storeQuantityRepository.findAllByStore_StoreId(destinationStore.getStoreId());
-            for (ShipmentDetail shipmentDetail : shipmentDetailList){
+            for (ShipmentDetail shipmentDetail : shipmentDetailList) {
                 Product product = shipmentDetail.getProduct();
                 int quantity = shipmentDetail.getQuantity();
                 shipmentDetail.setReceivedQuantity(quantity);
@@ -253,16 +334,16 @@ public class ShipmentService {
                         .orElse(null);
 
                 //first time receiving product
-                if (storeQuantity==null){
-                    storeQuantity = new StoreQuantity(destinationStore,product,quantity,quantity);
+                if (storeQuantity == null) {
+                    storeQuantity = new StoreQuantity(destinationStore, product, quantity, quantity);
                     storeQuantityList.add(storeQuantity);
                     shipmentDetail.setReceivedQuantity(quantity);
-                }
-                else {
-                    storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity()+quantity);
+                } else {
+                    storeQuantity.setInstoreQuantity(storeQuantity.getInstoreQuantity() + quantity);
                     shipmentDetail.setReceivedQuantity(quantity);
                 }
             }
+            shipment.setReceivedTimestamp(LocalDateTime.now());
             shipmentDetailRepository.saveAll(shipmentDetailList);
             storeQuantityRepository.saveAll(storeQuantityList);
             shipmentRepository.save(shipment);

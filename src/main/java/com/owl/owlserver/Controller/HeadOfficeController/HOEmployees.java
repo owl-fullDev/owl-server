@@ -24,40 +24,17 @@ public class HOEmployees {
 
     //injecting repositories for database access
     @Autowired
-    CustomerRepository customerRepository;
-    @Autowired
     EmployeeRepository employeeRepository;
     @Autowired
-    ProductRepository productRepository;
-    @Autowired
-    PromotionRepository promotionRepository;
-    @Autowired
-    SaleDetailRepository saleDetailRepository;
-    @Autowired
-    SaleRepository saleRepository;
-    @Autowired
-    StoreQuantityRepository storeQuantityRepository;
-    @Autowired
     StoreRepository storeRepository;
-    @Autowired
-    ShipmentRepository shipmentRepository;
-    @Autowired
-    ShipmentDetailRepository shipmentDetailRepository;
-    @Autowired
-    WarehouseRepository warehouseRepository;
-    @Autowired
-    WarehouseQuantityRepository warehouseQuantityRepository;
-    @Autowired
-    SupplierRespository supplierRespository;
 
     //JACKSON object Mapper
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     //REST endpoints
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public String ping() {
-        return "Head office api for employees, GET request received";
+    public ResponseEntity<String> ping() {
+        return new ResponseEntity<>("Head office api for employees, GET request received", HttpStatus.OK);
     }
 
     @GetMapping("/getAllEmployees")

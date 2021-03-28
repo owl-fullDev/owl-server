@@ -85,13 +85,14 @@ public class posEndpoint {
 
     @GetMapping("/getInStoreProductQuantity")
     public ResponseEntity<JsonNode> getInStoreProductQuantity(@RequestParam int storeId, String productId) {
-        Store store = storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID"));
-        Product product = productRepository.findById(productId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with specified ID exists"));
-        StoreQuantity storeQuantity = storeQuantityRepository.findByStoreAndProduct_ProductId(store,productId);
+        if(!storeRepository.existsById(storeId)){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists");
+        }
+        StoreQuantity storeQuantity = storeQuantityRepository.findByStore_StoreIdAndProduct_ProductId(storeId,productId);
         if (storeQuantity==null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product with specified ID not in stock in store");
         }
-        JsonNode jsonNode = objectMapper.convertValue(product, JsonNode.class);
+        JsonNode jsonNode = objectMapper.convertValue(storeQuantity.getProduct(), JsonNode.class);
         ((ObjectNode)jsonNode).put("quantity", storeQuantity.getInstoreQuantity());
         return new ResponseEntity<>(jsonNode, HttpStatus.OK);
     }
@@ -122,7 +123,6 @@ public class posEndpoint {
     @Transactional
     @PostMapping(value = "/newSale")
     public ResponseEntity<String> newSaleTest(@RequestBody NewSaleDTO newSaleDTO)  {
-
         saleService.newSale(newSaleDTO);
         return new ResponseEntity<>("New Sale sucessfull", HttpStatus.OK);
     }
@@ -160,27 +160,8 @@ public class posEndpoint {
     @PostMapping(value = "/receiveShipment")
     public ResponseEntity<String> receiveShipment(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
-        int ShipmentId = wholeJSON.get("shipmentId").asInt();
-        Shipment shipment = shipmentRepository.findById(ShipmentId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No shipment with specified ID exists"));
-
-        if (shipment.getDestinationType()!=3){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for a store!");
-        }
-        if (shipment.getDestinationId()!=wholeJSON.get("storeId").asInt()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for this store!");
-        }
-        if (shipment.getReceivedTimestamp()!=null){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment has already been received");
-        }
-
-        String zonePickUpTime = wholeJSON.get("receivedDate").asText();
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonePickUpTime, formatter);
-        ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
-        LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
-        shipment.setReceivedTimestamp(localPickUpTime);
-
-        shipmentService.receiveInternalShipment(shipment);
-
+        Shipment shipment = shipmentRepository.findById(wholeJSON.get("shipmentId").asInt()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No shipment with specified ID exists"));
+        shipmentService.receiveInternalShipment(shipment, 3 , wholeJSON.get("storeId").asInt());
         return new ResponseEntity<>("Shipment received by store!", HttpStatus.OK);
     }
 

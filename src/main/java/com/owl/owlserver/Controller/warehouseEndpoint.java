@@ -104,114 +104,17 @@ public class warehouseEndpoint {
         int shipmentId = wholeJSON.get("shipmentId").asInt();
         Shipment shipment = shipmentRepository.findById(shipmentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No shipment with specified ID exists"));
 
-        if (shipment.getDestinationType()!=2){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for a warehouse!");
+        if (shipment.getOriginType() == 1) {
+            shipmentService.receiveSupplierShipment(shipment, wholeJSON.get("receivedQuantityList"), wholeJSON.get("warehouseId").asInt() );
+        }
+        else if (shipment.getOriginType() == 2 || shipment.getOriginType() == 3){
+            shipmentService.receiveInternalShipment(shipment, 2, wholeJSON.get("warehouseId").asInt() );
         }
 
-        int warehouseId = wholeJSON.get("warehouseId").asInt();
-        Warehouse warehouse = warehouseRepository.findById(warehouseId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with specified ID exists"));
-
-        if (shipment.getReceivedTimestamp() != null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment has already been received");
-        }
-
-        if (shipment.getDestinationId() != warehouseId) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for this warehouse!");
-        }
-
-        String zonePickUpTime = wholeJSON.get("receivedDate").asText();
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonePickUpTime, formatter);
-        ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
-        LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
-        shipment.setReceivedTimestamp(localPickUpTime);
-
-        //ShipmentDetails
-        JsonNode receivedQuantityList = wholeJSON.get("receivedQuantityList");
-        List<ShipmentDetail> shipmentDetailList = shipment.getShipmentDetailList();
-        for (int i = 0; i < shipmentDetailList.size(); i++) {
-            ShipmentDetail shipmentDetail = shipmentDetailList.get(i);
-            if (shipmentDetail.getShipmentDetailId()!=receivedQuantityList.get(i).get("shipmentDetailId").asInt()){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This shipment detail ID does not match expected shipmentDetailId, Expected: "+shipmentDetail.getShipmentDetailId()+", Received:"+receivedQuantityList.get(i).get("shipmentDetailId").asInt());
-            }
-            int receivedQuantity = receivedQuantityList.get(i).get("receivedQuantity").asInt();
-            shipmentDetail.setReceivedQuantity(receivedQuantity);
-            String comment = receivedQuantityList.get(i).get("comment").asText();
-            shipmentDetail.setComment(comment);
-            shipmentDetailRepository.save(shipmentDetail);
-
-            WarehouseQuantity warehouseQuantity = warehouseQuantityRepository.findByWarehouseWarehouseIdAndProduct_ProductId(warehouseId, shipmentDetail.getProduct().getProductId());
-            //first time receiving product
-            if(warehouseQuantity==null){
-                Product product = productRepository.findById(shipmentDetail.getProduct().getProductId()).orElse(null);
-                warehouseQuantity = new WarehouseQuantity(warehouse,product,receivedQuantity);
-            }
-            else {
-                warehouseQuantity.setInWarehouseQuantity(warehouseQuantity.getInWarehouseQuantity() + receivedQuantity);
-            }
-            warehouseQuantityRepository.save(warehouseQuantity);
-        }
-
-        shipmentRepository.saveAndFlush(shipment);
         return new ResponseEntity<>("Shipment received by warehouse!", HttpStatus.OK);
     }
 
-//    @PostMapping("/receiveShipment")
-//    public ResponseEntity<String> receiveShipment(@RequestBody String jsonString) throws JsonProcessingException {
-//        JsonNode wholeJSON = objectMapper.readTree(jsonString);
-//
-//        int shipmentId = wholeJSON.get("shipmentId").asInt();
-//        Shipment shipment = shipmentRepository.findById(shipmentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No shipment with specified ID exists"));
-//
-//        if (shipment.getDestinationType()!=2){
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for a warehouse!");
-//        }
-//
-//        int warehouseId = wholeJSON.get("warehouseId").asInt();
-//        Warehouse warehouse = warehouseRepository.findById(warehouseId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No warehouse with specified ID exists"));
-//
-//        if (shipment.getReceivedTimestamp() != null) {
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment has already been received");
-//        }
-//
-//        if (shipment.getDestinationId() != warehouseId) {
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "This shipment is not meant for this warehouse!");
-//        }
-//
-//        String zonePickUpTime = wholeJSON.get("receivedDate").asText();
-//        ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonePickUpTime, formatter);
-//        ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
-//        LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
-//        shipment.setReceivedTimestamp(localPickUpTime);
-//
-//        //ShipmentDetails
-//        JsonNode receivedQuantityList = wholeJSON.get("receivedQuantityList");
-//        List<ShipmentDetail> shipmentDetailList = shipment.getShipmentDetailList();
-//        for (int i = 0; i < shipmentDetailList.size(); i++) {
-//            ShipmentDetail shipmentDetail = shipmentDetailList.get(i);
-//            if (shipmentDetail.getShipmentDetailId()!=receivedQuantityList.get(i).get("shipmentDetailId").asInt()){
-//                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This shipment detail ID does not match expected shipmentDetailId, Expected: "+shipmentDetail.getShipmentDetailId()+", Received:"+receivedQuantityList.get(i).get("shipmentDetailId").asInt());
-//            }
-//            int receivedQuantity = receivedQuantityList.get(i).get("receivedQuantity").asInt();
-//            shipmentDetail.setReceivedQuantity(receivedQuantity);
-//            String comment = receivedQuantityList.get(i).get("comment").asText();
-//            shipmentDetail.setComment(comment);
-//            shipmentDetailRepository.save(shipmentDetail);
-//
-//            WarehouseQuantity warehouseQuantity = warehouseQuantityRepository.findByWarehouseWarehouseIdAndProduct_ProductId(warehouseId, shipmentDetail.getProduct().getProductId());
-//            //first time receiving product
-//            if(warehouseQuantity==null){
-//                Product product = productRepository.findById(shipmentDetail.getProduct().getProductId()).orElse(null);
-//                warehouseQuantity = new WarehouseQuantity(warehouse,product,receivedQuantity);
-//            }
-//            else {
-//                warehouseQuantity.setInWarehouseQuantity(warehouseQuantity.getInWarehouseQuantity() + receivedQuantity);
-//            }
-//            warehouseQuantityRepository.save(warehouseQuantity);
-//        }
-//
-//        shipmentRepository.saveAndFlush(shipment);
-//        return new ResponseEntity<>("Shipment received by warehouse!", HttpStatus.OK);
-//    }
+
 
     @PostMapping("/sendShipment")
     public ResponseEntity<String> sendShipment(@RequestBody String jsonString) throws JsonProcessingException {

@@ -12,5 +12,6 @@ public interface WarehouseQuantityRepository extends JpaRepository<WarehouseQuan
     WarehouseQuantity findByProduct_ProductId(String productId);
     WarehouseQuantity findByWarehouseWarehouseIdAndProduct_ProductId(int warehouseId, String productId);
     List<WarehouseQuantity> findAllByProduct_ProductIdIn(List<String> productIdList);
+    List<WarehouseQuantity> findAllByWarehouse_WarehouseId(int warehouseId);
 
 }
