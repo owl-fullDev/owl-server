@@ -103,6 +103,7 @@ public class SaleService {
         newSale.setInitialDepositType(saleDTO.getInitialDepositType());
         newSale.setInitialDepositDate(LocalDateTime.now());
         newSale.setFullyPaid(fullyPaid);
+        newSale.setSaleRemarks(saleDTO.getSaleRemarks());
 
         newSale.setPromotion(promotion);
         if (saleDTO.getPromotionParentSaleId()!=null) {

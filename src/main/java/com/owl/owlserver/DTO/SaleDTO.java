@@ -26,7 +26,7 @@ public class SaleDTO {
     @JsonProperty("initialDepositAmount")
     public Double initialDepositAmount;
     @JsonProperty("remarks")
-    public Double saleRemarks;
+    public String saleRemarks;
 
     @JsonProperty("products")
     public List<SaleDetailDTO> saleDetailDTOS;
