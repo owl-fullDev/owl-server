@@ -122,9 +122,8 @@ public class posEndpoint {
 
     @Transactional
     @PostMapping(value = "/newSale")
-    public ResponseEntity<String> newSaleTest(@RequestBody NewSaleDTO newSaleDTO)  {
-        saleService.newSale(newSaleDTO);
-        return new ResponseEntity<>("New Sale sucessfull", HttpStatus.OK);
+    public ResponseEntity<Integer> newSaleTest(@RequestBody NewSaleDTO newSaleDTO)  {
+        return new ResponseEntity<>(saleService.newSale(newSaleDTO), HttpStatus.OK);
     }
 
     @Transactional

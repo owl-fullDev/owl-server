@@ -47,6 +47,9 @@ public class SalesAllSerializer extends StdSerializer<Sale> {
         if (sale.getPromotionParentSaleId()>0){
             jgen.writeNumberField("promotionParentSaleId", sale.getPromotionParentSaleId());
         }
+        if (sale.getSaleRemarks()!=null){
+            jgen.writeStringField("remarks", sale.getSaleRemarks());
+        }
         jgen.writeEndObject();
     }
 }

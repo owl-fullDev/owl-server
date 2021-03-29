@@ -54,6 +54,9 @@ public class Sale implements Serializable {
     @Column(name = "PROMO_SALE_ID", nullable = false)
     private int promotionParentSaleId;
 
+    @Column(name = "REMARKS")
+    private String saleRemarks;
+
     @ManyToOne
     @JoinColumn(name = "PROMOTION_ID")
     private Promotion promotion;
@@ -202,6 +205,14 @@ public class Sale implements Serializable {
         this.promotionParentSaleId = promotionParentSaleId;
     }
 
+    public String getSaleRemarks() {
+        return saleRemarks;
+    }
+
+    public void setSaleRemarks(String saleRemarks) {
+        this.saleRemarks = saleRemarks;
+    }
+
     @Override
     public String toString() {
         return "Sale{" +
@@ -216,6 +227,7 @@ public class Sale implements Serializable {
                 ", finalDepositType='" + finalDepositType + '\'' +
                 ", finalDepositAmount=" + finalDepositAmount +
                 ", fullyPaid=" + fullyPaid +
+                ", remarks=" + saleRemarks +
                 '}';
     }
 }

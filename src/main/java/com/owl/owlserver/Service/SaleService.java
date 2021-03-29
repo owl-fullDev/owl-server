@@ -53,7 +53,7 @@ public class SaleService {
     SupplierRespository supplierRespository;
 
     @Transactional
-    public void newSale(NewSaleDTO newSaleDTO) {
+    public int newSale(NewSaleDTO newSaleDTO) {
         Customer customer;
         if (newSaleDTO.getCustomerId() == null) {
             customer = new Customer();
@@ -163,6 +163,7 @@ public class SaleService {
 
         saleDetailRepository.saveAll(saleDetailList);
         storeQuantityRepository.saveAll(storeQuantityList);
+        return newSale.getSaleId();
     }
 
     private SaleDTO validateSaleDTO(SaleDTO saleDTO) {
