@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.Serializer.SalesAllSerializer;
+import com.owl.owlserver.model.Product;
 import com.owl.owlserver.model.Refund;
 import com.owl.owlserver.model.Sale;
 import com.owl.owlserver.model.Store;
@@ -110,7 +111,7 @@ public class HOSales {
     }
 
     @GetMapping("/getAllSalesTodayByStore")
-    public ArrayNode getAllSalesTodayByStore() throws JsonProcessingException {
+    public ArrayNode getAllSalesTodayByStore(){
 
         LocalDate localDate = LocalDate.now();
         LocalDateTime startOfDay = localDate.atStartOfDay();
@@ -141,7 +142,7 @@ public class HOSales {
     }
 
     @GetMapping("/getAllSalesForSpecificPeriodByStore")
-    public ArrayNode getAllSalesForSpecificPeriodByStore(String start, String end) throws JsonProcessingException {
+    public ArrayNode getAllSalesForSpecificPeriodByStore(String start, String end) {
 
         LocalDate localDateStart = LocalDate.parse(start);
         LocalDate localDateEnd = LocalDate.parse(end);
@@ -203,4 +204,22 @@ public class HOSales {
             return arrayNode;
         }
     }
+//
+//    @GetMapping("/getSalesByProducts")
+//        public List<Product> productList(String start, String end) {
+//        LocalDate localDateStart = LocalDate.parse(start);
+//        LocalDate localDateEnd = LocalDate.parse(end);
+//
+//        LocalDateTime startPeriod = localDateStart.atStartOfDay();
+//        LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
+//
+//        ObjectMapper mapper = new ObjectMapper();
+//        SimpleModule module = new SimpleModule();
+//        module.addSerializer(Sale.class, new SalesAllSerializer());
+//        mapper.registerModule(module);
+//
+//        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenOrderByInitialDepositDate(startPeriod, endPeriod);
+//        ArrayNode arrayNode = mapper.createArrayNode();
+//
+//    }
 }

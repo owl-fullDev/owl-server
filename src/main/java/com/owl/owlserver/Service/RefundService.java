@@ -50,7 +50,7 @@ public class RefundService {
 
         Sale sale = saleRepository.findById(wholeJSON.get("saleId").asInt()).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No sale with Id of: "+wholeJSON.get("saleId").asInt()+" found"));
         String remarks = wholeJSON.get("remarks").asText();
-        JsonNode saleDetailList = wholeJSON.get("products");
+        JsonNode saleDetailList = wholeJSON.get("refundedProducts");
 
         List<String> productIds = new ArrayList<>();
         for (SaleDetail saleDetail:sale.getSaleDetailList()){
@@ -60,7 +60,7 @@ public class RefundService {
         List<StoreQuantity> storeQuantityList = storeQuantityRepository.findAllByStore_StoreIdAndProduct_ProductIdIn(sale.getStore().getStoreId(), productIds);
 
         for (int c = 0; c<sale.getSaleDetailList().size(); c++){
-            if (storeQuantityList.get(c).getProduct().getProductId().equals(saleDetailList.get(c).get("productId").asText())){
+            if (storeQuantityList.get(c).getProduct().getProductId().equals(saleDetailList.get(c).get("product").get("productId").asText())){
                 if (saleDetailList.get(c).get("isReturned").asBoolean()){
                     storeQuantityList.get(c).setInstoreQuantity(storeQuantityList.get(c).getInstoreQuantity()+saleDetailList.get(c).get("quantity").asInt());
                 }
