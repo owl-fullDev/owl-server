@@ -1,12 +1,13 @@
 package com.owl.owlserver.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.model.Refund;
 import com.owl.owlserver.model.Sale;
 import com.owl.owlserver.model.SaleDetail;
+import com.owl.owlserver.model.StoreQuantity;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+
 
 @Service
 public class RefundService {
@@ -43,11 +46,31 @@ public class RefundService {
     RefundRepository refundRepository;
 
     @Transactional
-    public void newRefund(Sale sale, String remarks) throws JsonProcessingException {
+    public void newRefund(JsonNode wholeJSON) {
 
-        if (sale==null){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sale is null, no sale found");
+        Sale sale = saleRepository.findById(wholeJSON.get("saleId").asInt()).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No sale with Id of: "+wholeJSON.get("saleId").asInt()+" found"));
+        String remarks = wholeJSON.get("remarks").asText();
+        JsonNode saleDetailList = wholeJSON.get("products");
+
+        List<String> productIds = new ArrayList<>();
+        for (SaleDetail saleDetail:sale.getSaleDetailList()){
+            productIds.add(saleDetail.getProduct().getProductId());
         }
+
+        List<StoreQuantity> storeQuantityList = storeQuantityRepository.findAllByStore_StoreIdAndProduct_ProductIdIn(sale.getStore().getStoreId(), productIds);
+
+        for (int c = 0; c<sale.getSaleDetailList().size(); c++){
+            if (storeQuantityList.get(c).getProduct().getProductId().equals(saleDetailList.get(c).get("productId").asText())){
+                if (saleDetailList.get(c).get("isReturned").asBoolean()){
+                    storeQuantityList.get(c).setInstoreQuantity(storeQuantityList.get(c).getInstoreQuantity()+saleDetailList.get(c).get("quantity").asInt());
+                }
+            }
+            else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mismatch between received saleDetailsList and stored");
+            }
+        }
+
+        storeQuantityRepository.saveAll(storeQuantityList);
 
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode jsonNode = objectMapper.createObjectNode();
@@ -88,8 +111,8 @@ public class RefundService {
         newRefund.setRefundDate(LocalDateTime.now());
 
         refundRepository.save(newRefund);
-        List<SaleDetail> saleDetailList = sale.getSaleDetailList();
-        saleDetailRepository.deleteAll(saleDetailList);
+        List<SaleDetail> saleDetailList2 = sale.getSaleDetailList();
+        saleDetailRepository.deleteAll(saleDetailList2);
         saleRepository.deleteById(sale.getSaleId());
     }
 

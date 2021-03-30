@@ -181,11 +181,7 @@ public class posEndpoint {
     @PostMapping("/refundSale")
     public ResponseEntity<String> refundSale(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
-        int saleId = wholeJSON.get("saleId").asInt();
-        String remarks = wholeJSON.get("remarks").asText();
-
-        Sale sale = saleRepository.findById(saleId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No sale with Id of: "+saleId+" found"));
-        refundService.newRefund(sale,remarks);
+        refundService.newRefund(wholeJSON);
         return new ResponseEntity<>("Sale successfully voided", HttpStatus.OK);
     }
 
