@@ -89,7 +89,7 @@ public class SaleService {
 
             List<SaleDetailDTO> saleDetailDTOList = new ArrayList<>();
             for (SaleDetail saleDetail:sale.getSaleDetailList()){
-                SaleDetailDTO saleDetailDTO = new SaleDetailDTO(saleDetail.getProduct().getProductId(),saleDetail.getQuantity());
+                SaleDetailDTO saleDetailDTO = new SaleDetailDTO(saleDetail.getProduct().getProductName(),saleDetail.getQuantity());
                 saleDetailDTOList.add(saleDetailDTO);
             }
 
