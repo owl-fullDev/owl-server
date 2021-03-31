@@ -75,7 +75,7 @@ public class RefundService {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode jsonNode = objectMapper.createObjectNode();
         jsonNode.put("saleId", sale.getSaleId());
-        jsonNode.put("employeeId", sale.getEmployeeId());
+        jsonNode.put("employeeId", sale.getEmployee().getEmployeeId());
         jsonNode.put("grandTotal", sale.getGrandTotal());
         jsonNode.put("initialDepositDate", sale.getInitialDepositDate().toString());
         jsonNode.put("initialDepositType", sale.getInitialDepositType());

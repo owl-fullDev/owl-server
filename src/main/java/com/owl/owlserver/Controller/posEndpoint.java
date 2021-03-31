@@ -3,8 +3,10 @@ package com.owl.owlserver.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.DTO.NewSaleDTO;
+import com.owl.owlserver.DTO.SaleSerializeDTO;
 import com.owl.owlserver.Service.RefundService;
 import com.owl.owlserver.Service.SaleService;
 import com.owl.owlserver.Service.ShipmentService;
@@ -115,9 +117,10 @@ public class posEndpoint {
     }
 
     @GetMapping("/getPendingSaleList")
-    public ResponseEntity<List<Sale>> getPendingSaleList(@RequestParam int storeId) {
+    public List<SaleSerializeDTO> getPendingSaleList(@RequestParam int storeId) {
         storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
-        return new ResponseEntity<>(saleRepository.getAllByStoreStoreIdAndPickupDateEquals(storeId, null), HttpStatus.OK);
+        List<Sale> saleList = saleRepository.getAllByStoreStoreIdAndPickupDateEquals(storeId, null);
+        return saleService.serializeSale(saleList);
     }
 
     @Transactional
@@ -174,6 +177,7 @@ public class posEndpoint {
         LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
 
         List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndStoreStoreIdOrderByInitialDepositDate(startPeriod, endPeriod, storeId);
+
         return new ResponseEntity<>(saleList, HttpStatus.OK);
     }
 

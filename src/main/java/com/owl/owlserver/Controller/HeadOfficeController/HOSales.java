@@ -5,11 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.owl.owlserver.DTO.SaleSerializeDTO;
 import com.owl.owlserver.Serializer.SalesAllSerializer;
-import com.owl.owlserver.model.Product;
-import com.owl.owlserver.model.Refund;
-import com.owl.owlserver.model.Sale;
-import com.owl.owlserver.model.Store;
+import com.owl.owlserver.Service.SaleService;
+import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.springframework.aop.AopInvocationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @CrossOrigin
@@ -48,6 +48,9 @@ public class HOSales {
     @Autowired
     RefundRepository refundRepository;
 
+    //Services
+    @Autowired
+    SaleService saleService;
 
     //REST endpoints
     @GetMapping
@@ -57,30 +60,18 @@ public class HOSales {
     }
 
     @GetMapping("/getAllSalesToday")
-    public ArrayNode getAllSalesToday() throws JsonProcessingException {
+    public List<SaleSerializeDTO> getAllSalesToday(){
 
         LocalDate localDate = LocalDate.now();
         LocalDateTime startOfDay = localDate.atStartOfDay();
         LocalDateTime endOfDay = localDate.atTime(LocalTime.MAX);
 
-        ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(Sale.class, new SalesAllSerializer());
-        mapper.registerModule(module);
-
         List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenOrderByInitialDepositDate(startOfDay, endOfDay);
-        ArrayNode arrayNode = mapper.createArrayNode();
-
-        for (Sale sale : saleList) {
-            String x = mapper.writeValueAsString(sale);
-            JsonNode jsonNode = mapper.readTree(x);
-            arrayNode.add(jsonNode);
-        }
-        return arrayNode;
+        return saleService.serializeSale(saleList);
     }
 
     @GetMapping("/getAllSalesForSpecificPeriod")
-    public ArrayNode getAllSalesForSpecificPeriod(String start, String end) throws JsonProcessingException {
+    public List<SaleSerializeDTO> getAllSalesForSpecificPeriod(String start, String end) {
 
         LocalDate localDateStart = LocalDate.parse(start);
         LocalDate localDateEnd = LocalDate.parse(end);
@@ -88,26 +79,8 @@ public class HOSales {
         LocalDateTime startPeriod = localDateStart.atStartOfDay();
         LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
 
-        ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(Sale.class, new SalesAllSerializer());
-        mapper.registerModule(module);
-
         List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenOrderByInitialDepositDate(startPeriod, endPeriod);
-        ArrayNode arrayNode = mapper.createArrayNode();
-
-        if (saleList==null){
-            arrayNode.add("No sales for specified time period");
-            return arrayNode;
-        }
-        else {
-            for (Sale sale : saleList) {
-                String x = mapper.writeValueAsString(sale);
-                JsonNode jsonNode = mapper.readTree(x);
-                arrayNode.add(jsonNode);
-            }
-            return arrayNode;
-        }
+        return saleService.serializeSale(saleList);
     }
 
     @GetMapping("/getAllSalesTodayByStore")
@@ -204,22 +177,34 @@ public class HOSales {
             return arrayNode;
         }
     }
-//
-//    @GetMapping("/getSalesByProducts")
-//        public List<Product> productList(String start, String end) {
-//        LocalDate localDateStart = LocalDate.parse(start);
-//        LocalDate localDateEnd = LocalDate.parse(end);
-//
-//        LocalDateTime startPeriod = localDateStart.atStartOfDay();
-//        LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
-//
-//        ObjectMapper mapper = new ObjectMapper();
-//        SimpleModule module = new SimpleModule();
-//        module.addSerializer(Sale.class, new SalesAllSerializer());
-//        mapper.registerModule(module);
-//
-//        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenOrderByInitialDepositDate(startPeriod, endPeriod);
-//        ArrayNode arrayNode = mapper.createArrayNode();
-//
-//    }
+
+    @GetMapping("/getSalesByProducts")
+        public ArrayNode productList(String start, String end) {
+        LocalDate localDateStart = LocalDate.parse(start);
+        LocalDate localDateEnd = LocalDate.parse(end);
+
+        LocalDateTime startPeriod = localDateStart.atStartOfDay();
+        LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
+
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Sale.class, new SalesAllSerializer());
+        mapper.registerModule(module);
+
+        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenOrderByInitialDepositDate(startPeriod, endPeriod);
+        ArrayNode arrayNode = mapper.createArrayNode();
+
+        for (Sale sale:saleList){
+            for (SaleDetail saleDetail:sale.getSaleDetailList()){
+                ObjectNode objectNode = mapper.createObjectNode();
+                objectNode.put("saleId",sale.getSaleId());
+                objectNode.put("productId",saleDetail.getProduct().getProductId());
+                objectNode.put("quantity",saleDetail.getQuantity());
+                objectNode.put("date",sale.getInitialDepositDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+                arrayNode.add(objectNode);
+            }
+        }
+
+        return arrayNode;
+    }
 }

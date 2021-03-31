@@ -1,9 +1,6 @@
 package com.owl.owlserver.Service;
 
-import com.owl.owlserver.DTO.CustomerDTO;
-import com.owl.owlserver.DTO.NewSaleDTO;
-import com.owl.owlserver.DTO.SaleDTO;
-import com.owl.owlserver.DTO.SaleDetailDTO;
+import com.owl.owlserver.DTO.*;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.apache.commons.beanutils.BeanUtils;
@@ -15,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.transaction.Transactional;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -51,6 +49,56 @@ public class SaleService {
     WarehouseQuantityRepository warehouseQuantityRepository;
     @Autowired
     SupplierRespository supplierRespository;
+
+    @Transactional
+    public List<SaleSerializeDTO> serializeSale(List<Sale> saleList){
+        if (saleList==null){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Empty sale List");
+        }
+
+        List<SaleSerializeDTO> saleSerializeDTOList = new ArrayList<>();
+
+        for (Sale sale:saleList){
+            SaleSerializeDTO saleSerializeDTO = SaleSerializeDTO.builder()
+                    .saleId(sale.getSaleId())
+                    .customerId(sale.getCustomer().getCustomerId())
+                    .employeeName(sale.getEmployee().getFirstName()+" "+sale.getEmployee().getLastname())
+                    .storeName(sale.getStore().getName())
+                    .grandTotal(sale.getGrandTotal())
+                    .isFullyPaid(sale.isFullyPaid())
+                    .initialDepositDate(sale.getInitialDepositDate().toString())
+                    .initialDepositType(sale.getInitialDepositType())
+                    .initialDepositAmount(sale.getInitialDepositAmount())
+                    .build();
+
+            if (sale.getPromotion()!=null){
+                saleSerializeDTO.setPromotionName(sale.getPromotion().getPromotionName());
+                saleSerializeDTO.setPromotionParentId(sale.getPromotionParentSaleId());
+            }
+            if (sale.getFinalDepositDate()!=null) {
+                saleSerializeDTO.setFinalDepositDate(sale.getInitialDepositDate().toString());
+                saleSerializeDTO.setFinalDepositType(sale.getFinalDepositType());
+                saleSerializeDTO.setFinalDepositAmount(sale.getFinalDepositAmount());
+            }
+            if (sale.getSaleRemarks()!=null){
+                saleSerializeDTO.setSaleRemarks(sale.getSaleRemarks());
+            }
+            if (sale.getPickupDate()!=null){
+                saleSerializeDTO.setPickupDate(sale.getPickupDate().toString());
+            }
+
+            List<SaleDetailDTO> saleDetailDTOList = new ArrayList<>();
+            for (SaleDetail saleDetail:sale.getSaleDetailList()){
+                SaleDetailDTO saleDetailDTO = new SaleDetailDTO(saleDetail.getProduct().getProductId(),saleDetail.getQuantity());
+                saleDetailDTOList.add(saleDetailDTO);
+            }
+
+            saleSerializeDTO.setSaleDetailDTOS(saleDetailDTOList);
+            saleSerializeDTOList.add(saleSerializeDTO);
+        }
+
+        return saleSerializeDTOList;
+    }
 
     @Transactional
     public int newSale(NewSaleDTO newSaleDTO) {
@@ -92,12 +140,13 @@ public class SaleService {
             promotion = promotionRepository.findById(saleDTO.getPromotionId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No promotion with specified ID exist"));
         }
         Store store = storeRepository.findById(saleDTO.getStoreId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No store with specified ID exist"));
+        Employee employee = employeeRepository.findById(saleDTO.getEmployeeId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No employee with specified ID exists"));
         boolean fullyPaid = !(saleDTO.getGrandTotal() > saleDTO.getInitialDepositAmount());
 
         Sale newSale = new Sale();
         newSale.setStore(store);
         newSale.setCustomer(customer);
-        newSale.setEmployeeId(saleDTO.getEmployeeId());
+        newSale.setEmployee(employee);
         newSale.setGrandTotal(saleDTO.getGrandTotal());
         newSale.setInitialDepositAmount(saleDTO.getInitialDepositAmount());
         newSale.setInitialDepositType(saleDTO.getInitialDepositType());
@@ -167,16 +216,12 @@ public class SaleService {
         return newSale.getSaleId();
     }
 
-    private SaleDTO validateSaleDTO(SaleDTO saleDTO) {
+    private void validateSaleDTO(SaleDTO saleDTO) {
         if(saleDTO==null){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sale is empty!");
-        }
-        if (!employeeRepository.existsById(saleDTO.getEmployeeId())){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No employee with specified ID exists");
         }
         if (saleDTO.getGrandTotal()==null||saleDTO.getInitialDepositAmount()==null){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Grand total or initial deposit is null!");
         }
-        return saleDTO;
     }
 }

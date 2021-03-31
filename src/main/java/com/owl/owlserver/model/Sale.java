@@ -1,10 +1,6 @@
 package com.owl.owlserver.model;
 
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
-import com.owl.owlserver.repositories.PromotionRepository;
-import lombok.Builder;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -20,9 +16,6 @@ public class Sale implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "SALE_ID", nullable = false)
     private int saleId;
-    
-    @Column(name = "EMPLOYEE_ID", nullable = false)
-    private int employeeId;
 
     @Column(name = "GRAND_TOTAL", nullable = false)
     private double grandTotal;
@@ -57,6 +50,12 @@ public class Sale implements Serializable {
     @Column(name = "REMARKS")
     private String saleRemarks;
 
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "EMPLOYEE_ID", nullable = false)
+    private Employee employee;
+
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "PROMOTION_ID")
     private Promotion promotion;
@@ -109,12 +108,12 @@ public class Sale implements Serializable {
         this.promotion = promotion;
     }
 
-    public int getEmployeeId() {
-        return employeeId;
+    public Employee getEmployee() {
+        return employee;
     }
 
-    public void setEmployeeId(int employeeId) {
-        this.employeeId = employeeId;
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
     }
 
     public Store getStore() {
@@ -217,10 +216,10 @@ public class Sale implements Serializable {
     public String toString() {
         return "Sale{" +
                 "saleId=" + saleId +
-                ", employeeId=" + employeeId +
+                ", employeeId=" + employee +
                 ", grandTotal=" + grandTotal +
                 ", pickupDate=" + pickupDate +
-                ", initialDepositDate=" + initialDepositDate +
+                ", initialDepositDate=" + initialDepositDate.toString() +
                 ", initialDepositType='" + initialDepositType + '\'' +
                 ", initialDepositAmount=" + initialDepositAmount +
                 ", finalDepositDate=" + finalDepositDate +
