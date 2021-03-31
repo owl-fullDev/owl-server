@@ -10,7 +10,7 @@ import java.util.List;
 public class SaleSerializeDTO {
 
     private Integer saleId;
-    private Integer customerId;
+    private String customerName;
     private String promotionName;
     private Integer promotionParentId;
     public String employeeName;

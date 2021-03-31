@@ -61,7 +61,7 @@ public class SaleService {
         for (Sale sale:saleList){
             SaleSerializeDTO saleSerializeDTO = SaleSerializeDTO.builder()
                     .saleId(sale.getSaleId())
-                    .customerId(sale.getCustomer().getCustomerId())
+                    .customerName(sale.getCustomer().getFirstName()+" "+sale.getCustomer().getLastName())
                     .employeeName(sale.getEmployee().getFirstName()+" "+sale.getEmployee().getLastname())
                     .storeName(sale.getStore().getName())
                     .grandTotal(sale.getGrandTotal())
