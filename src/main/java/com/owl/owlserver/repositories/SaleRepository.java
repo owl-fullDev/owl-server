@@ -14,6 +14,7 @@ public interface SaleRepository extends JpaRepository <Sale,Integer> {
 
     List<Sale> getAllByStoreStoreIdAndPickupDateEquals(int storeId, LocalDateTime localDateTime);
     List<Sale> getAllByInitialDepositDateIsBetweenOrderByInitialDepositDate(LocalDateTime start, LocalDateTime end);
+    List<Sale> getAllByInitialDepositDateIsBetweenAndPickupDateIsNotNullOrderByInitialDepositDate(LocalDateTime start, LocalDateTime end);
     List<Sale> getAllByInitialDepositDateIsBetweenAndStoreStoreIdOrderByInitialDepositDate(LocalDateTime start, LocalDateTime end, int storeId);
     List<Sale> getAllByInitialDepositDateIsBetweenAndStoreStoreIdAndFullyPaidIsAndPromotionParentSaleId(LocalDateTime start, LocalDateTime end, int storeId, boolean isFullyPaid, int promotionParentSaleId);
 }

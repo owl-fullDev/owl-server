@@ -136,24 +136,29 @@ public class SaleService {
         }
 
         StringBuilder csvString = new StringBuilder();
-        csvString.append("saleId,Nama customer,Nama promosi,Transaksi pertama,Salesman,Toko,Pembayaran total,Bayar sekaligus,Timestamp deposit,Tipe deposit,Jumlah deposit,Transaksi kedua tanggal,Transaksi kedua tipe,Transaksi kedua jumlah,Remarks,Tanggal pengambilan,Produk 1,Jumlah,Produk 2,Jumlah,Produk 3,Jumlah\n");
+        csvString.append("saleId,Nama customer,Nama promosi,Transaksi pertama,Salesman,Toko,Pembayaran total,Bayar sekaligus,Tanggal deposit pertama,deposit pertama waktu,Tipe deposit,Jumlah deposit,Transaksi kedua tanggal,Transaksi kedua waktu,Transaksi kedua tipe,Transaksi kedua jumlah,Remarks,Tanggal pengambilan\n");
         for (Sale sale : saleList) {
             csvString.append(sale.getSaleId()).append(",");
             csvString.append(sale.getCustomer().getFirstName()).append(" ").append(sale.getCustomer().getLastName()).append(",");
-            if (sale.getCustomer()!=null)
+            if (sale.getPromotion()!=null)
             csvString.append(sale.getPromotion().getPromotionName()).append(",");
             csvString.append(sale.getPromotionParentSaleId()).append(",");
             csvString.append(sale.getEmployee().getFirstName()).append(" ").append(sale.getEmployee().getLastname()).append(",");
-            csvString.append(sale.getSaleId()).append("\n");
-            csvString.append(sale.getSaleId()).append("\n");
-            csvString.append(sale.getSaleId()).append("\n");
-            csvString.append(sale.getSaleId()).append("\n");
-            csvString.append(sale.getSaleId()).append("\n");
-            csvString.append(sale.getSaleId()).append("\n");
-            csvString.append(sale.getSaleId()).append("\n");
-            csvString.append(sale.getSaleId()).append("\n");
-
-            csvString.append("\n");
+            csvString.append(sale.getStore().getName()).append(",");
+            csvString.append(sale.getGrandTotal()).append(",");
+            csvString.append(sale.isFullyPaid()).append(",");
+            csvString.append(sale.getInitialDepositDate().toLocalDate()).append(",");
+            csvString.append(sale.getInitialDepositDate().toLocalTime()).append(",");
+            csvString.append(sale.getInitialDepositType()).append(",");
+            csvString.append(sale.getInitialDepositAmount()).append(",");
+            if (sale.getFinalDepositDate()!=null) {
+                csvString.append(sale.getFinalDepositDate().toLocalDate()).append(",");
+                csvString.append(sale.getFinalDepositDate().toLocalTime()).append(",");
+                csvString.append(sale.getFinalDepositType()).append(",");
+                csvString.append(sale.getFinalDepositAmount()).append(",");
+            }
+            if(sale.getSaleRemarks()!=null)
+            csvString.append(sale.getSaleRemarks()).append("\n");
         }
 
         return csvString.toString();

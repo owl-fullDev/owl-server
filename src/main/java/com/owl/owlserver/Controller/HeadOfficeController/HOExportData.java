@@ -46,7 +46,7 @@ public class HOExportData {
         LocalDateTime startPeriod = localDateStart.atStartOfDay();
         LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
 
-        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenOrderByInitialDepositDate(startPeriod, endPeriod);
+        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndPickupDateIsNotNullOrderByInitialDepositDate(startPeriod, endPeriod);
         return saleService.saleToCSV(saleList);
     }
 }
