@@ -109,10 +109,9 @@ public class posEndpoint {
     }
 
     @GetMapping("/getPendingSaleList")
-    public List<POSSaleSerializerDTO> getPendingSaleList(@RequestParam int storeId) {
+    public List<Sale> getPendingSaleList(@RequestParam int storeId) {
         storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
-        List<Sale> saleList = saleRepository.getAllByStoreStoreIdAndPickupDateEquals(storeId, null);
-        return saleService.serializeSalePOS(saleList);
+        return saleRepository.getAllByStoreStoreIdAndPickupDateEquals(storeId, null);
     }
 
     @Transactional

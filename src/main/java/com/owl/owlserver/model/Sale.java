@@ -50,17 +50,14 @@ public class Sale implements Serializable {
     @Column(name = "REMARKS")
     private String saleRemarks;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "EMPLOYEE_ID", nullable = false)
     private Employee employee;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "PROMOTION_ID")
     private Promotion promotion;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "STORE_ID", nullable = false)
     private Store store;
