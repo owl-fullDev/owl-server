@@ -62,7 +62,7 @@ public class SaleService {
 
     @Transactional
     public void updateSale(Sale sale, JsonNode wholeJSON) {
-        LocalDateTime localPickUpTime = LocalDateTime.parse(wholeJSON.get("pickUpDate").asText(), DateTimeFormatter.ISO_INSTANT);
+        LocalDateTime localPickUpTime = LocalDateTime.parse(wholeJSON.get("pickUpDate").asText(), DateTimeFormatter.ISO_ZONED_DATE_TIME);
         if (sale.isFullyPaid()) {
             sale.setPickupDate(localPickUpTime);
         }
@@ -130,71 +130,33 @@ public class SaleService {
     }
 
     @Transactional
-    public List<POSSaleSerializerDTO> serializeSalePOS(List<Sale> saleList) {
+    public String saleToCSV(List<Sale> saleList) {
         if (saleList == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Empty sale List");
         }
 
-        List<POSSaleSerializerDTO> posSaleSerializerDTOList = new ArrayList<>();
-
+        StringBuilder csvString = new StringBuilder();
+        csvString.append("saleId,Nama customer,Nama promosi,Transaksi pertama,Salesman,Toko,Pembayaran total,Bayar sekaligus,Timestamp deposit,Tipe deposit,Jumlah deposit,Transaksi kedua tanggal,Transaksi kedua tipe,Transaksi kedua jumlah,Remarks,Tanggal pengambilan,Produk 1,Jumlah,Produk 2,Jumlah,Produk 3,Jumlah\n");
         for (Sale sale : saleList) {
-            Customer customer = sale.getCustomer();
-            CustomerDTO customerDTO = CustomerDTO.builder()
-                    .firstName(customer.getFirstName())
-                    .lastName(customer.getLastName())
-                    .email(customer.getEmail())
-                    .phoneNumber(customer.getPhoneNumber())
-                    .leftEyeAdd(customer.getLeftEyeAdd())
-                    .leftEyeAxis(customer.getLeftEyeAxis())
-                    .leftEyeCylinder(customer.getLeftEyeCylinder())
-                    .leftEyePrism(customer.getLeftEyePrism())
-                    .leftEyeSphere(customer.getLeftEyeSphere())
-                    .rightEyeAdd(customer.getRightEyeAdd())
-                    .rightEyeAxis(customer.getRightEyeAxis())
-                    .rightEyeCylinder(customer.getRightEyeCylinder())
-                    .rightEyePrism(customer.getRightEyePrism())
-                    .rightEyeSphere(customer.getRightEyeSphere())
-                    .pupilDistance(customer.getPupilDistance())
-                    .build();
+            csvString.append(sale.getSaleId()).append(",");
+            csvString.append(sale.getCustomer().getFirstName()).append(" ").append(sale.getCustomer().getLastName()).append(",");
+            if (sale.getCustomer()!=null)
+            csvString.append(sale.getPromotion().getPromotionName()).append(",");
+            csvString.append(sale.getPromotionParentSaleId()).append(",");
+            csvString.append(sale.getEmployee().getFirstName()).append(" ").append(sale.getEmployee().getLastname()).append(",");
+            csvString.append(sale.getSaleId()).append("\n");
+            csvString.append(sale.getSaleId()).append("\n");
+            csvString.append(sale.getSaleId()).append("\n");
+            csvString.append(sale.getSaleId()).append("\n");
+            csvString.append(sale.getSaleId()).append("\n");
+            csvString.append(sale.getSaleId()).append("\n");
+            csvString.append(sale.getSaleId()).append("\n");
+            csvString.append(sale.getSaleId()).append("\n");
 
-            POSSaleSerializerDTO posSaleSerializerDTO = POSSaleSerializerDTO.builder()
-                    .saleId(sale.getSaleId())
-                    .customerDTO(customerDTO)
-                    .employeeName(sale.getEmployee().getFirstName() + " " + sale.getEmployee().getLastname())
-                    .storeName(sale.getStore().getName())
-                    .grandTotal(sale.getGrandTotal())
-                    .isFullyPaid(sale.isFullyPaid())
-                    .initialDepositDate(sale.getInitialDepositDate().toString())
-                    .initialDepositType(sale.getInitialDepositType())
-                    .initialDepositAmount(sale.getInitialDepositAmount())
-                    .build();
-
-            if (sale.getPromotion() != null) {
-                posSaleSerializerDTO.setPromotionName(sale.getPromotion().getPromotionName());
-                posSaleSerializerDTO.setPromotionParentId(sale.getPromotionParentSaleId());
-            }
-            if (sale.getFinalDepositDate() != null) {
-                posSaleSerializerDTO.setFinalDepositDate(sale.getInitialDepositDate().toString());
-                posSaleSerializerDTO.setFinalDepositType(sale.getFinalDepositType());
-                posSaleSerializerDTO.setFinalDepositAmount(sale.getFinalDepositAmount());
-            }
-            if (sale.getSaleRemarks() != null) {
-                posSaleSerializerDTO.setSaleRemarks(sale.getSaleRemarks());
-            }
-            if (sale.getPickupDate() != null) {
-                posSaleSerializerDTO.setPickupDate(sale.getPickupDate().toString());
-            }
-
-            List<SaleDetailSerializerDTO> saleDetailSerializerDTOList = new ArrayList<>();
-            for (SaleDetail saleDetail : sale.getSaleDetailList()) {
-                SaleDetailSerializerDTO saleDetailSerializerDTO = new SaleDetailSerializerDTO(saleDetail.getProduct().getProductId(), saleDetail.getProduct().getProductName(), saleDetail.getQuantity());
-                saleDetailSerializerDTOList.add(saleDetailSerializerDTO);
-            }
-
-            posSaleSerializerDTO.setSaleDetailSerializerDTOList(saleDetailSerializerDTOList);
-            posSaleSerializerDTOList.add(posSaleSerializerDTO);
+            csvString.append("\n");
         }
-        return posSaleSerializerDTOList;
+
+        return csvString.toString();
     }
 
     @Transactional

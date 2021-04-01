@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.DTO.Serialize.HO.SaleSerializeDTO;
-import com.owl.owlserver.Serializer.SalesAllSerializer;
 import com.owl.owlserver.Service.SaleService;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
@@ -185,9 +184,6 @@ public class HOSales {
         LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
 
         ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(Sale.class, new SalesAllSerializer());
-        mapper.registerModule(module);
 
         List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenOrderByInitialDepositDate(startPeriod, endPeriod);
         ArrayNode arrayNode = mapper.createArrayNode();
@@ -198,7 +194,7 @@ public class HOSales {
                 objectNode.put("saleId",sale.getSaleId());
                 objectNode.put("productId",saleDetail.getProduct().getProductId());
                 objectNode.put("quantity",saleDetail.getQuantity());
-                objectNode.put("date",sale.getInitialDepositDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+                objectNode.put("date",sale.getInitialDepositDate().format(DateTimeFormatter.ISO_INSTANT));
                 arrayNode.add(objectNode);
             }
         }
