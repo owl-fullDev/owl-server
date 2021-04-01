@@ -3,11 +3,9 @@ package com.owl.owlserver.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.DTO.NewSaleDTO;
 import com.owl.owlserver.DTO.SaleSerializeDTO;
-import com.owl.owlserver.Service.RefundService;
 import com.owl.owlserver.Service.SaleService;
 import com.owl.owlserver.Service.ShipmentService;
 import com.owl.owlserver.model.*;
@@ -57,16 +55,10 @@ public class posEndpoint {
     @Autowired
     private ShipmentService shipmentService;
     @Autowired
-    private RefundService refundService;
-    @Autowired
     private SaleService saleService;
 
     //JACKSON object Mapper
     private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    //Time settings
-    final DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-    final ZoneId serverLocalTime = ZoneId.systemDefault();
 
     //REST endpoints
     @GetMapping
@@ -133,28 +125,8 @@ public class posEndpoint {
     @PostMapping(value = "/updateSale")
     public ResponseEntity<String> updateSale(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
-
-        int saleId = wholeJSON.get("saleId").asInt();
-        Sale sale = saleRepository.findById(saleId).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Sale with specified ID exists"));
-
-        String zonePickUpTime = wholeJSON.get("pickUpDate").asText();
-        ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonePickUpTime, formatter);
-        ZonedDateTime convertedTime = zonedDateTime.withZoneSameInstant(serverLocalTime);
-        LocalDateTime localPickUpTime = convertedTime.toLocalDateTime();
-
-        if (sale.isFullyPaid()) {
-            sale.setPickupDate(localPickUpTime);
-        }
-        else {
-            sale.setPickupDate(localPickUpTime);
-            sale.setFinalDepositDate(localPickUpTime);
-            sale.setFinalDepositType(wholeJSON.get("finalPaymentType").asText());
-            if (sale.getGrandTotal()-sale.getInitialDepositAmount()-wholeJSON.get("finalPaymentAmount").asDouble()>sale.getGrandTotal()*0.01){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Final payment does not cover amount due!");
-            }
-            sale.setFinalDepositAmount(wholeJSON.get("finalPaymentAmount").asDouble());
-        }
-        saleRepository.save(sale);
+        Sale sale = saleRepository.findById(wholeJSON.get("saleId").asInt()).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Sale with specified ID exists"));
+        saleService.updateSale(sale, wholeJSON);
         return new ResponseEntity<>("Successfully updated Sale", HttpStatus.OK);
     }
 
@@ -169,23 +141,14 @@ public class posEndpoint {
 
     @GetMapping("/getRecentSalesList")
     public ResponseEntity<List<Sale>> getRecentSalesList(int storeId) {
-
-        LocalDate localDateStart = LocalDate.now().minusDays(2);
-        LocalDate localDateEnd = LocalDate.now();
-
-        LocalDateTime startPeriod = localDateStart.atStartOfDay();
-        LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
-
-        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndStoreStoreIdOrderByInitialDepositDate(startPeriod, endPeriod, storeId);
-
+        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndStoreStoreIdOrderByInitialDepositDate(LocalDate.now().minusDays(2).atStartOfDay(), LocalDate.now().atTime(LocalTime.MAX), storeId);
         return new ResponseEntity<>(saleList, HttpStatus.OK);
     }
 
     @Transactional
     @PostMapping("/refundSale")
     public ResponseEntity<String> refundSale(@RequestBody String jsonString) throws JsonProcessingException {
-        JsonNode wholeJSON = objectMapper.readTree(jsonString);
-        refundService.newRefund(wholeJSON);
+        saleService.newRefund(objectMapper.readTree(jsonString));
         return new ResponseEntity<>("Sale successfully voided", HttpStatus.OK);
     }
 
@@ -193,23 +156,13 @@ public class posEndpoint {
     @Transactional
     @PostMapping(value = "/newTransferShipment")
     public ResponseEntity<String> newTransferShipment(@RequestBody Shipment shipment) {
-
-        if (shipment==null){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All shipment details are empty!");
-        }
         shipmentService.persistShipment(shipment);
         return new ResponseEntity<>("Successfully created new transfer shipment, ID: "+shipment.getShipmentId(), HttpStatus.OK);
     }
 
     @GetMapping("/getPromotionalFirstSaleList")
     public ResponseEntity<List<Sale>> getPromotionalFirstSaleList(int storeId, int promoId) {
-
-        LocalDate localDate = LocalDate.now();
-
-        LocalDateTime startPeriod = localDate.atStartOfDay();
-        LocalDateTime endPeriod = localDate.atTime(LocalTime.MAX);
-
-        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndStoreStoreIdAndFullyPaidIsAndPromotionParentSaleId(startPeriod, endPeriod, storeId, true, -promoId);
+        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndStoreStoreIdAndFullyPaidIsAndPromotionParentSaleId(LocalDate.now().atStartOfDay(), LocalDate.now().atTime(LocalTime.MAX), storeId, true, -promoId);
         return new ResponseEntity<>(saleList, HttpStatus.OK);
     }
 

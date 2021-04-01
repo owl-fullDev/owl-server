@@ -3,14 +3,10 @@ package com.owl.owlserver.Controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.DTO.ShipmentDTO;
 import com.owl.owlserver.Service.ShipmentService;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
-import io.vavr.Tuple;
-import io.vavr.Tuple3;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +18,7 @@ import java.time.format.DateTimeFormatter;
 
 import java.time.*;
 import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
 
 @CrossOrigin
 @RestController
@@ -100,7 +93,6 @@ public class warehouseEndpoint {
     @PostMapping("/receiveShipment")
     public ResponseEntity<String> receiveShipment(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
-
         int shipmentId = wholeJSON.get("shipmentId").asInt();
         Shipment shipment = shipmentRepository.findById(shipmentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No shipment with specified ID exists"));
 
@@ -114,12 +106,9 @@ public class warehouseEndpoint {
         return new ResponseEntity<>("Shipment received by warehouse!", HttpStatus.OK);
     }
 
-
-
     @PostMapping("/sendShipment")
     public ResponseEntity<String> sendShipment(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
-
         int shipmentId = wholeJSON.get("shipmentId").asInt();
         Shipment shipment = shipmentRepository.findById(shipmentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No shipment with specified ID exists"));
 

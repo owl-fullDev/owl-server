@@ -1,5 +1,9 @@
 package com.owl.owlserver.Service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.DTO.*;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
@@ -12,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.transaction.Transactional;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -49,20 +54,42 @@ public class SaleService {
     WarehouseQuantityRepository warehouseQuantityRepository;
     @Autowired
     SupplierRespository supplierRespository;
+    @Autowired
+    RefundRepository refundRepository;
 
     @Transactional
-    public List<SaleSerializeDTO> serializeSale(List<Sale> saleList){
-        if (saleList==null){
+    public void updateSale(Sale sale, JsonNode wholeJSON) {
+        LocalDateTime localPickUpTime = LocalDateTime.parse(wholeJSON.get("pickUpDate").asText(), DateTimeFormatter.ISO_INSTANT);
+        if (sale.isFullyPaid()) {
+            sale.setPickupDate(localPickUpTime);
+        }
+        else {
+            sale.setPickupDate(localPickUpTime);
+            sale.setFinalDepositDate(localPickUpTime);
+            sale.setFinalDepositType(wholeJSON.get("finalPaymentType").asText());
+            if (sale.getGrandTotal()-sale.getInitialDepositAmount()-wholeJSON.get("finalPaymentAmount").asDouble()>sale.getGrandTotal()*0.01){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Final payment does not cover amount due!");
+            }
+            sale.setFinalDepositAmount(wholeJSON.get("finalPaymentAmount").asDouble());
+        }
+        saleRepository.save(sale);
+    }
+
+
+    @Transactional
+    public List<SaleSerializeDTO> serializeSale(List<Sale> saleList) {
+        if (saleList == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Empty sale List");
         }
 
         List<SaleSerializeDTO> saleSerializeDTOList = new ArrayList<>();
 
-        for (Sale sale:saleList){
+        for (Sale sale : saleList) {
             SaleSerializeDTO saleSerializeDTO = SaleSerializeDTO.builder()
                     .saleId(sale.getSaleId())
-                    .customerName(sale.getCustomer().getFirstName()+" "+sale.getCustomer().getLastName())
-                    .employeeName(sale.getEmployee().getFirstName()+" "+sale.getEmployee().getLastname())
+                    .customerName(sale.getCustomer().getFirstName() + " " + sale.getCustomer().getLastName())
+                    .phoneNumber(sale.getCustomer().getPhoneNumber())
+                    .employeeName(sale.getEmployee().getFirstName() + " " + sale.getEmployee().getLastname())
                     .storeName(sale.getStore().getName())
                     .grandTotal(sale.getGrandTotal())
                     .isFullyPaid(sale.isFullyPaid())
@@ -71,25 +98,25 @@ public class SaleService {
                     .initialDepositAmount(sale.getInitialDepositAmount())
                     .build();
 
-            if (sale.getPromotion()!=null){
+            if (sale.getPromotion() != null) {
                 saleSerializeDTO.setPromotionName(sale.getPromotion().getPromotionName());
                 saleSerializeDTO.setPromotionParentId(sale.getPromotionParentSaleId());
             }
-            if (sale.getFinalDepositDate()!=null) {
+            if (sale.getFinalDepositDate() != null) {
                 saleSerializeDTO.setFinalDepositDate(sale.getInitialDepositDate().toString());
                 saleSerializeDTO.setFinalDepositType(sale.getFinalDepositType());
                 saleSerializeDTO.setFinalDepositAmount(sale.getFinalDepositAmount());
             }
-            if (sale.getSaleRemarks()!=null){
+            if (sale.getSaleRemarks() != null) {
                 saleSerializeDTO.setSaleRemarks(sale.getSaleRemarks());
             }
-            if (sale.getPickupDate()!=null){
+            if (sale.getPickupDate() != null) {
                 saleSerializeDTO.setPickupDate(sale.getPickupDate().toString());
             }
 
             List<SaleDetailDTO> saleDetailDTOList = new ArrayList<>();
-            for (SaleDetail saleDetail:sale.getSaleDetailList()){
-                SaleDetailDTO saleDetailDTO = new SaleDetailDTO(saleDetail.getProduct().getProductName(),saleDetail.getQuantity());
+            for (SaleDetail saleDetail : sale.getSaleDetailList()) {
+                SaleDetailDTO saleDetailDTO = new SaleDetailDTO(saleDetail.getProduct().getProductName(), saleDetail.getQuantity());
                 saleDetailDTOList.add(saleDetailDTO);
             }
 
@@ -111,8 +138,7 @@ public class SaleService {
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error with instantiating customer from customerDTO!");
             }
-        }
-        else {
+        } else {
             customer = customerRepository.findById(newSaleDTO.getCustomerId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No customer with specified ID exist"));
             CustomerDTO customerDTO = newSaleDTO.getCustomer();
 
@@ -136,7 +162,7 @@ public class SaleService {
         validateSaleDTO(saleDTO);
 
         Promotion promotion = null;
-        if (saleDTO.getPromotionId()!=null) {
+        if (saleDTO.getPromotionId() != null) {
             promotion = promotionRepository.findById(saleDTO.getPromotionId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No promotion with specified ID exist"));
         }
         Store store = storeRepository.findById(saleDTO.getStoreId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No store with specified ID exist"));
@@ -155,10 +181,10 @@ public class SaleService {
         newSale.setSaleRemarks(saleDTO.getSaleRemarks());
 
         newSale.setPromotion(promotion);
-        if (saleDTO.getPromotionParentSaleId()!=null) {
+        if (saleDTO.getPromotionParentSaleId() != null) {
             newSale.setPromotionParentSaleId(saleDTO.getPromotionParentSaleId());
             if (saleDTO.getPromotionParentSaleId() > 0) {
-                Sale parentSale = saleRepository.findById(saleDTO.getPromotionParentSaleId()).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST, "No parent sale with specified ID exists"));
+                Sale parentSale = saleRepository.findById(saleDTO.getPromotionParentSaleId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No parent sale with specified ID exists"));
                 parentSale.setPromotionParentSaleId(0);
                 saleRepository.save(parentSale);
             }
@@ -191,15 +217,15 @@ public class SaleService {
         List<StoreQuantity> storeQuantityList = storeQuantityRepository.findAllByStore_StoreIdAndProduct_ProductIdIn(newSale.getStore().getStoreId(), validProductIds);
         List<SaleDetail> saleDetailList = newSale.getSaleDetailList();
 
-        if (storeQuantityList.size()!=saleDetailDTOList.size()){
+        if (storeQuantityList.size() != saleDetailDTOList.size()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Mismatch between store quantity list returned and saleDetail list");
         }
 
         for (int c = 0; c < storeQuantityList.size(); c++) {
             String saleDetailProductId = saleDetailDTOList.get(c).getProductId();
             String storeQuantityProductId = storeQuantityList.get(c).getProduct().getProductId();
-            if (!(saleDetailProductId.equals(storeQuantityProductId))){
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Mismatch between store quantity list returned and saleDetail list "+ saleDetailProductId +" and "+storeQuantityProductId);
+            if (!(saleDetailProductId.equals(storeQuantityProductId))) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Mismatch between store quantity list returned and saleDetail list " + saleDetailProductId + " and " + storeQuantityProductId);
             }
             int available = storeQuantityList.get(c).getInstoreQuantity();
             int requested = saleDetailDTOList.get(c).getQuantity();
@@ -217,11 +243,81 @@ public class SaleService {
     }
 
     private void validateSaleDTO(SaleDTO saleDTO) {
-        if(saleDTO==null){
+        if (saleDTO == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sale is empty!");
         }
-        if (saleDTO.getGrandTotal()==null||saleDTO.getInitialDepositAmount()==null){
+        if (saleDTO.getGrandTotal() == null || saleDTO.getInitialDepositAmount() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Grand total or initial deposit is null!");
         }
+    }
+
+    @Transactional
+    public void newRefund(JsonNode wholeJSON) {
+
+        Sale sale = saleRepository.findById(wholeJSON.get("saleId").asInt()).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "No sale with Id of: " + wholeJSON.get("saleId").asInt() + " found"));
+        String remarks = wholeJSON.get("remarks").asText();
+        JsonNode saleDetailList = wholeJSON.get("refundedProducts");
+
+        List<String> productIds = new ArrayList<>();
+        for (SaleDetail saleDetail : sale.getSaleDetailList()) {
+            productIds.add(saleDetail.getProduct().getProductId());
+        }
+
+        List<StoreQuantity> storeQuantityList = storeQuantityRepository.findAllByStore_StoreIdAndProduct_ProductIdIn(sale.getStore().getStoreId(), productIds);
+
+        for (int c = 0; c < sale.getSaleDetailList().size(); c++) {
+            if (storeQuantityList.get(c).getProduct().getProductId().equals(saleDetailList.get(c).get("product").get("productId").asText())) {
+                if (saleDetailList.get(c).get("isReturned").asBoolean()) {
+                    storeQuantityList.get(c).setInstoreQuantity(storeQuantityList.get(c).getInstoreQuantity() + saleDetailList.get(c).get("quantity").asInt());
+                }
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mismatch between received saleDetailsList and stored");
+            }
+        }
+
+        storeQuantityRepository.saveAll(storeQuantityList);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode jsonNode = objectMapper.createObjectNode();
+        jsonNode.put("saleId", sale.getSaleId());
+        jsonNode.put("employeeId", sale.getEmployee().getEmployeeId());
+        jsonNode.put("grandTotal", sale.getGrandTotal());
+        jsonNode.put("initialDepositDate", sale.getInitialDepositDate().toString());
+        jsonNode.put("initialDepositType", sale.getInitialDepositType());
+        jsonNode.put("initialDepositAmount", sale.getInitialDepositAmount());
+        jsonNode.put("fullyPaid", sale.isFullyPaid());
+
+        if (sale.getFinalDepositDate() != null) {
+            jsonNode.put("finalDepositDate", sale.getFinalDepositDate().toString());
+            jsonNode.put("finalDepositType", sale.getFinalDepositType());
+            jsonNode.put("finalDepositAmount", sale.getFinalDepositAmount());
+        }
+
+        if (sale.getPickupDate() != null) {
+            jsonNode.put("pickupDate", sale.getPickupDate().toString());
+        }
+
+        if (sale.getPromotion() != null) {
+            ObjectNode promotionNode = jsonNode.putObject("promotion");
+            promotionNode.put("promotionId", sale.getPromotion().getPromotionId());
+            promotionNode.put("promotionName", sale.getPromotion().getPromotionName());
+        }
+
+        ObjectNode storeNode = jsonNode.putObject("store");
+        storeNode.put("storeId", sale.getStore().getStoreId());
+        storeNode.put("storeName", sale.getStore().getName());
+
+        ArrayNode arrayNode = objectMapper.valueToTree(sale.getSaleDetailList());
+        jsonNode.set("saleDetails", arrayNode);
+
+        Refund newRefund = new Refund();
+        newRefund.setRefundDetails(jsonNode.toString());
+        newRefund.setRemarks(remarks);
+        newRefund.setRefundDate(LocalDateTime.now());
+
+        refundRepository.save(newRefund);
+        List<SaleDetail> saleDetailList2 = sale.getSaleDetailList();
+        saleDetailRepository.deleteAll(saleDetailList2);
+        saleRepository.deleteById(sale.getSaleId());
     }
 }

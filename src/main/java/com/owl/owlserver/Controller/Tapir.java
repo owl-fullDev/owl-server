@@ -14,6 +14,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
 
+
+//THIS ENDPOINT IS FOR TESTING PURPOSES ONLY, DELETE BEFORE PRODUCTION
+
 @CrossOrigin
 @RestController
 @RequestMapping("/tapirRestApi")
@@ -55,25 +58,25 @@ public class Tapir {
         return "Happy birthday broooooooooooo";
     }
 
-    @PostMapping("/test")
-    public String test(@RequestBody TestEntity testEntity) throws JsonProcessingException {
-         return testEntity.toString();
-    }
-
-    @PostMapping("/test2")
-    public String test2(@RequestBody String jsonString) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode wholeJSON = objectMapper.readTree(jsonString);
-        JsonNode testJson = wholeJSON.get("testEntity");
-
-        try {
-            TestEntity testEntity = objectMapper.treeToValue(testJson,TestEntity.class);
-            return testEntity.toString();
-        }
-        catch (Exception e){
-            return e.toString();
-        }
-    }
+//    @PostMapping("/test")
+//    public String test(@RequestBody TestEntity testEntity) throws JsonProcessingException {
+//         return testEntity.toString();
+//    }
+//
+//    @PostMapping("/test2")
+//    public String test2(@RequestBody String jsonString) throws JsonProcessingException {
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+//        JsonNode testJson = wholeJSON.get("testEntity");
+//
+//        try {
+//            TestEntity testEntity = objectMapper.treeToValue(testJson,TestEntity.class);
+//            return testEntity.toString();
+//        }
+//        catch (Exception e){
+//            return e.toString();
+//        }
+//    }
 
     @Transactional
     @PostMapping(value = "/newSale")

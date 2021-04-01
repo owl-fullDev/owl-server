@@ -61,6 +61,9 @@ public class ShipmentService {
 
     public void persistShipment(Shipment shipment) {
 
+        if (shipment==null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Shipment data is empty!");
+        }
         int originType = shipment.getOriginType();
         int originId = shipment.getOriginId();
         int destinationType = shipment.getDestinationType();

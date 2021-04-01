@@ -11,6 +11,7 @@ public class SaleSerializeDTO {
 
     private Integer saleId;
     private String customerName;
+    private String phoneNumber;
     private String promotionName;
     private Integer promotionParentId;
     public String employeeName;
