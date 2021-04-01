@@ -1,11 +1,10 @@
 package com.owl.owlserver.Controller.HeadOfficeController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.owl.owlserver.DTO.SaleSerializeDTO;
+import com.owl.owlserver.DTO.Serialize.HO.SaleSerializeDTO;
 import com.owl.owlserver.Serializer.SalesAllSerializer;
 import com.owl.owlserver.Service.SaleService;
 import com.owl.owlserver.model.*;
@@ -14,7 +13,6 @@ import org.springframework.aop.AopInvocationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import com.fasterxml.jackson.databind.JsonNode;
 
 
 import java.time.LocalDate;

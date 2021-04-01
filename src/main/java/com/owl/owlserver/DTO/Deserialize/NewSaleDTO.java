@@ -1,5 +1,5 @@
 
-package com.owl.owlserver.DTO;
+package com.owl.owlserver.DTO.Deserialize;
 
 import lombok.Data;
 

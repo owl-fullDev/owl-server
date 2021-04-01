@@ -4,8 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.owl.owlserver.DTO.NewSaleDTO;
-import com.owl.owlserver.DTO.SaleSerializeDTO;
+import com.owl.owlserver.DTO.Deserialize.NewSaleDTO;
+import com.owl.owlserver.DTO.Serialize.HO.SaleSerializeDTO;
+import com.owl.owlserver.DTO.Serialize.POS.POSSaleSerializerDTO;
 import com.owl.owlserver.Service.SaleService;
 import com.owl.owlserver.Service.ShipmentService;
 import com.owl.owlserver.model.*;
@@ -18,7 +19,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @CrossOrigin
@@ -109,10 +109,10 @@ public class posEndpoint {
     }
 
     @GetMapping("/getPendingSaleList")
-    public List<SaleSerializeDTO> getPendingSaleList(@RequestParam int storeId) {
+    public List<POSSaleSerializerDTO> getPendingSaleList(@RequestParam int storeId) {
         storeRepository.findById(storeId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No store with specified ID exists"));
         List<Sale> saleList = saleRepository.getAllByStoreStoreIdAndPickupDateEquals(storeId, null);
-        return saleService.serializeSale(saleList);
+        return saleService.serializeSalePOS(saleList);
     }
 
     @Transactional

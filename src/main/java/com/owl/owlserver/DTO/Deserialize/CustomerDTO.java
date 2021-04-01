@@ -1,24 +1,26 @@
 
-package com.owl.owlserver.DTO;
+package com.owl.owlserver.DTO.Deserialize;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class CustomerDTO {
 
     public String firstName;
     public String lastName;
     public String phoneNumber;
     public String email;
-    public Integer leftEyeSphere;
-    public Integer leftEyeCylinder;
+    public Double leftEyeSphere;
+    public Double leftEyeCylinder;
     public Integer leftEyeAxis;
-    public Integer leftEyeAdd;
+    public Double leftEyeAdd;
     public String leftEyePrism;
-    public Integer rightEyeSphere;
-    public Integer rightEyeCylinder;
+    public Double rightEyeSphere;
+    public Double rightEyeCylinder;
     public Integer rightEyeAxis;
-    public Integer rightEyeAdd;
+    public Double rightEyeAdd;
     public String rightEyePrism;
     public Integer pupilDistance;
 

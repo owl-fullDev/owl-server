@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.owl.owlserver.DTO.*;
+import com.owl.owlserver.DTO.Deserialize.*;
+import com.owl.owlserver.DTO.Serialize.HO.SaleSerializeDTO;
+import com.owl.owlserver.DTO.Serialize.POS.POSSaleSerializerDTO;
+import com.owl.owlserver.DTO.Serialize.SaleDetailSerializerDTO;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.apache.commons.beanutils.BeanUtils;
@@ -123,8 +126,75 @@ public class SaleService {
             saleSerializeDTO.setSaleDetailDTOS(saleDetailDTOList);
             saleSerializeDTOList.add(saleSerializeDTO);
         }
-
         return saleSerializeDTOList;
+    }
+
+    @Transactional
+    public List<POSSaleSerializerDTO> serializeSalePOS(List<Sale> saleList) {
+        if (saleList == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Empty sale List");
+        }
+
+        List<POSSaleSerializerDTO> posSaleSerializerDTOList = new ArrayList<>();
+
+        for (Sale sale : saleList) {
+            Customer customer = sale.getCustomer();
+            CustomerDTO customerDTO = CustomerDTO.builder()
+                    .firstName(customer.getFirstName())
+                    .lastName(customer.getLastName())
+                    .email(customer.getEmail())
+                    .phoneNumber(customer.getPhoneNumber())
+                    .leftEyeAdd(customer.getLeftEyeAdd())
+                    .leftEyeAxis(customer.getLeftEyeAxis())
+                    .leftEyeCylinder(customer.getLeftEyeCylinder())
+                    .leftEyePrism(customer.getLeftEyePrism())
+                    .leftEyeSphere(customer.getLeftEyeSphere())
+                    .rightEyeAdd(customer.getRightEyeAdd())
+                    .rightEyeAxis(customer.getRightEyeAxis())
+                    .rightEyeCylinder(customer.getRightEyeCylinder())
+                    .rightEyePrism(customer.getRightEyePrism())
+                    .rightEyeSphere(customer.getRightEyeSphere())
+                    .pupilDistance(customer.getPupilDistance())
+                    .build();
+
+            POSSaleSerializerDTO posSaleSerializerDTO = POSSaleSerializerDTO.builder()
+                    .saleId(sale.getSaleId())
+                    .customerDTO(customerDTO)
+                    .employeeName(sale.getEmployee().getFirstName() + " " + sale.getEmployee().getLastname())
+                    .storeName(sale.getStore().getName())
+                    .grandTotal(sale.getGrandTotal())
+                    .isFullyPaid(sale.isFullyPaid())
+                    .initialDepositDate(sale.getInitialDepositDate().toString())
+                    .initialDepositType(sale.getInitialDepositType())
+                    .initialDepositAmount(sale.getInitialDepositAmount())
+                    .build();
+
+            if (sale.getPromotion() != null) {
+                posSaleSerializerDTO.setPromotionName(sale.getPromotion().getPromotionName());
+                posSaleSerializerDTO.setPromotionParentId(sale.getPromotionParentSaleId());
+            }
+            if (sale.getFinalDepositDate() != null) {
+                posSaleSerializerDTO.setFinalDepositDate(sale.getInitialDepositDate().toString());
+                posSaleSerializerDTO.setFinalDepositType(sale.getFinalDepositType());
+                posSaleSerializerDTO.setFinalDepositAmount(sale.getFinalDepositAmount());
+            }
+            if (sale.getSaleRemarks() != null) {
+                posSaleSerializerDTO.setSaleRemarks(sale.getSaleRemarks());
+            }
+            if (sale.getPickupDate() != null) {
+                posSaleSerializerDTO.setPickupDate(sale.getPickupDate().toString());
+            }
+
+            List<SaleDetailSerializerDTO> saleDetailSerializerDTOList = new ArrayList<>();
+            for (SaleDetail saleDetail : sale.getSaleDetailList()) {
+                SaleDetailSerializerDTO saleDetailSerializerDTO = new SaleDetailSerializerDTO(saleDetail.getProduct().getProductId(), saleDetail.getProduct().getProductName(), saleDetail.getQuantity());
+                saleDetailSerializerDTOList.add(saleDetailSerializerDTO);
+            }
+
+            posSaleSerializerDTO.setSaleDetailSerializerDTOList(saleDetailSerializerDTOList);
+            posSaleSerializerDTOList.add(posSaleSerializerDTO);
+        }
+        return posSaleSerializerDTOList;
     }
 
     @Transactional

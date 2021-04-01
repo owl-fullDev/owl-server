@@ -1,5 +1,7 @@
-package com.owl.owlserver.DTO;
+package com.owl.owlserver.DTO.Serialize.HO;
 
+import com.owl.owlserver.DTO.Deserialize.SaleDetailDTO;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -7,6 +9,7 @@ import java.util.List;
 
 @Data
 @Builder
+@AllArgsConstructor
 public class SaleSerializeDTO {
 
     private Integer saleId;
@@ -14,18 +17,18 @@ public class SaleSerializeDTO {
     private String phoneNumber;
     private String promotionName;
     private Integer promotionParentId;
-    public String employeeName;
-    public String storeName;
-    public Double grandTotal;
-    public Boolean isFullyPaid;
+    private String employeeName;
+    private String storeName;
+    private Double grandTotal;
+    private Boolean isFullyPaid;
     private String initialDepositDate;
     private String initialDepositType;
     private Double initialDepositAmount;
     private String finalDepositDate;
     private String finalDepositType;
     private Double finalDepositAmount;
-    public String saleRemarks;
-    public String pickupDate;
+    private String saleRemarks;
+    private String pickupDate;
 
-    public List<SaleDetailDTO> saleDetailDTOS;
+    private List<SaleDetailDTO> saleDetailDTOS;
 }
