@@ -141,7 +141,9 @@ public class SaleService {
             csvString.append(sale.getSaleId()).append(",");
             csvString.append(sale.getCustomer().getFirstName()).append(" ").append(sale.getCustomer().getLastName()).append(",");
             if (sale.getPromotion()!=null)
-            csvString.append(sale.getPromotion().getPromotionName()).append(",");
+                csvString.append(sale.getPromotion().getPromotionName()).append(",");
+            else
+                csvString.append("-").append(",");
             csvString.append(sale.getPromotionParentSaleId()).append(",");
             csvString.append(sale.getEmployee().getFirstName()).append(" ").append(sale.getEmployee().getLastname()).append(",");
             csvString.append(sale.getStore().getName()).append(",");
@@ -157,8 +159,12 @@ public class SaleService {
                 csvString.append(sale.getFinalDepositType()).append(",");
                 csvString.append(sale.getFinalDepositAmount()).append(",");
             }
+            else
+                csvString.append("-").append(",");
             if(sale.getSaleRemarks()!=null)
             csvString.append(sale.getSaleRemarks()).append("\n");
+            else
+                csvString.append("-").append(",");
         }
 
         return csvString.toString();
