@@ -20,9 +20,7 @@ import javax.transaction.Transactional;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
@@ -134,15 +132,47 @@ public class SaleService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Empty sale List");
         }
 
-        StringBuilder csvString = new StringBuilder();
-        csvString.append("toko,produkID,Quantitas Terjual\n");
+        List<Store> storeList = storeRepository.findAll();
+        HashMap<Integer,HashMap<String,Integer>> storeProductsHashmap = new HashMap<>();
+
         for (Sale sale : saleList) {
-            List<SaleDetail> saleDetailList = sale.getSaleDetailList();
-            for (SaleDetail saleDetail:saleDetailList){
-                csvString.append(sale.getStore().getName()).append(",");
-                csvString.append(saleDetail.getProduct().getProductId()).append(",");
-                csvString.append(saleDetail.getQuantity()).append(",");
-                csvString.append(sale.getStore().getName()).append("\n");
+            int storeId = sale.getStore().getStoreId();
+            if (!storeProductsHashmap.containsKey(storeId)) {
+                storeProductsHashmap.put(storeId, new HashMap<>());
+            }
+
+            HashMap<String, Integer> productSaleHashmap = storeProductsHashmap.get(storeId);
+            for (SaleDetail saleDetail:sale.getSaleDetailList()){
+                Product product = saleDetail.getProduct();
+                if (!productSaleHashmap.containsKey(product.getProductId())){
+                    productSaleHashmap.put(product.getProductId(),saleDetail.getQuantity());
+                }
+                else {
+                    int quantity = productSaleHashmap.get(product.getProductId());
+                    productSaleHashmap.put(product.getProductId(),quantity+saleDetail.getQuantity());
+                }
+            }
+        }
+
+        StringBuilder csvString = new StringBuilder();
+        csvString.append("ProdukId,Quantitas Terjual\n");
+        for (Map.Entry storeDetailsRow : storeProductsHashmap.entrySet()) {
+            int storeId = (int) storeDetailsRow.getKey();
+            String storeName = "";
+            for (Store store : storeList) {
+                if (store.getStoreId() == storeId) {
+                    storeName = store.getName();
+                    break;
+                }
+            }
+            csvString.append("Penjualan produk").append("Toko: ").append(storeName).append("\n");
+
+            HashMap<String, Integer> productMap = ((HashMap<String, Integer>) storeDetailsRow.getValue());
+            for (Map.Entry productRow : productMap.entrySet()) {
+                String productId = (String) productRow.getKey();
+                int quantity = (int)productRow.getValue();
+                csvString.append(productId).append(",");
+                csvString.append(quantity).append("\n");
             }
         }
         return csvString.toString();
