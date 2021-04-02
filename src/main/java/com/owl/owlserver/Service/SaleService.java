@@ -78,7 +78,6 @@ public class SaleService {
         saleRepository.save(sale);
     }
 
-
     @Transactional
     public List<SaleSerializeDTO> serializeSale(List<Sale> saleList) {
         if (saleList == null) {
@@ -127,6 +126,26 @@ public class SaleService {
             saleSerializeDTOList.add(saleSerializeDTO);
         }
         return saleSerializeDTOList;
+    }
+
+    @Transactional
+    public String CSVProductSales(List<Sale> saleList) {
+        if (saleList == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Empty sale List");
+        }
+
+        StringBuilder csvString = new StringBuilder();
+        csvString.append("toko,produkID,Quantitas Terjual\n");
+        for (Sale sale : saleList) {
+            List<SaleDetail> saleDetailList = sale.getSaleDetailList();
+            for (SaleDetail saleDetail:saleDetailList){
+                csvString.append(sale.getStore().getName()).append(",");
+                csvString.append(saleDetail.getProduct().getProductId()).append(",");
+                csvString.append(saleDetail.getQuantity()).append(",");
+                csvString.append(sale.getStore().getName()).append("\n");
+            }
+        }
+        return csvString.toString();
     }
 
     @Transactional

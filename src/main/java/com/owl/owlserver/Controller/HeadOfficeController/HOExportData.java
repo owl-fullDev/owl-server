@@ -1,9 +1,15 @@
 package com.owl.owlserver.Controller.HeadOfficeController;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.DTO.Serialize.HO.SaleSerializeDTO;
 import com.owl.owlserver.Service.SaleService;
 import com.owl.owlserver.model.Sale;
+import com.owl.owlserver.model.Store;
 import com.owl.owlserver.repositories.SaleRepository;
+import com.owl.owlserver.repositories.StoreRepository;
+import org.springframework.aop.AopInvocationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +31,8 @@ public class HOExportData {
     //injecting repositories for database access
     @Autowired
     SaleRepository saleRepository;
+    @Autowired
+    StoreRepository storeRepository;
 
     //injecting services for database access
     @Autowired
@@ -48,5 +56,19 @@ public class HOExportData {
 
         List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndPickupDateIsNotNullOrderByInitialDepositDate(startPeriod, endPeriod);
         return saleService.saleToCSV(saleList);
+    }
+
+    @GetMapping(value = "/getAllProductSalesForSpecificPeriodByStore", produces = "text/csv")
+    public String getAllProductSalesForSpecificPeriodByStore(String start, String end) {
+
+        LocalDate localDateStart = LocalDate.parse(start);
+        LocalDate localDateEnd = LocalDate.parse(end);
+
+        LocalDateTime startPeriod = localDateStart.atStartOfDay();
+        LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
+
+        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndPickupDateIsNotNullOrderByInitialDepositDate(startPeriod, endPeriod);
+
+        return saleService.CSVProductSales(saleList);
     }
 }

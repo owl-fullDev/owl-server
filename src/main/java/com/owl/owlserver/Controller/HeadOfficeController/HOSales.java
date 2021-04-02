@@ -107,7 +107,6 @@ public class HOSales {
             }
             arrayNode.add(objectNode);
         }
-
         return arrayNode;
     }
 
