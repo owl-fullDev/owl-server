@@ -133,6 +133,8 @@ public class SaleService {
         }
 
         List<Store> storeList = storeRepository.findAll();
+
+        HashMap<String,Integer> totalProductsSaleHashmap = new HashMap<>();
         HashMap<Integer,HashMap<String,Integer>> storeProductsHashmap = new HashMap<>();
 
         for (Sale sale : saleList) {
@@ -140,16 +142,26 @@ public class SaleService {
             if (!storeProductsHashmap.containsKey(storeId)) {
                 storeProductsHashmap.put(storeId, new HashMap<>());
             }
-
             HashMap<String, Integer> productSaleHashmap = storeProductsHashmap.get(storeId);
             for (SaleDetail saleDetail:sale.getSaleDetailList()){
                 Product product = saleDetail.getProduct();
+
+                //to count for product sales per store
                 if (!productSaleHashmap.containsKey(product.getProductId())){
                     productSaleHashmap.put(product.getProductId(),saleDetail.getQuantity());
                 }
                 else {
                     int quantity = productSaleHashmap.get(product.getProductId());
                     productSaleHashmap.put(product.getProductId(),quantity+saleDetail.getQuantity());
+                }
+
+                //to count total sales for all products
+                if (!totalProductsSaleHashmap.containsKey(product.getProductId())){
+                    totalProductsSaleHashmap.put(product.getProductId(),saleDetail.getQuantity());
+                }
+                else {
+                    int quantity = totalProductsSaleHashmap.get(product.getProductId());
+                    totalProductsSaleHashmap.put(product.getProductId(),quantity+saleDetail.getQuantity());
                 }
             }
         }
@@ -165,9 +177,11 @@ public class SaleService {
                     break;
                 }
             }
+
+            csvString.append(" - , - ").append("\n");
             csvString.append("Penjualan produk").append("Toko: ").append(storeName).append("\n");
 
-            HashMap<String, Integer> productMap = ((HashMap<String, Integer>) storeDetailsRow.getValue());
+            HashMap<String, Integer> productMap = (HashMap<String, Integer>) storeDetailsRow.getValue();
             for (Map.Entry productRow : productMap.entrySet()) {
                 String productId = (String) productRow.getKey();
                 int quantity = (int)productRow.getValue();
@@ -175,6 +189,16 @@ public class SaleService {
                 csvString.append(quantity).append("\n");
             }
         }
+
+        csvString.append(" - , - ").append("\n");
+        csvString.append("Total penjualan produk dari semua toko: ").append("\n");
+        for (Map.Entry totalProductSale : totalProductsSaleHashmap.entrySet()) {
+            String productId = (String) totalProductSale.getKey();
+            int quantity = (int)totalProductSale.getValue();
+            csvString.append(productId).append(",");
+            csvString.append(quantity).append("\n");
+        }
+
         return csvString.toString();
     }
 
