@@ -16,8 +16,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.transaction.Transactional;
 import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -198,12 +200,11 @@ public class SaleService {
             csvString.append(productId).append(",");
             csvString.append(quantity).append("\n");
         }
-
         return csvString.toString();
     }
 
     @Transactional
-    public String saleToCSV(List<Sale> saleList) {
+    public String CSVSaleList(List<Sale> saleList) {
         if (saleList == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Empty sale List");
         }
@@ -242,6 +243,60 @@ public class SaleService {
 
         return csvString.toString();
     }
+
+    @Transactional
+    public String CSVTotalSaleRevenue(List<Sale> saleList) {
+        if (saleList == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Empty sale List");
+        }
+
+        StringBuilder csvString = new StringBuilder();
+        HashMap<LocalDate, HashMap<Integer, Double>> saleHash = new HashMap<>();
+
+        for (Sale sale : saleList) {
+            int promotionId = 0;
+            if (sale.getPromotion() != null) {
+                promotionId = sale.getPromotion().getPromotionId();
+            }
+
+            saleHash.putIfAbsent(sale.getInitialDepositDate().toLocalDate(), new HashMap<>());
+            HashMap<Integer, Double> totalDayRevenueHash = saleHash.get(sale.getInitialDepositDate().toLocalDate());
+            if (!totalDayRevenueHash.containsKey(promotionId)) {
+                totalDayRevenueHash.put(promotionId, sale.getGrandTotal());
+            }
+            else {
+                totalDayRevenueHash.put(promotionId, totalDayRevenueHash.get(promotionId) + sale.getGrandTotal());
+            }
+        }
+
+        csvString.append(" ,");
+        List<Promotion> promotionList = promotionRepository.findAll();
+        for (Promotion promotion:promotionList) {
+            csvString.append(promotion.getPromotionId()).append(" : ").append(promotion.getPromotionName()).append(",");
+        }
+        csvString.append("\n");
+
+        for (Map.Entry dates : saleHash.entrySet()) {
+            HashMap<Integer,Double> totalSalesByPromotions = (HashMap<Integer, Double>) dates.getValue();
+            csvString.append(dates.getKey().toString()).append(",");
+            for (Promotion promotion:promotionList) {
+                    if (totalSalesByPromotions.containsKey(promotion.getPromotionId())) {
+                        csvString.append(totalSalesByPromotions.get(promotion.getPromotionId()));
+                    }
+                    else {
+                        csvString.append("0");
+                    }
+                csvString.append(",");
+
+            }
+            csvString.append("\n");
+        }
+
+
+        return csvString.toString();
+    }
+
+
 
     @Transactional
     public int newSale(NewSaleDTO newSaleDTO) {

@@ -1,15 +1,9 @@
 package com.owl.owlserver.Controller.HeadOfficeController;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.owl.owlserver.DTO.Serialize.HO.SaleSerializeDTO;
 import com.owl.owlserver.Service.SaleService;
 import com.owl.owlserver.model.Sale;
-import com.owl.owlserver.model.Store;
 import com.owl.owlserver.repositories.SaleRepository;
 import com.owl.owlserver.repositories.StoreRepository;
-import org.springframework.aop.AopInvocationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,7 +49,7 @@ public class HOExportData {
         LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
 
         List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndPickupDateIsNotNullOrderByInitialDepositDate(startPeriod, endPeriod);
-        return saleService.saleToCSV(saleList);
+        return saleService.CSVSaleList(saleList);
     }
 
     @GetMapping(value = "/getAllProductSalesForSpecificPeriodByStore", produces = "text/csv")
@@ -70,5 +64,19 @@ public class HOExportData {
         List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndPickupDateIsNotNullOrderByInitialDepositDate(startPeriod, endPeriod);
 
         return saleService.CSVProductSales(saleList);
+    }
+
+    @GetMapping(value = "/getAllSalesTotalsWithPromotion", produces = "text/csv")
+    public String getAllSalesTotalsWithPromotion(String start, String end) {
+
+        LocalDate localDateStart = LocalDate.parse(start);
+        LocalDate localDateEnd = LocalDate.parse(end);
+
+        LocalDateTime startPeriod = localDateStart.atStartOfDay();
+        LocalDateTime endPeriod = localDateEnd.atTime(LocalTime.MAX);
+
+        List<Sale> saleList = saleRepository.getAllByInitialDepositDateIsBetweenAndPickupDateIsNotNullOrderByInitialDepositDate(startPeriod, endPeriod);
+
+        return saleService.CSVTotalSaleRevenue(saleList);
     }
 }
