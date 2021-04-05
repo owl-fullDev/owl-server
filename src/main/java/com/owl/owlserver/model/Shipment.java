@@ -5,7 +5,6 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,18 +44,4 @@ public class Shipment implements Serializable {
     public Shipment() {
         shipmentDetailList = new ArrayList<>();
     }
-
-    public Shipment(int shipmentId) {
-        shipmentDetailList = new ArrayList<>();
-        this.shipmentId = shipmentId;
-    }
-
-    public Shipment(int originType, int destinationType, int originId, int destinationId) {
-        shipmentDetailList = new ArrayList<>();
-        this.originType = originType;
-        this.destinationType = destinationType;
-        this.originId = originId;
-        this.destinationId = destinationId;
-    }
-
 }

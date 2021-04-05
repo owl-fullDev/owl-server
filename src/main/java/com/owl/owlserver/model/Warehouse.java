@@ -1,6 +1,7 @@
 package com.owl.owlserver.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Data
 @Table(name = "WAREHOUSE")
 public class Warehouse implements Serializable {
 
@@ -39,54 +41,8 @@ public class Warehouse implements Serializable {
         warehouseQuantityList = new ArrayList<>();
     }
 
-    public int getWarehouseId() {
-        return warehouseId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPhone_number() {
-        return phone_number;
-    }
-
-    public void setPhone_number(String phone_number) {
-        this.phone_number = phone_number;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public List<WarehouseQuantity> getWarehouseQuantityList() {
-        return warehouseQuantityList;
-    }
-
     public void addWarehouseQuantityList(WarehouseQuantity warehouseQuantity) {
-        warehouseQuantityList.add(warehouseQuantity);
-    }
-
-    public void removeWarehouseQuantityList(WarehouseQuantity warehouseQuantity) {
-        warehouseQuantityList.remove(warehouseQuantity);
-    }
-
-    @Override
-    public String toString() {
-        return "Warehouse{" +
-                "warehouseId=" + warehouseId +
-                ", name='" + name + '\'' +
-                ", phone_number='" + phone_number + '\'' +
-                ", address='" + address + '\'' +
-                '}';
+        this.warehouseQuantityList.add(warehouseQuantity);
     }
 }
 

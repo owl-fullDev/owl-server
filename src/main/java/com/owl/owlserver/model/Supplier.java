@@ -1,9 +1,12 @@
 package com.owl.owlserver.model;
 
+import lombok.Data;
+
 import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
+@Data
 @Table(name = "SUPPLIER")
 public class Supplier implements Serializable {
 
@@ -32,52 +35,5 @@ public class Supplier implements Serializable {
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.email = email;
-    }
-
-    public int getSupplierId() {
-        return supplierId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    @Override
-    public String toString() {
-        return "Supplier{" +
-                "supplierId=" + supplierId +
-                ", name='" + name + '\'' +
-                ", address='" + address + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", email='" + email + '\'' +
-                '}';
     }
 }

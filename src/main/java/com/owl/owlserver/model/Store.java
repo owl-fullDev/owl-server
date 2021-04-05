@@ -150,7 +150,7 @@ public class Store implements Serializable {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
-//test
+
     @Override
     public String toString() {
         return "Store{" +

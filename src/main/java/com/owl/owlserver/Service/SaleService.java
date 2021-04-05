@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.DTO.Deserialize.*;
 import com.owl.owlserver.DTO.Serialize.HO.SaleSerializeDTO;
-import com.owl.owlserver.DTO.Serialize.POS.POSSaleSerializerDTO;
-import com.owl.owlserver.DTO.Serialize.SaleDetailSerializerDTO;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.apache.commons.beanutils.BeanUtils;
@@ -16,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.transaction.Transactional;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
@@ -294,8 +291,6 @@ public class SaleService {
         }
         return csvString.toString();
     }
-
-
 
     @Transactional
     public int newSale(NewSaleDTO newSaleDTO) {

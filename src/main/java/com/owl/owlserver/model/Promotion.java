@@ -1,14 +1,15 @@
 package com.owl.owlserver.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Entity
+@Data
 @Table(name = "PROMOTION")
 public class Promotion implements Serializable {
 
@@ -37,6 +38,7 @@ public class Promotion implements Serializable {
     public Promotion() {
         saleList = new ArrayList<>();
         storeList = new ArrayList<>();
+        this.activeInAllStores = false;
     }
 
     public Promotion(int percentage, String promotionName) {
@@ -47,70 +49,19 @@ public class Promotion implements Serializable {
         this.activeInAllStores = false;
     }
 
-    public List<Store> getStoreList() {
-        return storeList;
-    }
-
-    public void addStore(Store store) {
-        storeList.add(store);
-    }
-
-    public void removeStore(Store store) {
-        storeList.remove(store);
-    }
-
-    public List<Sale> getSaleList() {
-        return saleList;
-    }
-
     public void addSale(Sale sale) {
-        saleList.add(sale);
+        this.saleList.add(sale);
     }
 
     public void removeSale(Sale sale) {
-        saleList.remove(sale);
+        this.saleList.remove(sale);
     }
 
-
-    public int getPromotionId() {
-        return promotionId;
+    public void addStore(Store store) {
+        this.storeList.add(store);
     }
 
-    public void setPromotionId(int promotionId) {
-        this.promotionId = promotionId;
-    }
-
-    public String getPromotionName() {
-        return promotionName;
-    }
-
-    public void setPromotionName(String promotionName) {
-        this.promotionName = promotionName;
-    }
-
-    public int getPercentage() {
-        return percentage;
-    }
-
-    public void setPercentage(int percentage) {
-        this.percentage = percentage;
-    }
-
-    public boolean isActiveInAllStores() {
-        return activeInAllStores;
-    }
-
-    public void setActiveInAllStores(boolean activeInAllStores) {
-        this.activeInAllStores = activeInAllStores;
-    }
-
-    @Override
-    public String toString() {
-        return "Promotion{" +
-                "promotionId=" + promotionId +
-                ", promotionName='" + promotionName + '\'' +
-                ", percentage=" + percentage +
-                ", activeInAllStores=" + activeInAllStores +
-                '}';
+    public void removeStore(Store store) {
+        this.storeList.remove(store);
     }
 }

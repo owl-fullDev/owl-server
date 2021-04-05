@@ -38,13 +38,4 @@ public class ShipmentDetail implements Serializable {
     @ManyToOne
     @JoinColumn(name = "SHIPMENT_ID", nullable = false)
     private Shipment shipment;
-
-    public ShipmentDetail(Shipment shipment, Product product, int quantity) {
-        this.quantity = quantity;
-        this.product = product;
-        this.shipment = shipment;
-        this.comment = "";
-    }
-
-
 }

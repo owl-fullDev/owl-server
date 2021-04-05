@@ -36,6 +36,4 @@ public class WarehouseQuantity implements Serializable {
         this.product = product;
         this.inWarehouseQuantity = inWarehouseQuantity;
     }
-
-
 }
