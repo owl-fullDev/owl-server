@@ -274,25 +274,24 @@ public class SaleService {
         for (Promotion promotion:promotionList) {
             csvString.append(promotion.getPromotionId()).append(" : ").append(promotion.getPromotionName()).append(",");
         }
+        csvString.append("0 : No Promotion");
         csvString.append("\n");
 
         for (Map.Entry dates : saleHash.entrySet()) {
             HashMap<Integer,Double> totalSalesByPromotions = (HashMap<Integer, Double>) dates.getValue();
             csvString.append(dates.getKey().toString()).append(",");
             for (Promotion promotion:promotionList) {
-                    if (totalSalesByPromotions.containsKey(promotion.getPromotionId())) {
-                        csvString.append(totalSalesByPromotions.get(promotion.getPromotionId()));
-                    }
-                    else {
-                        csvString.append("0");
-                    }
+                if (totalSalesByPromotions.containsKey(promotion.getPromotionId())) {
+                    csvString.append(totalSalesByPromotions.get(promotion.getPromotionId()));
+                }
+                else {
+                    csvString.append("0");
+                }
                 csvString.append(",");
-
             }
+            csvString.append(totalSalesByPromotions.get(0));
             csvString.append("\n");
         }
-
-
         return csvString.toString();
     }
 
