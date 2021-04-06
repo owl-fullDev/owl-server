@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.DTO.Deserialize.NewSaleDTO;
-import com.owl.owlserver.DTO.Serialize.HO.SaleSerializeDTO;
-import com.owl.owlserver.DTO.Serialize.POS.POSSaleSerializerDTO;
 import com.owl.owlserver.Service.SaleService;
 import com.owl.owlserver.Service.ShipmentService;
 import com.owl.owlserver.model.*;

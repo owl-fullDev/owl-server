@@ -1,10 +1,9 @@
 package com.owl.owlserver.Controller.HeadOfficeController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.owl.owlserver.DTO.Serialize.HO.SaleSerializeDTO;
+import com.owl.owlserver.DTO.Serialize.SaleSerializeDTO;
 import com.owl.owlserver.Service.SaleService;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;

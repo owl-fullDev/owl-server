@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.owl.owlserver.DTO.Deserialize.*;
-import com.owl.owlserver.DTO.Serialize.HO.SaleSerializeDTO;
+import com.owl.owlserver.DTO.Serialize.SaleSerializeDTO;
 import com.owl.owlserver.model.*;
 import com.owl.owlserver.repositories.*;
 import org.apache.commons.beanutils.BeanUtils;
@@ -86,31 +86,17 @@ public class SaleService {
         for (Sale sale : saleList) {
             SaleSerializeDTO saleSerializeDTO = SaleSerializeDTO.builder()
                     .saleId(sale.getSaleId())
-                    .customerName(sale.getCustomer().getFirstName() + " " + sale.getCustomer().getLastName())
-                    .phoneNumber(sale.getCustomer().getPhoneNumber())
-                    .employeeName(sale.getEmployee().getFirstName() + " " + sale.getEmployee().getLastname())
                     .storeName(sale.getStore().getName())
                     .grandTotal(sale.getGrandTotal())
-                    .isFullyPaid(sale.isFullyPaid())
                     .initialDepositDate(sale.getInitialDepositDate().toString())
-                    .initialDepositType(sale.getInitialDepositType())
-                    .initialDepositAmount(sale.getInitialDepositAmount())
                     .build();
 
             if (sale.getPromotion() != null) {
                 saleSerializeDTO.setPromotionName(sale.getPromotion().getPromotionName());
                 saleSerializeDTO.setPromotionParentId(sale.getPromotionParentSaleId());
             }
-            if (sale.getFinalDepositDate() != null) {
-                saleSerializeDTO.setFinalDepositDate(sale.getInitialDepositDate().toString());
-                saleSerializeDTO.setFinalDepositType(sale.getFinalDepositType());
-                saleSerializeDTO.setFinalDepositAmount(sale.getFinalDepositAmount());
-            }
             if (sale.getSaleRemarks() != null) {
                 saleSerializeDTO.setSaleRemarks(sale.getSaleRemarks());
-            }
-            if (sale.getPickupDate() != null) {
-                saleSerializeDTO.setPickupDate(sale.getPickupDate().toString());
             }
 
             List<SaleDetailDTO> saleDetailDTOList = new ArrayList<>();
@@ -123,173 +109,6 @@ public class SaleService {
             saleSerializeDTOList.add(saleSerializeDTO);
         }
         return saleSerializeDTOList;
-    }
-
-    @Transactional
-    public String CSVProductSales(List<Sale> saleList) {
-        if (saleList == null) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Empty sale List");
-        }
-
-        List<Store> storeList = storeRepository.findAll();
-
-        HashMap<String,Integer> totalProductsSaleHashmap = new HashMap<>();
-        HashMap<Integer,HashMap<String,Integer>> storeProductsHashmap = new HashMap<>();
-
-        for (Sale sale : saleList) {
-            int storeId = sale.getStore().getStoreId();
-            if (!storeProductsHashmap.containsKey(storeId)) {
-                storeProductsHashmap.put(storeId, new HashMap<>());
-            }
-            HashMap<String, Integer> productSaleHashmap = storeProductsHashmap.get(storeId);
-            for (SaleDetail saleDetail:sale.getSaleDetailList()){
-                Product product = saleDetail.getProduct();
-
-                //to count for product sales per store
-                if (!productSaleHashmap.containsKey(product.getProductId())){
-                    productSaleHashmap.put(product.getProductId(),saleDetail.getQuantity());
-                }
-                else {
-                    int quantity = productSaleHashmap.get(product.getProductId());
-                    productSaleHashmap.put(product.getProductId(),quantity+saleDetail.getQuantity());
-                }
-
-                //to count total sales for all products
-                if (!totalProductsSaleHashmap.containsKey(product.getProductId())){
-                    totalProductsSaleHashmap.put(product.getProductId(),saleDetail.getQuantity());
-                }
-                else {
-                    int quantity = totalProductsSaleHashmap.get(product.getProductId());
-                    totalProductsSaleHashmap.put(product.getProductId(),quantity+saleDetail.getQuantity());
-                }
-            }
-        }
-
-        StringBuilder csvString = new StringBuilder();
-        csvString.append("ProdukId,Quantitas Terjual\n");
-        for (Map.Entry storeDetailsRow : storeProductsHashmap.entrySet()) {
-            int storeId = (int) storeDetailsRow.getKey();
-            String storeName = "";
-            for (Store store : storeList) {
-                if (store.getStoreId() == storeId) {
-                    storeName = store.getName();
-                    break;
-                }
-            }
-
-            csvString.append(" - , - ").append("\n");
-            csvString.append("Penjualan produk").append("Toko: ").append(storeName).append("\n");
-
-            HashMap<String, Integer> productMap = (HashMap<String, Integer>) storeDetailsRow.getValue();
-            for (Map.Entry productRow : productMap.entrySet()) {
-                String productId = (String) productRow.getKey();
-                int quantity = (int)productRow.getValue();
-                csvString.append(productId).append(",");
-                csvString.append(quantity).append("\n");
-            }
-        }
-
-        csvString.append(" - , - ").append("\n");
-        csvString.append("Total penjualan produk dari semua toko: ").append("\n");
-        for (Map.Entry totalProductSale : totalProductsSaleHashmap.entrySet()) {
-            String productId = (String) totalProductSale.getKey();
-            int quantity = (int)totalProductSale.getValue();
-            csvString.append(productId).append(",");
-            csvString.append(quantity).append("\n");
-        }
-        return csvString.toString();
-    }
-
-    @Transactional
-    public String CSVSaleList(List<Sale> saleList) {
-        if (saleList == null) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Empty sale List");
-        }
-
-        StringBuilder csvString = new StringBuilder();
-        csvString.append("saleId,Nama customer,Nama promosi,Transaksi pertama,Salesman,Toko,Pembayaran total,Bayar sekaligus,Tanggal deposit pertama,deposit pertama waktu,Tipe deposit,Jumlah deposit,Transaksi kedua tanggal,Transaksi kedua waktu,Transaksi kedua tipe,Transaksi kedua jumlah,Remarks,Tanggal pengambilan\n");
-        for (Sale sale : saleList) {
-            csvString.append(sale.getSaleId()).append(",");
-            csvString.append(sale.getCustomer().getFirstName()).append(" ").append(sale.getCustomer().getLastName()).append(",");
-            if (sale.getPromotion()!=null)
-                csvString.append(sale.getPromotion().getPromotionName()).append(",");
-            else
-                csvString.append("-").append(",");
-            csvString.append(sale.getPromotionParentSaleId()).append(",");
-            csvString.append(sale.getEmployee().getFirstName()).append(" ").append(sale.getEmployee().getLastname()).append(",");
-            csvString.append(sale.getStore().getName()).append(",");
-            csvString.append(sale.getGrandTotal()).append(",");
-            csvString.append(sale.isFullyPaid()).append(",");
-            csvString.append(sale.getInitialDepositDate().toLocalDate()).append(",");
-            csvString.append(sale.getInitialDepositDate().toLocalTime()).append(",");
-            csvString.append(sale.getInitialDepositType()).append(",");
-            csvString.append(sale.getInitialDepositAmount()).append(",");
-            if (sale.getFinalDepositDate()!=null) {
-                csvString.append(sale.getFinalDepositDate().toLocalDate()).append(",");
-                csvString.append(sale.getFinalDepositDate().toLocalTime()).append(",");
-                csvString.append(sale.getFinalDepositType()).append(",");
-                csvString.append(sale.getFinalDepositAmount()).append(",");
-            }
-            else
-                csvString.append("-").append(",");
-            if(sale.getSaleRemarks()!=null)
-            csvString.append(sale.getSaleRemarks()).append("\n");
-            else
-                csvString.append("-").append(",");
-        }
-
-        return csvString.toString();
-    }
-
-    @Transactional
-    public String CSVTotalSaleRevenue(List<Sale> saleList) {
-        if (saleList == null) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Empty sale List");
-        }
-
-        StringBuilder csvString = new StringBuilder();
-        HashMap<LocalDate, HashMap<Integer, Double>> saleHash = new HashMap<>();
-
-        for (Sale sale : saleList) {
-            int promotionId = 0;
-            if (sale.getPromotion() != null) {
-                promotionId = sale.getPromotion().getPromotionId();
-            }
-
-            saleHash.putIfAbsent(sale.getInitialDepositDate().toLocalDate(), new HashMap<>());
-            HashMap<Integer, Double> totalDayRevenueHash = saleHash.get(sale.getInitialDepositDate().toLocalDate());
-            if (!totalDayRevenueHash.containsKey(promotionId)) {
-                totalDayRevenueHash.put(promotionId, sale.getGrandTotal());
-            }
-            else {
-                totalDayRevenueHash.put(promotionId, totalDayRevenueHash.get(promotionId) + sale.getGrandTotal());
-            }
-        }
-
-        csvString.append(" ,");
-        List<Promotion> promotionList = promotionRepository.findAll();
-        for (Promotion promotion:promotionList) {
-            csvString.append(promotion.getPromotionId()).append(" : ").append(promotion.getPromotionName()).append(",");
-        }
-        csvString.append("0 : No Promotion");
-        csvString.append("\n");
-
-        for (Map.Entry dates : saleHash.entrySet()) {
-            HashMap<Integer,Double> totalSalesByPromotions = (HashMap<Integer, Double>) dates.getValue();
-            csvString.append(dates.getKey().toString()).append(",");
-            for (Promotion promotion:promotionList) {
-                if (totalSalesByPromotions.containsKey(promotion.getPromotionId())) {
-                    csvString.append(totalSalesByPromotions.get(promotion.getPromotionId()));
-                }
-                else {
-                    csvString.append("0");
-                }
-                csvString.append(",");
-            }
-            csvString.append(totalSalesByPromotions.get(0));
-            csvString.append("\n");
-        }
-        return csvString.toString();
     }
 
     @Transactional
@@ -309,13 +128,11 @@ public class SaleService {
 
             customer.setEmail(customerDTO.getEmail());
             customer.setPhoneNumber(customerDTO.getPhoneNumber());
-
             customer.setLeftEyeAdd(customerDTO.getLeftEyeAdd());
             customer.setLeftEyeAxis(customerDTO.getLeftEyeAxis());
             customer.setLeftEyeCylinder(customerDTO.getLeftEyeCylinder());
             customer.setLeftEyePrism(customerDTO.getLeftEyePrism());
             customer.setLeftEyeSphere(customerDTO.getLeftEyeSphere());
-
             customer.setRightEyeAdd(customerDTO.getRightEyeAdd());
             customer.setRightEyeAxis(customerDTO.getRightEyeAxis());
             customer.setRightEyeCylinder(customerDTO.getRightEyeCylinder());
@@ -484,5 +301,170 @@ public class SaleService {
         List<SaleDetail> saleDetailList2 = sale.getSaleDetailList();
         saleDetailRepository.deleteAll(saleDetailList2);
         saleRepository.deleteById(sale.getSaleId());
+    }
+
+    public String CSVTotalSaleRevenue(List<Sale> saleList) {
+        if (saleList == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Empty sale List");
+        }
+
+        StringBuilder csvString = new StringBuilder();
+        HashMap<LocalDate, HashMap<Integer, Double>> saleHash = new HashMap<>();
+
+        for (Sale sale : saleList) {
+            int promotionId = 0;
+            if (sale.getPromotion() != null) {
+                promotionId = sale.getPromotion().getPromotionId();
+            }
+
+            saleHash.putIfAbsent(sale.getInitialDepositDate().toLocalDate(), new HashMap<>());
+            HashMap<Integer, Double> totalDayRevenueHash = saleHash.get(sale.getInitialDepositDate().toLocalDate());
+            if (!totalDayRevenueHash.containsKey(promotionId)) {
+                totalDayRevenueHash.put(promotionId, sale.getGrandTotal());
+            }
+            else {
+                totalDayRevenueHash.put(promotionId, totalDayRevenueHash.get(promotionId) + sale.getGrandTotal());
+            }
+        }
+
+        csvString.append(" ,");
+        List<Promotion> promotionList = promotionRepository.findAll();
+        for (Promotion promotion:promotionList) {
+            csvString.append(promotion.getPromotionId()).append(" : ").append(promotion.getPromotionName()).append(",");
+        }
+        csvString.append("0 : No Promotion");
+        csvString.append("\n");
+
+        for (Map.Entry dates : saleHash.entrySet()) {
+            HashMap<Integer,Double> totalSalesByPromotions = (HashMap<Integer, Double>) dates.getValue();
+            csvString.append(dates.getKey().toString()).append(",");
+            for (Promotion promotion:promotionList) {
+                if (totalSalesByPromotions.containsKey(promotion.getPromotionId())) {
+                    csvString.append(totalSalesByPromotions.get(promotion.getPromotionId()));
+                }
+                else {
+                    csvString.append("0");
+                }
+                csvString.append(",");
+            }
+            csvString.append(totalSalesByPromotions.get(0));
+            csvString.append("\n");
+        }
+        return csvString.toString();
+    }
+
+    public String CSVSaleList(List<Sale> saleList) {
+        if (saleList == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Empty sale List");
+        }
+
+        StringBuilder csvString = new StringBuilder();
+        csvString.append("saleId,Nama customer,Nama promosi,Transaksi pertama,Salesman,Toko,Pembayaran total,Bayar sekaligus,Tanggal deposit pertama,deposit pertama waktu,Tipe deposit,Jumlah deposit,Transaksi kedua tanggal,Transaksi kedua waktu,Transaksi kedua tipe,Transaksi kedua jumlah,Remarks,Tanggal pengambilan\n");
+        for (Sale sale : saleList) {
+            csvString.append(sale.getSaleId()).append(",");
+            csvString.append(sale.getCustomer().getFirstName()).append(" ").append(sale.getCustomer().getLastName()).append(",");
+            if (sale.getPromotion()!=null)
+                csvString.append(sale.getPromotion().getPromotionName()).append(",");
+            else
+                csvString.append("-").append(",");
+            csvString.append(sale.getPromotionParentSaleId()).append(",");
+            csvString.append(sale.getEmployee().getFirstName()).append(" ").append(sale.getEmployee().getLastname()).append(",");
+            csvString.append(sale.getStore().getName()).append(",");
+            csvString.append(sale.getGrandTotal()).append(",");
+            csvString.append(sale.isFullyPaid()).append(",");
+            csvString.append(sale.getInitialDepositDate().toLocalDate()).append(",");
+            csvString.append(sale.getInitialDepositDate().toLocalTime()).append(",");
+            csvString.append(sale.getInitialDepositType()).append(",");
+            csvString.append(sale.getInitialDepositAmount()).append(",");
+            if (sale.getFinalDepositDate()!=null) {
+                csvString.append(sale.getFinalDepositDate().toLocalDate()).append(",");
+                csvString.append(sale.getFinalDepositDate().toLocalTime()).append(",");
+                csvString.append(sale.getFinalDepositType()).append(",");
+                csvString.append(sale.getFinalDepositAmount()).append(",");
+            }
+            else
+                csvString.append("-").append(",");
+            if(sale.getSaleRemarks()!=null)
+                csvString.append(sale.getSaleRemarks()).append("\n");
+            else
+                csvString.append("-").append(",");
+        }
+
+        return csvString.toString();
+    }
+
+    @Transactional
+    public String CSVProductSales(List<Sale> saleList) {
+        if (saleList == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Empty sale List");
+        }
+
+        List<Store> storeList = storeRepository.findAll();
+
+        HashMap<String,Integer> totalProductsSaleHashmap = new HashMap<>();
+        HashMap<Integer,HashMap<String,Integer>> storeProductsHashmap = new HashMap<>();
+
+        for (Sale sale : saleList) {
+            int storeId = sale.getStore().getStoreId();
+            if (!storeProductsHashmap.containsKey(storeId)) {
+                storeProductsHashmap.put(storeId, new HashMap<>());
+            }
+            HashMap<String, Integer> productSaleHashmap = storeProductsHashmap.get(storeId);
+            for (SaleDetail saleDetail:sale.getSaleDetailList()){
+                Product product = saleDetail.getProduct();
+
+                //to count for product sales per store
+                if (!productSaleHashmap.containsKey(product.getProductId())){
+                    productSaleHashmap.put(product.getProductId(),saleDetail.getQuantity());
+                }
+                else {
+                    int quantity = productSaleHashmap.get(product.getProductId());
+                    productSaleHashmap.put(product.getProductId(),quantity+saleDetail.getQuantity());
+                }
+
+                //to count total sales for all products
+                if (!totalProductsSaleHashmap.containsKey(product.getProductId())){
+                    totalProductsSaleHashmap.put(product.getProductId(),saleDetail.getQuantity());
+                }
+                else {
+                    int quantity = totalProductsSaleHashmap.get(product.getProductId());
+                    totalProductsSaleHashmap.put(product.getProductId(),quantity+saleDetail.getQuantity());
+                }
+            }
+        }
+
+        StringBuilder csvString = new StringBuilder();
+        csvString.append("ProdukId,Quantitas Terjual\n");
+        for (Map.Entry storeDetailsRow : storeProductsHashmap.entrySet()) {
+            int storeId = (int) storeDetailsRow.getKey();
+            String storeName = "";
+            for (Store store : storeList) {
+                if (store.getStoreId() == storeId) {
+                    storeName = store.getName();
+                    break;
+                }
+            }
+
+            csvString.append(" - , - ").append("\n");
+            csvString.append("Penjualan produk").append("Toko: ").append(storeName).append("\n");
+
+            HashMap<String, Integer> productMap = (HashMap<String, Integer>) storeDetailsRow.getValue();
+            for (Map.Entry productRow : productMap.entrySet()) {
+                String productId = (String) productRow.getKey();
+                int quantity = (int)productRow.getValue();
+                csvString.append(productId).append(",");
+                csvString.append(quantity).append("\n");
+            }
+        }
+
+        csvString.append(" - , - ").append("\n");
+        csvString.append("Total penjualan produk dari semua toko: ").append("\n");
+        for (Map.Entry totalProductSale : totalProductsSaleHashmap.entrySet()) {
+            String productId = (String) totalProductSale.getKey();
+            int quantity = (int)totalProductSale.getValue();
+            csvString.append(productId).append(",");
+            csvString.append(quantity).append("\n");
+        }
+        return csvString.toString();
     }
 }
