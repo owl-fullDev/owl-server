@@ -10,6 +10,7 @@ import java.io.Serializable;
 
 @Entity
 @Data
+@NoArgsConstructor
 @Table(name = "FRAME_MATERIAL")
 public class FrameMaterial implements Serializable {
 

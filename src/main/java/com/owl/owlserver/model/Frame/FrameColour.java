@@ -10,6 +10,7 @@ import java.io.Serializable;
 
 @Entity
 @Data
+@NoArgsConstructor
 @Table(name = "FRAME_COLOUR")
 public class FrameColour implements Serializable {
 
