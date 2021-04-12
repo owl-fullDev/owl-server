@@ -151,7 +151,7 @@ public class HOProducts {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
 
         char frameCategoryId = wholeJSON.get("frameCategoryId").asText().charAt(0);
-        String frameCategoryName = wholeJSON.get("frameCategoryName").asText();
+        String frameCategoryName = wholeJSON.get("frameCategory").asText();
 
         if (frameCategoryRepository.existsById(frameCategoryId)){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Frame category ID of: "+frameCategoryId+" already used");
@@ -186,8 +186,8 @@ public class HOProducts {
         return new ResponseEntity<>("New Frame model has been added", HttpStatus.CREATED);
     }
 
-    @GetMapping("/getAllFrameColour")
-    public List<FrameColour> getAllFrameColour() {
+    @GetMapping("/getAllFrameColours")
+    public List<FrameColour> getAllFrameColours() {
         return frameColourRepository.findAll();
     }
 
