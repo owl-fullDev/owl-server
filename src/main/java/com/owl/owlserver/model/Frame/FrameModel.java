@@ -15,6 +15,7 @@ import java.io.Serializable;
 @Table(name = "FRAME_MODEL")
 public class FrameModel implements Serializable {
 
+    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "FRAME_MODEL_ID", nullable = false)

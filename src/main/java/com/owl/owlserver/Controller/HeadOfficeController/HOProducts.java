@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.owl.owlserver.DTO.Deserialize.NewProductDTO;
 import com.owl.owlserver.model.Frame.FrameCategory;
 import com.owl.owlserver.model.Frame.FrameColour;
 import com.owl.owlserver.model.Frame.FrameMaterial;
@@ -124,7 +125,7 @@ public class HOProducts {
     }
 
     @PostMapping(value = "/addNewProduct")
-    public ResponseEntity<String> newSale(@RequestBody String jsonString) throws JsonProcessingException {
+    public ResponseEntity<String> addNewProduct(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
 
         String productId = wholeJSON.get("productId").asText();
@@ -139,6 +140,12 @@ public class HOProducts {
         productRepository.saveAndFlush(newProduct);
 
         return new ResponseEntity<>("Product has been added", HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/addNewProducts")
+    public ResponseEntity<String> addNewProducts(@RequestBody NewProductDTO newProductDTO) {
+
+        return new ResponseEntity<>(newProductDTO.toString(), HttpStatus.OK);
     }
 
     @GetMapping("/getAllFrameCategories")
