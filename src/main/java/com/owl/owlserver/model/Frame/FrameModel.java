@@ -12,7 +12,6 @@ import java.io.Serializable;
 @Entity
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "FRAME_MODEL")
 public class FrameModel implements Serializable {
 
@@ -26,15 +25,15 @@ public class FrameModel implements Serializable {
     @JoinColumn(name = "FRAME_CATEGORY_ID", nullable = false)
     private FrameCategory frameCategory;
 
-    @Column(name = "FRAME_MODEL_CODE", columnDefinition = "char(2)" ,nullable = false)
-    private String frameModelCode;
+    @Column(name = "frame_category_model_id" ,nullable = false)
+    private int frameCategoryModelId;
 
     @Column(name = "FRAME_MODEL", nullable = false)
     private String frameModel;
 
-    public FrameModel(FrameCategory frameCategory, String frameModelCode, String frameModel) {
+    public FrameModel(FrameCategory frameCategory, int frameCategoryModelId, String frameModel) {
         this.frameCategory = frameCategory;
-        this.frameModelCode = frameModelCode;
+        this.frameCategoryModelId = frameCategoryModelId;
         this.frameModel = frameModel;
     }
 }

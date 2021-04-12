@@ -6,5 +6,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FrameModelRepository extends JpaRepository<FrameModel,Character> {
 
-    boolean existsByFrameCategoryAndAndFrameModelCode(FrameCategory frameCategoryId, String frameModelCode);
 }

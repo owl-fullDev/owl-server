@@ -13,8 +13,9 @@ import java.util.List;
 public class FrameCategory implements Serializable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "FRAME_CATEGORY_ID", nullable = false)
-    private Character frameCategoryId;
+    private int frameCategoryId;
 
     @Column(name = "CATEGORY_NAME", nullable = false)
     private String categoryName;
@@ -26,9 +27,8 @@ public class FrameCategory implements Serializable {
         frameModelList = new ArrayList<>();
     }
 
-    public FrameCategory(char frameCategoryId, String categoryName) {
+    public FrameCategory(String categoryName) {
         frameModelList = new ArrayList<>();
-        this.frameCategoryId = frameCategoryId;
         this.categoryName = categoryName;
     }
 

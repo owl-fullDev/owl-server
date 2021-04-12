@@ -150,14 +150,9 @@ public class HOProducts {
     public ResponseEntity<String> newFrameCategory (@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
 
-        char frameCategoryId = wholeJSON.get("frameCategoryId").asText().charAt(0);
         String frameCategoryName = wholeJSON.get("frameCategory").asText();
 
-        if (frameCategoryRepository.existsById(frameCategoryId)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Frame category ID of: "+frameCategoryId+" already used");
-        }
-
-        FrameCategory newFrameCategory = new FrameCategory(frameCategoryId,frameCategoryName);
+        FrameCategory newFrameCategory = new FrameCategory(frameCategoryName);
         frameCategoryRepository.save(newFrameCategory);
         return new ResponseEntity<>("New Frame category has been added", HttpStatus.CREATED);
     }
@@ -169,20 +164,18 @@ public class HOProducts {
 
     @PostMapping(value = "/addNewFrameModel")
     public ResponseEntity<String> addNewFrameModel (@RequestBody String jsonString) throws JsonProcessingException {
-        JsonNode wholeJSON = objectMapper.readTree(jsonString);
-
-        char frameCategoryId = wholeJSON.get("frameCategoryId").asText().charAt(0);
-        String frameModelCode = wholeJSON.get("frameModelCode").asText();
-        String frameModel = wholeJSON.get("frameModel").asText();
-
-        FrameCategory frameCategory = frameCategoryRepository.findById(frameCategoryId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No frame category with ID of: " + frameCategoryId + " exists!"));
-
-        FrameModel newFrameModel = new FrameModel(frameCategory,frameModelCode,frameModel);
-        if (frameModelRepository.existsByFrameCategoryAndAndFrameModelCode(frameCategory,frameModelCode)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Frame model ID of: "+frameModelCode+" already used");
-        }
-
-        frameModelRepository.save(newFrameModel);
+//        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+//
+//        int frameModelCode = wholeJSON.get("frameModelCode").asInt();
+//        String frameModel = wholeJSON.get("frameModel").asText();
+//
+//
+//        FrameModel newFrameModel = new FrameModel(frameCategory,frameModelCode,frameModel);
+//        if (frameModelRepository.existsByFrameCategoryAndAndFrameModelCode(frameCategory,frameModelCode)){
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Frame model ID of: "+frameModelCode+" already used");
+//        }
+//
+//        frameModelRepository.save(newFrameModel);
         return new ResponseEntity<>("New Frame model has been added", HttpStatus.CREATED);
     }
 
@@ -195,14 +188,9 @@ public class HOProducts {
     public ResponseEntity<String> addNewFrameColour (@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
 
-        char frameColourId = wholeJSON.get("frameColourId").asText().charAt(0);
         String frameColour = wholeJSON.get("frameColour").asText();
 
-        if (frameColourRepository.existsById(frameColourId)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Frame colour ID of: "+frameColourId+" already used");
-        }
-
-        FrameColour newFrameColour = new FrameColour(frameColourId,frameColour);
+        FrameColour newFrameColour = new FrameColour(frameColour);
         frameColourRepository.save(newFrameColour);
         return new ResponseEntity<>("New Frame colour has been added", HttpStatus.OK);
     }
@@ -216,14 +204,9 @@ public class HOProducts {
     public ResponseEntity<String> addNewFrameMaterial (@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
 
-        char frameMaterialId = wholeJSON.get("frameMaterialId").asText().charAt(0);
         String frameMaterial = wholeJSON.get("frameMaterial").asText();
 
-        if (frameMaterialRepository.existsById(frameMaterialId)){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Frame material ID of: "+frameMaterialId+" already used");
-        }
-
-        FrameMaterial newFrameMaterial = new FrameMaterial(frameMaterialId,frameMaterial);
+        FrameMaterial newFrameMaterial = new FrameMaterial(frameMaterial);
         frameMaterialRepository.save(newFrameMaterial);
         return new ResponseEntity<>("New Frame material has been added", HttpStatus.OK);
     }

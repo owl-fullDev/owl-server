@@ -10,16 +10,20 @@ import java.io.Serializable;
 
 @Entity
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "FRAME_COLOUR")
 public class FrameColour implements Serializable {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "FRAME_COLOUR_ID", nullable = false)
-    private Character frameColourId;
+    private int frameColourId;
 
     @Column(name = "FRAME_COLOUR", nullable = false)
     private String frameColour;
 
+    public FrameColour(String frameColour) {
+        this.frameColour = frameColour;
+    }
 }
+
+
