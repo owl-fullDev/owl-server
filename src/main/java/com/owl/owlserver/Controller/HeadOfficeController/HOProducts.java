@@ -3,8 +3,17 @@ package com.owl.owlserver.Controller.HeadOfficeController;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.owl.owlserver.model.Frame.FrameCategory;
+import com.owl.owlserver.model.Frame.FrameColour;
+import com.owl.owlserver.model.Frame.FrameMaterial;
+import com.owl.owlserver.model.Frame.FrameModel;
 import com.owl.owlserver.model.Product;
 import com.owl.owlserver.repositories.*;
+import com.owl.owlserver.repositories.Frame.FrameCategoryRepository;
+import com.owl.owlserver.repositories.Frame.FrameColourRepository;
+import com.owl.owlserver.repositories.Frame.FrameMaterialRepository;
+import com.owl.owlserver.repositories.Frame.FrameModelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +52,15 @@ public class HOProducts {
     WarehouseRepository warehouseRepository;
     @Autowired
     WarehouseQuantityRepository warehouseQuantityRepository;
+    @Autowired
+    FrameCategoryRepository frameCategoryRepository;
+    @Autowired
+    FrameModelRepository frameModelRepository;
+    @Autowired
+    FrameColourRepository frameColourRepository;
+    @Autowired
+    FrameMaterialRepository frameMaterialRepository;
+
 
     //JACKSON object Mapper
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -89,6 +107,22 @@ public class HOProducts {
         return new ResponseEntity<>(productList, HttpStatus.OK);
     }
 
+    @PostMapping(value = "/updateProduct")
+    public ResponseEntity<String> updateProduct(@RequestBody String jsonString) throws JsonProcessingException {
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+
+        String productId = wholeJSON.get("productId").asText();
+        String productName = wholeJSON.get("productName").asText();
+        double productPrice = wholeJSON.get("productPrice").asDouble();
+
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with ID of: " + productId + " exists!"));
+        product.setProductName(productName);
+        product.setProductPrice(productPrice);
+        productRepository.saveAndFlush(product);
+
+        return new ResponseEntity<>("Product has been updated", HttpStatus.OK);
+    }
+
     @PostMapping(value = "/addNewProduct")
     public ResponseEntity<String> newSale(@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
@@ -107,19 +141,90 @@ public class HOProducts {
         return new ResponseEntity<>("Product has been added", HttpStatus.OK);
     }
 
-    @PostMapping(value = "/updateProduct")
-    public ResponseEntity<String> updateProduct(@RequestBody String jsonString) throws JsonProcessingException {
+    @GetMapping("/getAllFrameCategories")
+    public List<FrameCategory> getAllFrameCategories() {
+        return frameCategoryRepository.findAll();
+    }
+
+    @PostMapping(value = "/addNewFrameCategory")
+    public ResponseEntity<String> newFrameCategory (@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
 
-        String productId = wholeJSON.get("productId").asText();
-        String productName = wholeJSON.get("productName").asText();
-        double productPrice = wholeJSON.get("productPrice").asDouble();
+        char frameCategoryId = wholeJSON.get("frameCategoryId").asText().charAt(0);
+        String frameCategoryName = wholeJSON.get("frameCategoryName").asText();
 
-        Product product = productRepository.findById(productId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No product with ID of: " + productId + " exists!"));
-        product.setProductName(productName);
-        product.setProductPrice(productPrice);
-        productRepository.saveAndFlush(product);
+        if (frameCategoryRepository.existsById(frameCategoryId)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Frame category ID of: "+frameCategoryId+" already used");
+        }
 
-        return new ResponseEntity<>("Product has been updated", HttpStatus.OK);
+        FrameCategory newFrameCategory = new FrameCategory(frameCategoryId,frameCategoryName);
+        frameCategoryRepository.save(newFrameCategory);
+        return new ResponseEntity<>("New Frame category has been added", HttpStatus.CREATED);
+    }
+
+    @GetMapping("/getAllFrameModels")
+    public List<FrameModel> getAllFrameModels() {
+        return frameModelRepository.findAll();
+    }
+
+    @PostMapping(value = "/addNewFrameModel")
+    public ResponseEntity<String> addNewFrameModel (@RequestBody String jsonString) throws JsonProcessingException {
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+
+        char frameCategoryId = wholeJSON.get("frameCategoryId").asText().charAt(0);
+        String frameModelCode = wholeJSON.get("frameModelCode").asText();
+        String frameModel = wholeJSON.get("frameModel").asText();
+
+        FrameCategory frameCategory = frameCategoryRepository.findById(frameCategoryId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No frame category with ID of: " + frameCategoryId + " exists!"));
+
+        FrameModel newFrameModel = new FrameModel(frameCategory,frameModelCode,frameModel);
+        if (frameModelRepository.existsByFrameCategoryAndAndFrameModelCode(frameCategory,frameModelCode)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Frame model ID of: "+frameModelCode+" already used");
+        }
+
+        frameModelRepository.save(newFrameModel);
+        return new ResponseEntity<>("New Frame model has been added", HttpStatus.CREATED);
+    }
+
+    @GetMapping("/getAllFrameColour")
+    public List<FrameColour> getAllFrameColour() {
+        return frameColourRepository.findAll();
+    }
+
+    @PostMapping(value = "/addNewFrameColour")
+    public ResponseEntity<String> addNewFrameColour (@RequestBody String jsonString) throws JsonProcessingException {
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+
+        char frameColourId = wholeJSON.get("frameColourId").asText().charAt(0);
+        String frameColour = wholeJSON.get("frameColour").asText();
+
+        if (frameColourRepository.existsById(frameColourId)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Frame colour ID of: "+frameColourId+" already used");
+        }
+
+        FrameColour newFrameColour = new FrameColour(frameColourId,frameColour);
+        frameColourRepository.save(newFrameColour);
+        return new ResponseEntity<>("New Frame colour has been added", HttpStatus.OK);
+    }
+
+    @GetMapping("/getAllFrameMaterials")
+    public List<FrameMaterial> getAllFrameMaterials() {
+        return frameMaterialRepository.findAll();
+    }
+
+    @PostMapping(value = "/addNewFrameMaterial")
+    public ResponseEntity<String> addNewFrameMaterial (@RequestBody String jsonString) throws JsonProcessingException {
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+
+        char frameMaterialId = wholeJSON.get("frameMaterialId").asText().charAt(0);
+        String frameMaterial = wholeJSON.get("frameMaterial").asText();
+
+        if (frameMaterialRepository.existsById(frameMaterialId)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Frame material ID of: "+frameMaterialId+" already used");
+        }
+
+        FrameMaterial newFrameMaterial = new FrameMaterial(frameMaterialId,frameMaterial);
+        frameMaterialRepository.save(newFrameMaterial);
+        return new ResponseEntity<>("New Frame material has been added", HttpStatus.OK);
     }
 }
