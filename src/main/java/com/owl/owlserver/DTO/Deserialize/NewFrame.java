@@ -3,7 +3,7 @@ package com.owl.owlserver.DTO.Deserialize;
 import lombok.Data;
 
 @Data
-public class NewFrameDTO {
+public class NewFrame {
 
     public int frameCategoryId;
     public int frameModelId;

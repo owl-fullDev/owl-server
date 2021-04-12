@@ -1,15 +1,11 @@
 package com.owl.owlserver.Service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.owl.owlserver.DTO.Deserialize.NewProductDTO;
-import com.owl.owlserver.model.Sale;
+import com.owl.owlserver.DTO.Deserialize.NewProduct;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 
@@ -47,6 +43,6 @@ public class ProductService {
     RefundRepository refundRepository;
 
     @Transactional
-    public void newProduct(List<NewProductDTO> newProductDTOList) {
+    public void newProduct(List<NewProduct> newProductList) {
     }
 }

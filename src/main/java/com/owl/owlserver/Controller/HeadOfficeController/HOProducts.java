@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.owl.owlserver.DTO.Deserialize.NewProductDTO;
+import com.owl.owlserver.DTO.Deserialize.NewProduct;
 import com.owl.owlserver.model.Frame.FrameCategory;
 import com.owl.owlserver.model.Frame.FrameColour;
 import com.owl.owlserver.model.Frame.FrameMaterial;
@@ -143,9 +143,9 @@ public class HOProducts {
     }
 
     @PostMapping(value = "/addNewProducts")
-    public ResponseEntity<String> addNewProducts(@RequestBody NewProductDTO newProductDTO) {
+    public ResponseEntity<String> addNewProducts(@RequestBody NewProduct newProduct) {
 
-        return new ResponseEntity<>(newProductDTO.toString(), HttpStatus.OK);
+        return new ResponseEntity<>(newProduct.toString(), HttpStatus.OK);
     }
 
     @GetMapping("/getAllFrameCategories")

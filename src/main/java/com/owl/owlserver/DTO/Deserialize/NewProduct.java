@@ -6,12 +6,12 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class NewProductDTO {
+public class NewProduct {
 
     public boolean isExistingModel;
     public int newProductType;
 
     @JsonProperty("newFrameList")
-    public List<NewFrameDTO> newFrameDTOList;
+    public List<NewFrame> newFrameList;
 
 }
