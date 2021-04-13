@@ -41,7 +41,4 @@ public class ProductService {
     @Autowired
     RefundRepository refundRepository;
 
-    @Transactional
-    public void newProduct(List<NewProduct> newProductList) {
-    }
 }
