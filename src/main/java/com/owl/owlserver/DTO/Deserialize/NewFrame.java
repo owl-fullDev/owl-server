@@ -12,6 +12,6 @@ public class NewFrame {
 
     public int frameMaterial;
 
-    public String[] supplierColourCodeArray;
-    public int[] frameColourIdArray;
+    public String supplierColourCode;
+    public int frameColourId;
 }
