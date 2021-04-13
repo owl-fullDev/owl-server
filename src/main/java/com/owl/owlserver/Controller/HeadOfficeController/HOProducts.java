@@ -140,8 +140,8 @@ public class HOProducts {
 //        return new ResponseEntity<>("Product has been added", HttpStatus.OK);
 //    }
 
-    @PostMapping(value = "/addNewProducts")
-    public ResponseEntity<String> addNewProducts(@RequestBody NewFrames newFrames) {
+    @PostMapping(value = "/addNewFrames")
+    public ResponseEntity<String> addNewFrames(@RequestBody NewFrames newFrames) {
 
         return new ResponseEntity<>(newFrames.toString(), HttpStatus.OK);
     }
