@@ -22,6 +22,10 @@ public class Product implements Serializable {
     private double productPrice;
 
     @JsonIgnore
+    @Column(name = "SUPPLIER_CODE", nullable = false)
+    private String supplierCode;
+
+    @JsonIgnore
     @Column(name = "IMAGE_LINK")
     private String imageLink;
 
@@ -32,9 +36,10 @@ public class Product implements Serializable {
         this.productId = productId;
     }
 
-    public Product(String productId, String productName, double productPrice) {
+    public Product(String productId, String productName, double productPrice, String supplierCode) {
         this.productId = productId;
         this.productName = productName;
         this.productPrice = productPrice;
+        this.supplierCode = supplierCode;
     }
 }

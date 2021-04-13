@@ -6,8 +6,12 @@ import lombok.Data;
 public class NewFrame {
 
     public int frameCategoryId;
+
     public int frameModelId;
+    public String supplierModelCode;
+
     public int frameMaterial;
 
+    public String[] supplierColourCodeArray;
     public int[] frameColourIdArray;
 }
