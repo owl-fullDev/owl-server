@@ -1,6 +1,5 @@
-package com.owl.owlserver.model.Frame;
+package com.owl.owlserver.model.Products;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

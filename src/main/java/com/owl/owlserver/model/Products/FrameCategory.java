@@ -1,4 +1,4 @@
-package com.owl.owlserver.model.Frame;
+package com.owl.owlserver.model.Products;
 
 import lombok.Data;
 
