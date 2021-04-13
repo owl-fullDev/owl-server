@@ -2,8 +2,10 @@ package com.owl.owlserver.DTO.Deserialize;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
-public class NewFrame {
+public class NewFrames {
 
     public int frameCategoryId;
 
@@ -12,6 +14,5 @@ public class NewFrame {
 
     public int frameMaterial;
 
-    public String supplierColourCode;
-    public int frameColourId;
+    public List<NewFrameColours> newFrameColoursList;
 }

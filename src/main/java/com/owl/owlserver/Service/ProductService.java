@@ -1,6 +1,5 @@
 package com.owl.owlserver.Service;
 
-import com.owl.owlserver.DTO.Deserialize.NewProduct;
 import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
