@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FrameModelRepository extends JpaRepository<FrameModel,Integer> {
 
+    FrameModel findAllByFrameCategory_FrameCategoryIdAndAndFrameCategoryModelId(int frameCategoryId, int frameCategoryModelId);
+
 }

@@ -8,11 +8,13 @@ import java.util.List;
 public class NewFrames {
 
     public int frameCategoryId;
+    public int frameBrandId;//OWL is 22, Lee cooper is 33
 
     public int frameModelId;
     public String supplierModelCode;
 
-    public int frameMaterial;
+    public int frameMaterialId;
+    public double framePrice;
 
     public List<NewFrameColours> newFrameColoursList;
 }
