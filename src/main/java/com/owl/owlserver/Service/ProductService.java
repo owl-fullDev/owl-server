@@ -73,7 +73,7 @@ public class ProductService {
         if (frameModel==null){
             StringBuilder newProductIdBuilder = new StringBuilder();
             FrameCategory frameCategory = frameCategoryRepository.findById(newFrames.getFrameCategoryId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No frame category with ID of: " + newFrames.getFrameCategoryId() + " exists!"));
-            FrameModel newFrameModel = new FrameModel(frameCategory, newFrames.frameModelId, newFrames.supplierModelCode);
+            FrameModel newFrameModel = new FrameModel(frameCategory, newFrames.getFrameModelId(), newFrames.getSupplierModelCode());
 
             //frames start with 11
             newProductIdBuilder.append("11");
@@ -90,7 +90,7 @@ public class ProductService {
 
             //Frame model
             newProductIdBuilder.append(newFrameModel.getFrameCategoryModelId());
-            FrameMaterial frameMaterial = frameMaterialRepository.findById(newFrames.frameModelId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No frame material with ID of: " + newFrames.getFrameMaterialId() + " exists!"));
+            FrameMaterial frameMaterial = frameMaterialRepository.findById(newFrames.getFrameMaterialId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No frame material with ID of: " + newFrames.getFrameMaterialId() + " exists!"));
 
             //Material
             newProductIdBuilder.append(newFrames.getFrameMaterialId());
@@ -100,7 +100,7 @@ public class ProductService {
             List<Product> newProductsList = new ArrayList<>();
             StringBuilder newProductNameBuilder = new StringBuilder();
             for (NewFrameColours newFrameColour : newFrames.getNewFrameColoursList()){
-                Product newProduct = new Product(newProductId.concat(String.valueOf(newFrameColour.frameColourId)));
+                Product newProduct = new Product(newProductId.concat(String.valueOf(newFrameColour.getFrameColourId())));
                 newProduct.setProductPrice(newFrames.getFramePrice());
                 newProduct.setProductName(newProductNameBuilder.append(brand).append(frameCategory.getCategoryName()).append(" ").append(newFrameModel.getFrameCategoryModelId()).append(frameMaterial.getFrameMaterial()).toString());
                 newProduct.setSupplierCode(newFrames.getSupplierModelCode()+newFrameColour.getSupplierColourCode());
