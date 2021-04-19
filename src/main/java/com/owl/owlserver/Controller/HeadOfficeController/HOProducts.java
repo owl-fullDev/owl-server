@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.owl.owlserver.DTO.Deserialize.NewFrames;
+import com.owl.owlserver.Service.ProductService;
 import com.owl.owlserver.model.Products.*;
 import com.owl.owlserver.model.Product;
 import com.owl.owlserver.repositories.*;
@@ -60,6 +61,8 @@ public class HOProducts {
     @Autowired
     LensModelRepository lensModelRepository;
 
+    @Autowired
+    ProductService productService;
 
     //JACKSON object Mapper
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -142,6 +145,8 @@ public class HOProducts {
 
     @PostMapping(value = "/addNewFrames")
     public ResponseEntity<String> addNewFrames(@RequestBody NewFrames newFrames) {
+
+        productService.newFrame(newFrames);
 
         return new ResponseEntity<>(newFrames.toString(), HttpStatus.OK);
     }
