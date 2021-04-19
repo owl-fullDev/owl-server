@@ -81,7 +81,7 @@ public class HOProducts {
 
     @GetMapping("/getAllFrames")
     public ResponseEntity<List<Product>> getAllFrames() {
-        List<Product> productList = productRepository.findAllByProductIdStartsWith("F");
+        List<Product> productList = productRepository.findAllByProductIdStartsWith("11");
         if (productList.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No frames found");
         }
@@ -90,7 +90,7 @@ public class HOProducts {
 
     @GetMapping("/getAllLenses")
     public ResponseEntity<List<Product>> getAllLenses() {
-        List<Product> productList = productRepository.findAllByProductIdStartsWith("L");
+        List<Product> productList = productRepository.findAllByProductIdStartsWith("22");
         if (productList.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No lenses found");
         }
@@ -99,7 +99,7 @@ public class HOProducts {
 
     @GetMapping("/getAllCustomLenses")
     public ResponseEntity<List<Product>> getAllCustomLenses() {
-        List<Product> productList = productRepository.findAllByProductIdStartsWith("CL");
+        List<Product> productList = productRepository.findAllByProductIdStartsWith("33");
         if (productList.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No custom lenses found");
         }
