@@ -1,4 +1,4 @@
-package com.owl.owlserver.DTO.Deserialize;
+package com.owl.owlserver.DTO.Deserialize.NewProducts;
 
 import lombok.Data;
 

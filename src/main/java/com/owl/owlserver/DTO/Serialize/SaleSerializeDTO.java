@@ -1,6 +1,6 @@
 package com.owl.owlserver.DTO.Serialize;
 
-import com.owl.owlserver.DTO.Deserialize.SaleDetailDTO;
+import com.owl.owlserver.DTO.Deserialize.NewSale.SaleDetailDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

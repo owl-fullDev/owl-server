@@ -4,12 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.owl.owlserver.DTO.Deserialize.NewFrames;
+import com.owl.owlserver.DTO.Deserialize.NewProducts.NewFrames;
+import com.owl.owlserver.DTO.Deserialize.NewProducts.NewLenses;
 import com.owl.owlserver.Service.ProductService;
 import com.owl.owlserver.model.Products.*;
 import com.owl.owlserver.model.Product;
 import com.owl.owlserver.repositories.*;
-import com.owl.owlserver.repositories.Frame.*;
+import com.owl.owlserver.repositories.Products.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -125,30 +126,10 @@ public class HOProducts {
         return new ResponseEntity<>("Product has been updated", HttpStatus.OK);
     }
 
-//    @PostMapping(value = "/addNewProduct")
-//    public ResponseEntity<String> addNewProduct(@RequestBody String jsonString) throws JsonProcessingException {
-//        JsonNode wholeJSON = objectMapper.readTree(jsonString);
-//
-//        String productId = wholeJSON.get("productId").asText();
-//        String productName = wholeJSON.get("productName").asText();
-//        double productPrice = wholeJSON.get("productPrice").asDouble();
-//
-//        if (productRepository.existsById(productId)) {
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Specified ID already taken by existing product");
-//        }
-//
-//        Product newProduct = new Product(productId, productName, productPrice);
-//        productRepository.saveAndFlush(newProduct);
-//
-//        return new ResponseEntity<>("Product has been added", HttpStatus.OK);
-//    }
-
     @PostMapping(value = "/addNewFrames")
     public ResponseEntity<String> addNewFrames(@RequestBody NewFrames newFrames) {
-
         productService.newFrame(newFrames);
-
-        return new ResponseEntity<>(newFrames.toString(), HttpStatus.OK);
+        return new ResponseEntity<>("Successfully added new frames", HttpStatus.OK);
     }
 
     @GetMapping("/getAllFrameCategories")
@@ -171,23 +152,6 @@ public class HOProducts {
     public List<FrameModel> getAllFrameModels() {
         return frameModelRepository.findAll();
     }
-
-//    @PostMapping(value = "/addNewFrameModel")
-//    public ResponseEntity<String> addNewFrameModel (@RequestBody String jsonString) throws JsonProcessingException {
-//        JsonNode wholeJSON = objectMapper.readTree(jsonString);
-//
-//        int frameModelCode = wholeJSON.get("frameModelCode").asInt();
-//        String frameModel = wholeJSON.get("frameModel").asText();
-//
-//
-//        FrameModel newFrameModel = new FrameModel(frameCategory,frameModelCode,frameModel);
-//        if (frameModelRepository.existsByFrameCategoryAndAndFrameModelCode(frameCategory,frameModelCode)){
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Frame model ID of: "+frameModelCode+" already used");
-//        }
-//
-//        frameModelRepository.save(newFrameModel);
-//        return new ResponseEntity<>("New Frame model has been added", HttpStatus.CREATED);
-//    }
 
     @GetMapping("/getAllFrameColours")
     public List<FrameColour> getAllFrameColours() {
@@ -221,6 +185,12 @@ public class HOProducts {
         return new ResponseEntity<>("New Frame material has been added", HttpStatus.OK);
     }
 
+    @PostMapping(value = "/addNewLens")
+    public ResponseEntity<String> addNewLens(@RequestBody NewLenses newLenses) {
+        productService.newLens(newLenses);
+        return new ResponseEntity<>("Successfully added new lens", HttpStatus.OK);
+    }
+
     @GetMapping("/getAllLensCategories")
     public List<LensCategory> getAllLensCategories() {
         return lensCategoryRepository.findAll();
@@ -242,20 +212,4 @@ public class HOProducts {
         return lensModelRepository.findAll();
     }
 
-//    @PostMapping(value = "/addNewFrameModel")
-//    public ResponseEntity<String> addNewFrameModel (@RequestBody String jsonString) throws JsonProcessingException {
-//        JsonNode wholeJSON = objectMapper.readTree(jsonString);
-//
-//        int frameModelCode = wholeJSON.get("frameModelCode").asInt();
-//        String frameModel = wholeJSON.get("frameModel").asText();
-//
-//
-//        FrameModel newFrameModel = new FrameModel(frameCategory,frameModelCode,frameModel);
-//        if (frameModelRepository.existsByFrameCategoryAndAndFrameModelCode(frameCategory,frameModelCode)){
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Frame model ID of: "+frameModelCode+" already used");
-//        }
-//
-//        frameModelRepository.save(newFrameModel);
-//        return new ResponseEntity<>("New Frame model has been added", HttpStatus.CREATED);
-//    }
 }

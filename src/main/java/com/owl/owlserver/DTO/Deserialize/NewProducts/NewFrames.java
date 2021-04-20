@@ -1,4 +1,4 @@
-package com.owl.owlserver.DTO.Deserialize;
+package com.owl.owlserver.DTO.Deserialize.NewProducts;
 
 import lombok.Data;
 
@@ -8,7 +8,7 @@ import java.util.List;
 public class NewFrames {
 
     public int frameCategoryId;
-    public int frameBrandId;//OWL is 22, Lee cooper is 33
+    public int frameBrandId;
 
     public int frameModelId;
     public String supplierModelCode;

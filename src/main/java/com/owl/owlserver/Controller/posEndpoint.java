@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.owl.owlserver.DTO.Deserialize.NewSaleDTO;
+import com.owl.owlserver.DTO.Deserialize.NewSale.NewSaleDTO;
 import com.owl.owlserver.Service.SaleService;
 import com.owl.owlserver.Service.ShipmentService;
 import com.owl.owlserver.model.*;

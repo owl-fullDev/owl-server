@@ -1,5 +1,5 @@
 
-package com.owl.owlserver.DTO.Deserialize;
+package com.owl.owlserver.DTO.Deserialize.NewSale;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

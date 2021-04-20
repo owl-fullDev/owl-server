@@ -1,4 +1,4 @@
-package com.owl.owlserver.repositories.Frame;
+package com.owl.owlserver.repositories.Products;
 
 import com.owl.owlserver.model.Products.FrameMaterial;
 import org.springframework.data.jpa.repository.JpaRepository;
