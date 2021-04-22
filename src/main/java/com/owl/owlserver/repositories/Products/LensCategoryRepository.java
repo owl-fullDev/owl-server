@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LensCategoryRepository extends JpaRepository<LensCategory,Integer> {
 
+    LensCategory findTopByOrderByLensCategoryIdDesc();
 }

@@ -5,5 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FrameColourRepository extends JpaRepository<FrameColour,Integer> {
 
-    FrameColour findTopByOrderByFrameColourId();
+    FrameColour findTopByOrderByFrameColourIdDesc( );
+
 }

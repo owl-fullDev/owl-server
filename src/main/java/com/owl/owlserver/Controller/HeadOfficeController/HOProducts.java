@@ -140,8 +140,12 @@ public class HOProducts {
     @PostMapping(value = "/addNewFrameCategory")
     public ResponseEntity<String> newFrameCategory (@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
-
         String frameCategoryName = wholeJSON.get("frameCategory").asText();
+
+        FrameCategory frameCategory = frameCategoryRepository.findTopByOrderByFrameCategoryIdDesc();
+        if (frameCategory.getFrameCategoryId() + 1 > 99){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Maximum frame category Id limit reached");
+        }
 
         FrameCategory newFrameCategory = new FrameCategory(frameCategoryName);
         frameCategoryRepository.save(newFrameCategory);
@@ -161,10 +165,14 @@ public class HOProducts {
     @PostMapping(value = "/addNewFrameColour")
     public ResponseEntity<String> addNewFrameColour (@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
+        String frameColourName = wholeJSON.get("frameColour").asText();
 
-        String frameColour = wholeJSON.get("frameColour").asText();
+        FrameColour frameColour = frameColourRepository.findTopByOrderByFrameColourIdDesc();
+        if (frameColour.getFrameColourId()+1 >99){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Maximum frame colour Id limit reached");
+        }
 
-        FrameColour newFrameColour = new FrameColour(frameColour);
+        FrameColour newFrameColour = new FrameColour(frameColourName);
         frameColourRepository.save(newFrameColour);
         return new ResponseEntity<>("New Frame colour has been added", HttpStatus.OK);
     }
@@ -177,10 +185,14 @@ public class HOProducts {
     @PostMapping(value = "/addNewFrameMaterial")
     public ResponseEntity<String> addNewFrameMaterial (@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
+        String frameMaterialName = wholeJSON.get("frameMaterial").asText();
 
-        String frameMaterial = wholeJSON.get("frameMaterial").asText();
+        FrameMaterial frameMaterial = frameMaterialRepository.findTopByOrderByFrameMaterialIdDesc();
+        if (frameMaterial.getFrameMaterialId()+1 >99){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Maximum frame material Id limit reached");
+        }
 
-        FrameMaterial newFrameMaterial = new FrameMaterial(frameMaterial);
+        FrameMaterial newFrameMaterial = new FrameMaterial(frameMaterialName);
         frameMaterialRepository.save(newFrameMaterial);
         return new ResponseEntity<>("New Frame material has been added", HttpStatus.OK);
     }
@@ -199,8 +211,12 @@ public class HOProducts {
     @PostMapping(value = "/addNewLensCategory")
     public ResponseEntity<String> addNewLensCategory (@RequestBody String jsonString) throws JsonProcessingException {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
-
         String lensCategoryName = wholeJSON.get("lensCategory").asText();
+
+        LensCategory lensCategory = lensCategoryRepository.findTopByOrderByLensCategoryIdDesc();
+        if (lensCategory.getLensCategoryId()+1 >99){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Maximum lens category Id limit reached");
+        }
 
         LensCategory newLensCategory = new LensCategory(lensCategoryName);
         lensCategoryRepository.save(newLensCategory);

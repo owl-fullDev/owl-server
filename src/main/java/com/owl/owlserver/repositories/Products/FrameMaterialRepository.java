@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FrameMaterialRepository extends JpaRepository<FrameMaterial,Integer> {
 
+        FrameMaterial findTopByOrderByFrameMaterialIdDesc( );
+
 }
