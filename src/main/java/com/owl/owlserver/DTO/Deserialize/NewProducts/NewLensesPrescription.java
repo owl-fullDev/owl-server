@@ -6,8 +6,6 @@ import lombok.Data;
 public class NewLensesPrescription {
 
     public boolean powerPolarity;
-    public int powerId;
-    public int cylinderStartId;
-    public int cylinderEndId;
-
+    public double power;
+    public double cylinder;
 }

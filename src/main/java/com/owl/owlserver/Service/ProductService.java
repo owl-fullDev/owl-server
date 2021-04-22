@@ -120,13 +120,15 @@ public class ProductService {
 
         //Lens category
         LensCategory lensCategory = lensCategoryRepository.findById(newLenses.getLensCategoryId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No lens category with ID of: " + newLenses.getLensCategoryId() + " exists!"));
-        newLensIdBuilder.append(lensCategory.getLensCategoryId());
-        if (lensCategory.getLensCategoryId()<10){
-            String lensCategoryId = "0"+lensCategory.getLensCategoryId();
-            newLensIdBuilder.append(lensCategoryId);
+        if (lensCategory.getLensCategoryId() < 10) {
+            newLensIdBuilder.append('0');
         }
+        newLensIdBuilder.append(lensCategory.getLensCategoryId());
 
         //Lens thickness
+        if (newLenses.getLensThicknessId() < 10) {
+            newLensIdBuilder.append('0');
+        }
         newLensIdBuilder.append(newLenses.getLensThicknessId());
 
         LensModel lensModel = lensModelRepository.findByLensCategory_LensCategoryIdAndLensCategoryModelId(lensCategory.getLensCategoryId(), newLenses.getLensModelId());
@@ -135,120 +137,80 @@ public class ProductService {
             lensModel = new LensModel(lensCategory, newLenses.getLensModelId(), newLenses.getLensModel());
             lensModelRepository.save(lensModel);
         }
-        newLensIdBuilder.append(lensCategory.getLensCategoryId());
-        if (lensModel.getLensCategoryModelId()<10){
-            String lensCategoryModelId = "0"+lensModel.getLensCategoryModelId();
-            newLensIdBuilder.append(lensCategoryModelId);
+        if (lensModel.getLensCategoryModelId() < 10) {
+            newLensIdBuilder.append('0');
         }
+        newLensIdBuilder.append(lensCategory.getLensCategoryId());
 
         //prescriptions
-        String newLensId = newLensIdBuilder.toString();
         List<Product> newLensList = new ArrayList<>();
-        StringBuilder newLensNameBuilder = new StringBuilder();
-        newLensNameBuilder.append(lensCategory.getCategoryName()).append(" ").append(1.49).append(newLenses.getLensThicknessId()).append(" ").append(lensModel.getLensModel()).append(" ");
+        double lensThicknessValue = newLenses.getLensThicknessId();
+        lensThicknessValue = 1.49+(lensThicknessValue/100);
+        String lensName = lensCategory.getCategoryName()+" "+lensThicknessValue+" "+lensModel.getLensModel()+" ";
 
         for (NewLensesPrescription newLensPrescription : newLenses.getNewLensesPrescriptionList()) {
-            String lensPowerId = "";
-            StringBuilder lensPowerIdStr = new StringBuilder();
-            //lens power if positive
-            if (newLensPrescription.powerPolarity){
-                int lensPowerIdRaw = newLensPrescription.getPowerId();
-                lensPowerId = lensPowerIdRaw +"00";
-                if (lensPowerIdRaw<10) {
-                    lensPowerId = "0"+ lensPowerIdRaw +"00";
-                }
-                lensPowerIdStr.append(" +").append(lensPowerId.charAt(0)).append(".");
-                if (lensPowerId.charAt(1)=='0'){
-                    lensPowerIdStr.append("00");
-                }
-                else if (lensPowerId.charAt(1)=='2') {
-                    lensPowerIdStr.append("25");
-                }
-                else if (lensPowerId.charAt(1)=='5') {
-                    lensPowerIdStr.append("50");
-                }
-                else if (lensPowerId.charAt(1)=='7') {
-                    lensPowerIdStr.append("75");
-                }
-                lensPowerIdStr.append(" -0.00");
-            }
+            StringBuilder lensPowerIdBuilder = new StringBuilder();
+            StringBuilder newLensNameBuilder = new StringBuilder();
 
-            //if power is negative
+            double lensPower = newLensPrescription.getPower();
+
+            if (lensPower == 0) {
+                lensPowerIdBuilder.append("0000");
+                newLensNameBuilder.append("+0.00 -0.00");
+            }
             else {
-                int lensPowerIdRaw = newLensPrescription.getPowerId();
-                lensPowerId = "00"+ lensPowerIdRaw;
-                if (lensPowerIdRaw<10) {
-                    lensPowerId = "000"+ lensPowerIdRaw;
+                int powerId = 0;
+                double powerDivisibleCount = lensPower / .25;
+                boolean add2or3 = true;
+                while (powerDivisibleCount != 0) {
+                    if (add2or3) {
+                        powerId = powerId + 2;
+                    } else {
+                        powerId = powerId + 3;
+                    }
+                    add2or3 = !add2or3;
+                    powerDivisibleCount=powerDivisibleCount-1;
                 }
-                lensPowerIdStr.append(" +0.00 ");
-                lensPowerIdStr.append("-").append(lensPowerId.charAt(0)).append(".");
-                if (lensPowerId.charAt(1)=='0'){
-                    lensPowerIdStr.append("00");
+
+                if (newLensPrescription.isPowerPolarity()){
+                    lensPowerIdBuilder.append(powerId).append("00");
+                    newLensNameBuilder.append("+").append(newLensPrescription.getPower()).append(" -0.00");
                 }
-                else if (lensPowerId.charAt(1)=='2') {
-                    lensPowerIdStr.append("25");
-                }
-                else if (lensPowerId.charAt(1)=='5') {
-                    lensPowerIdStr.append("50");
-                }
-                else if (lensPowerId.charAt(1)=='7') {
-                    lensPowerIdStr.append("75");
+                else {
+                    newLensNameBuilder.append("+0.00").append(" -").append(newLensPrescription.getPower());
+                    lensPowerIdBuilder.append("00").append(powerId);
                 }
             }
 
-            int startCylinderId = newLensPrescription.getCylinderStartId();
-            int endCylinderId = newLensPrescription.getCylinderEndId();
-            boolean additionValue;
-
-            //no cylinder value
-            if (startCylinderId==endCylinderId){
-                Product newLens = new Product(newLensId.concat(lensPowerId + "00"));
-                newLens.setProductPrice(newLenses.getLensPrice());
-                newLens.setProductName(newLensNameBuilder.toString()+lensPowerIdStr.toString()+" 0.00");
-                newLensList.add(newLens);
+            //cylinder value
+            double cylinder = newLensPrescription.getCylinder();
+            if (cylinder == 0) {
+                lensPowerIdBuilder.append("00");
+                newLensNameBuilder.append(" -0.00");
             }
-
-            //with cylinder values
             else {
-                if (startCylinderId % 5 == 0) {
-                    additionValue = false;//+2
-                } else {
-                    additionValue = true;//+3
+                int cylinderId = 0;
+                double cylinderDivisibleCount = cylinder / .25;
+                boolean add2or3 = true;
+                while (cylinderDivisibleCount != 0) {
+                    if (add2or3) {
+                        cylinderId = cylinderId + 2;
+                    } else {
+                        cylinderId = cylinderId + 3;
+                    }
+                    add2or3 = !add2or3;
+                    cylinderDivisibleCount=cylinderDivisibleCount-1;
                 }
-
-                while (startCylinderId < endCylinderId) {
-                    Product newLens = new Product(newLensId.concat(lensPowerId + startCylinderId));
-                    newLens.setProductPrice(newLenses.getLensPrice());
-                    String startCylinderIdStr = Integer.toString(startCylinderId);
-                    if (startCylinderId<10){
-                        startCylinderIdStr = '0'+Integer.toString(startCylinderId);
-                    }
-                    lensPowerIdStr.append(" ").append(startCylinderIdStr.charAt(0)).append(".");
-                    if (startCylinderIdStr.charAt(1)=='0'){
-                        lensPowerIdStr.append("00");
-                    }
-                    else if (startCylinderIdStr.charAt(1)=='2') {
-                        lensPowerIdStr.append("25");
-                    }
-                    else if (startCylinderIdStr.charAt(1)=='5') {
-                        lensPowerIdStr.append("50");
-                    }
-                    else if (startCylinderIdStr.charAt(1)=='7') {
-                        lensPowerIdStr.append("75");
-                    }
-                    newLens.setProductName(newLensNameBuilder.toString()+lensPowerIdStr.toString());
-                    newLensList.add(newLens);
-
-                    if(!additionValue){
-                        startCylinderId = startCylinderId+2;
-                    }
-                    else {
-                        startCylinderId = startCylinderId+3;
-                    }
-                }
+                newLensNameBuilder.append(" -").append(newLensPrescription.getCylinder());
+                lensPowerIdBuilder.append(cylinderId);
             }
+
+            Product newLens = new Product(newLensIdBuilder.toString()+lensPowerIdBuilder.toString());
+            newLens.setProductName(lensName+newLensNameBuilder.toString());
+            newLens.setProductPrice(newLenses.getLensPrice());
+            newLensList.add(newLens);
+            System.out.println(newLens);
         }
-
         productRepository.saveAll(newLensList);
     }
 }
