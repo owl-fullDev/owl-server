@@ -8,7 +8,7 @@ import java.util.List;
 public class NewLenses {
 
     public int lensCategoryId;
-    public int lensThicknessId;
+    public int lensThickness;
 
     public int lensModelId;
     public String lensModel;

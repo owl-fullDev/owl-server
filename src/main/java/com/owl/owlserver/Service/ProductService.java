@@ -126,10 +126,10 @@ public class ProductService {
         newLensIdBuilder.append(lensCategory.getLensCategoryId());
 
         //Lens thickness
-        if (newLenses.getLensThicknessId() < 10) {
+        if (newLenses.getLensThickness() < 10) {
             newLensIdBuilder.append('0');
         }
-        newLensIdBuilder.append(newLenses.getLensThicknessId());
+        newLensIdBuilder.append(newLenses.getLensThickness());
 
         LensModel lensModel = lensModelRepository.findByLensCategory_LensCategoryIdAndLensCategoryModelId(lensCategory.getLensCategoryId(), newLenses.getLensModelId());
         //new Lens model
@@ -144,9 +144,7 @@ public class ProductService {
 
         //prescriptions
         List<Product> newLensList = new ArrayList<>();
-        double lensThicknessValue = newLenses.getLensThicknessId();
-        lensThicknessValue = 1.49+(lensThicknessValue/100);
-        String lensName = lensCategory.getCategoryName()+" "+lensThicknessValue+" "+lensModel.getLensModel()+" ";
+        String lensName = lensCategory.getCategoryName()+" "+newLenses.getLensThickness()+" "+lensModel.getLensModel()+" ";
 
         for (NewLensesPrescription newLensPrescription : newLenses.getNewLensesPrescriptionList()) {
             StringBuilder lensPowerIdBuilder = new StringBuilder();
