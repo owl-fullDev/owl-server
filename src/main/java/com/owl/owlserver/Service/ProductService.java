@@ -130,7 +130,7 @@ public class ProductService {
         //error check to see if products already exist
         List<String> existingProductIdList = productRepository.findProductIdByProductIdIn(newFrameIdList);
 
-        if (newFrameIdList.size() != 0) {
+        if (existingProductIdList.size() != 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The following frame IDs already exist!: {" + existingProductIdList.toString() + "}");
         }
 
@@ -268,7 +268,7 @@ public class ProductService {
         //error check to see if products already exist
         List<String> existingProductIdList = productRepository.findProductIdByProductIdIn(newLensIdList);
 
-        if (newLensIdList.size() != 0) {
+        if (existingProductIdList.size() != 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The following lens IDs already exist!: {" + existingProductIdList.toString() + "}");
         }
         productRepository.saveAll(newLensList);
