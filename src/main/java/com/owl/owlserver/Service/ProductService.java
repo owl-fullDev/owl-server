@@ -23,33 +23,7 @@ public class ProductService {
 
     //injecting repositories for database access
     @Autowired
-    CustomerRepository customerRepository;
-    @Autowired
-    EmployeeRepository employeeRepository;
-    @Autowired
     ProductRepository productRepository;
-    @Autowired
-    PromotionRepository promotionRepository;
-    @Autowired
-    SaleDetailRepository saleDetailRepository;
-    @Autowired
-    SaleRepository saleRepository;
-    @Autowired
-    StoreQuantityRepository storeQuantityRepository;
-    @Autowired
-    StoreRepository storeRepository;
-    @Autowired
-    ShipmentRepository shipmentRepository;
-    @Autowired
-    ShipmentDetailRepository shipmentDetailRepository;
-    @Autowired
-    WarehouseRepository warehouseRepository;
-    @Autowired
-    WarehouseQuantityRepository warehouseQuantityRepository;
-    @Autowired
-    SupplierRespository supplierRespository;
-    @Autowired
-    RefundRepository refundRepository;
     @Autowired
     FrameCategoryRepository frameCategoryRepository;
     @Autowired
@@ -67,56 +41,92 @@ public class ProductService {
     public void newFrame(NewFrames newFrames) {
 
         StringBuilder newFrameIdBuilder = new StringBuilder();
+        StringBuilder newFrameNameBuilder = new StringBuilder();
 
         //frames start with 11
         newFrameIdBuilder.append("11");
 
         //Frame brand
-        newFrameIdBuilder.append(newFrames.getFrameBrandId());
-        String brand = null;
         if (newFrames.getFrameBrandId() == 11) {
-            brand = "OWL ";
+            newFrameNameBuilder.append("OWL ");
         }
+        else if(newFrames.getFrameBrandId() == 22) {
+            newFrameNameBuilder.append("LEE COOPER ");
+        }
+        else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unknown frame brand Id");
+        }
+        newFrameIdBuilder.append(newFrames.getFrameBrandId());
 
         //Frame category
         FrameCategory frameCategory = frameCategoryRepository.findById(newFrames.getFrameCategoryId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No frame category with ID of: " + newFrames.getFrameCategoryId() + " exists!"));
+        if (frameCategory.getFrameCategoryId() < 10) {
+            newFrameIdBuilder.append('0');
+        }
         newFrameIdBuilder.append(newFrames.getFrameCategoryId());
+        newFrameNameBuilder.append(frameCategory.getCategoryName()).append(" ");
 
+        //Frame model
         FrameModel frameModel = frameModelRepository.findAllByFrameCategory_FrameCategoryIdAndFrameCategoryModelId(newFrames.getFrameCategoryId(), newFrames.getFrameModelId());
-        //new Frame model
-        if (frameModel == null) {
+        if (frameModel == null) {//new model
+            if (newFrames.getFrameModelId()>=9999){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Model in category ID limit reached");
+            }
             frameModel = new FrameModel(frameCategory, newFrames.getFrameModelId(), newFrames.getSupplierModelCode());
             frameModelRepository.save(frameModel);
         }
+        if (newFrames.getFrameModelId()<1000){
+            newFrameNameBuilder.append('0');
+            if (newFrames.getFrameModelId()<100){
+                newFrameNameBuilder.append('0');
+                if (newFrames.getFrameModelId()<10){
+                    newFrameNameBuilder.append('0');
+                }
+            }
+        }
         newFrameIdBuilder.append(frameModel.getFrameCategoryModelId());
+        newFrameNameBuilder.append(frameModel.getFrameModel()).append(" ");
 
         //Material
         FrameMaterial frameMaterial = frameMaterialRepository.findById(newFrames.getFrameMaterialId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No frame material with ID of: " + newFrames.getFrameMaterialId() + " exists!"));
+        if (frameMaterial.getFrameMaterialId() < 10) {
+            newFrameIdBuilder.append('0');
+        }
         newFrameIdBuilder.append(newFrames.getFrameMaterialId());
+        newFrameNameBuilder.append(frameMaterial.getFrameMaterial()).append(" ");
 
         //Colors
+        List<FrameColour> frameColourList = frameColourRepository.findAll();
         String newFrameId = newFrameIdBuilder.toString();
+        String newFrameName = newFrameNameBuilder.toString();
         List<Product> newProductsList = new ArrayList<>();
-        StringBuilder newProductNameBuilder = new StringBuilder();
         for (NewFrameColours newFrameColour : newFrames.getNewFrameColoursList()) {
-            Product newProduct = new Product(newFrameId.concat(String.valueOf(newFrameColour.getFrameColourId())));
+            String colourId = "";
+            if (newFrameColour.getFrameColourId()<10){
+                colourId = "0";
+            }
+            Product newProduct = new Product(newFrameId+colourId+newFrameColour.getFrameColourId());
             newProduct.setProductPrice(newFrames.getFramePrice());
-            newProduct.setProductName(newProductNameBuilder.append(brand).append(frameCategory.getCategoryName()).append(" ").append(frameModel.getFrameCategoryModelId()).append(frameMaterial.getFrameMaterial()).toString());
-            newProduct.setSupplierCode(newFrames.getSupplierModelCode() + newFrameColour.getSupplierColourCode());
+            FrameColour frameColour = frameColourList.stream().filter(frameColour2 -> newFrameColour.frameColourId==frameColour2.getFrameColourId()).findFirst().orElse(null);
+            if (frameColour==null){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Colour Id not recognized");
+            }
+            newProduct.setProductName(newFrameName +" "+ frameColour.getFrameColour());
+            newProduct.setSupplierCode(newFrames.getSupplierName() +" "+ newFrames.getSupplierModelCode() +" "+ newFrameColour.getSupplierColourCode());
             newProductsList.add(newProduct);
         }
-
         productRepository.saveAll(newProductsList);
     }
+
 
 
     @Transactional
     public void newLens(NewLenses newLenses) {
 
-
         StringBuilder newLensIdBuilder = new StringBuilder();
+        StringBuilder newLensNameBuilder = new StringBuilder();
 
-        //lenses start with 11
+        //lenses start with 22
         newLensIdBuilder.append("22");
 
         //Lens category
@@ -125,15 +135,17 @@ public class ProductService {
             newLensIdBuilder.append('0');
         }
         newLensIdBuilder.append(lensCategory.getLensCategoryId());
+        newLensNameBuilder.append(lensCategory.getCategoryName()).append(" ");
 
         //Lens thickness
         if (newLenses.getLensThickness() < 10) {
             newLensIdBuilder.append('0');
         }
         newLensIdBuilder.append(newLenses.getLensThickness());
+        newLensNameBuilder.append("1.").append(newLenses.getLensThickness()).append(" ");
 
+        //Lens model
         LensModel lensModel = lensModelRepository.findByLensCategory_LensCategoryIdAndLensCategoryModelId(lensCategory.getLensCategoryId(), newLenses.getLensModelId());
-        //new Lens model
         if (lensModel == null) {
             lensModel = new LensModel(lensCategory, newLenses.getLensModelId(), newLenses.getLensModel());
             lensModelRepository.save(lensModel);
@@ -141,29 +153,32 @@ public class ProductService {
         if (lensModel.getLensCategoryModelId() < 10) {
             newLensIdBuilder.append('0');
         }
-        newLensIdBuilder.append(lensCategory.getLensCategoryId());
+        newLensIdBuilder.append(lensModel.getLensModelId());
+        newLensNameBuilder.append(lensModel.getLensModel()).append(" ");
 
         //prescriptions
         List<Product> newLensList = new ArrayList<>();
-        String lensName = lensCategory.getCategoryName()+" 1."+newLenses.getLensThickness()+" "+lensModel.getLensModel()+" ";
+        String lensName = newLensNameBuilder.toString();
 
         for (NewLensesPrescription newLensPrescription : newLenses.getNewLensesPrescriptionList()) {
             StringBuilder lensPowerIdBuilder = new StringBuilder();
-            StringBuilder newLensNameBuilder = new StringBuilder();
+            StringBuilder lensPowerNameBuilder = new StringBuilder();
 
             double lensPower = newLensPrescription.getPower();
 
             if (lensPower == 0) {
                 lensPowerIdBuilder.append("0000");
-                newLensNameBuilder.append("+0.00 -0.00");
-            } else {
+                lensPowerNameBuilder.append("+0.00 -0.00");
+            }
+            else {
                 int powerId = 0;
                 double powerDivisibleCount = lensPower / .25;
                 boolean add2or3 = true;
                 while (powerDivisibleCount != 0) {
                     if (add2or3) {
                         powerId = powerId + 2;
-                    } else {
+                    }
+                    else {
                         powerId = powerId + 3;
                     }
                     add2or3 = !add2or3;
@@ -172,10 +187,10 @@ public class ProductService {
 
                 if (newLensPrescription.isPowerPolarity()) {
                     lensPowerIdBuilder.append(powerId).append("00");
-                    newLensNameBuilder.append("+").append(newLensPrescription.getPower()).append(" -0.00");
+                    lensPowerNameBuilder.append("+").append(newLensPrescription.getPower()).append(" -0.00");
                 } else {
                     newLensNameBuilder.append("+0.00").append(" -").append(newLensPrescription.getPower());
-                    lensPowerIdBuilder.append("00").append(powerId);
+                    lensPowerNameBuilder.append("00").append(powerId);
                 }
             }
 
@@ -183,7 +198,7 @@ public class ProductService {
             double cylinder = newLensPrescription.getCylinder();
 
             Product newLens = new Product(newLensIdBuilder.toString() + lensPowerIdBuilder.toString() + "00");
-            newLens.setProductName(lensName + newLensNameBuilder.toString() + " -0.00");
+            newLens.setProductName(lensName + lensPowerNameBuilder.toString() + " -0.00");
             newLens.setProductPrice(newLenses.getLensPrice());
             newLensList.add(newLens);
 
@@ -205,7 +220,7 @@ public class ProductService {
                 }
 
                 newLens = new Product(newLensIdBuilder.toString() + lensPowerIdBuilder.toString()+cylinderIdStr);
-                newLens.setProductName(lensName + newLensNameBuilder.toString()+" -"+0.25*cylinderDivisibleCount);
+                newLens.setProductName(lensName + lensPowerNameBuilder.toString()+" -"+0.25*cylinderDivisibleCount);
                 newLens.setProductPrice(newLenses.getLensPrice());
                 newLensList.add(newLens);
             }

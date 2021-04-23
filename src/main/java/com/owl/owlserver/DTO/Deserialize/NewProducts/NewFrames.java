@@ -10,6 +10,7 @@ public class NewFrames {
     public int frameCategoryId;
     public int frameBrandId;
 
+    public String supplierName;
     public int frameModelId;
     public String supplierModelCode;
 
