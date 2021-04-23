@@ -79,11 +79,11 @@ public class ProductService {
             frameModelRepository.save(frameModel);
         }
         if (newFrames.getFrameModelId()<1000){
-            newFrameNameBuilder.append('0');
+            newFrameIdBuilder.append("0");
             if (newFrames.getFrameModelId()<100){
-                newFrameNameBuilder.append('0');
+                newFrameIdBuilder.append("0");
                 if (newFrames.getFrameModelId()<10){
-                    newFrameNameBuilder.append('0');
+                    newFrameIdBuilder.append("0");
                 }
             }
         }
@@ -115,7 +115,7 @@ public class ProductService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Colour Id not recognized");
             }
 
-            if ((newFrameId+colourId+newFrameColour.getFrameColourId()).length()!=10){
+            if ((newFrameId+colourId+newFrameColour.getFrameColourId()).length()!=14){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Something has gone wrong with barcode generation!");
             }
 
