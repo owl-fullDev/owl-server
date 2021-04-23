@@ -113,6 +113,7 @@ public class ProductService {
     @Transactional
     public void newLens(NewLenses newLenses) {
 
+
         StringBuilder newLensIdBuilder = new StringBuilder();
 
         //lenses start with 11
@@ -207,7 +208,6 @@ public class ProductService {
             newLens.setProductName(lensName+newLensNameBuilder.toString());
             newLens.setProductPrice(newLenses.getLensPrice());
             newLensList.add(newLens);
-            System.out.println(newLens);
         }
         productRepository.saveAll(newLensList);
     }
