@@ -191,18 +191,28 @@ public class ProductService {
                     powerDivisibleCount = powerDivisibleCount - 1;
                 }
 
+                String powerIdStr = "";
+                if (powerId<10){
+                    powerIdStr = "0"+ powerId;
+                }
+                else {
+                    powerIdStr = Integer.toString(powerId);
+                }
+
                 if (newLensPrescription.isPowerPolarity()) {
-                    lensPowerIdBuilder.append(powerId).append("00");
+                    lensPowerIdBuilder.append(powerIdStr).append("00");
                     lensPowerNameBuilder.append("+").append(newLensPrescription.getPower()).append(" -0.00");
-                } else {
-                    newLensNameBuilder.append("+0.00").append(" -").append(newLensPrescription.getPower());
-                    lensPowerNameBuilder.append("00").append(powerId);
+                }
+                else {
+                    lensPowerIdBuilder.append("00").append(powerIdStr);
+                    lensPowerNameBuilder.append("+0.00").append(" -").append(newLensPrescription.getPower());
                 }
             }
 
             //cylinder values
             double cylinder = newLensPrescription.getCylinder();
-            if ((newLensNameBuilder.toString()+lensPowerIdBuilder.toString()).length()!=10){
+
+            if ((newLensIdBuilder.toString() + lensPowerIdBuilder.toString() + "00").length()!=14){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Something has gone wrong with barcode generation!");
             }
             Product newLens = new Product(newLensIdBuilder.toString() + lensPowerIdBuilder.toString() + "00");
@@ -227,7 +237,7 @@ public class ProductService {
                     cylinderIdStr = '0'+Integer.toString(cylinderId);
                 }
 
-                if ((newLensNameBuilder.toString()+lensPowerIdBuilder.toString()+cylinderIdStr).length()!=10){
+                if ((newLensIdBuilder.toString() + lensPowerIdBuilder.toString()+cylinderIdStr).length()!=14){
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Something has gone wrong with barcode generation!");
                 }
                 newLens = new Product(newLensIdBuilder.toString() + lensPowerIdBuilder.toString()+cylinderIdStr);
