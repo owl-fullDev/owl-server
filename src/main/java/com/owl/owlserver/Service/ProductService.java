@@ -105,12 +105,18 @@ public class ProductService {
             if (newFrameColour.getFrameColourId()<10){
                 colourId = "0";
             }
-            Product newProduct = new Product(newFrameId+colourId+newFrameColour.getFrameColourId());
-            newProduct.setProductPrice(newFrames.getFramePrice());
+
             FrameColour frameColour = frameColourList.stream().filter(frameColour2 -> newFrameColour.frameColourId==frameColour2.getFrameColourId()).findFirst().orElse(null);
             if (frameColour==null){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Colour Id not recognized");
             }
+
+            if ((newFrameId+colourId+newFrameColour.getFrameColourId()).length()!=10){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Something has gone wrong with barcode generation!");
+            }
+
+            Product newProduct = new Product(newFrameId+colourId+newFrameColour.getFrameColourId());
+            newProduct.setProductPrice(newFrames.getFramePrice());
             newProduct.setProductName(newFrameName +" "+ frameColour.getFrameColour());
             newProduct.setSupplierCode(newFrames.getSupplierName() +" "+ newFrames.getSupplierModelCode() +" "+ newFrameColour.getSupplierColourCode());
             newProductsList.add(newProduct);
@@ -196,7 +202,9 @@ public class ProductService {
 
             //cylinder values
             double cylinder = newLensPrescription.getCylinder();
-
+            if ((newLensNameBuilder.toString()+lensPowerIdBuilder.toString()).length()!=10){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Something has gone wrong with barcode generation!");
+            }
             Product newLens = new Product(newLensIdBuilder.toString() + lensPowerIdBuilder.toString() + "00");
             newLens.setProductName(lensName + lensPowerNameBuilder.toString() + " -0.00");
             newLens.setProductPrice(newLenses.getLensPrice());
@@ -219,6 +227,9 @@ public class ProductService {
                     cylinderIdStr = '0'+Integer.toString(cylinderId);
                 }
 
+                if ((newLensNameBuilder.toString()+lensPowerIdBuilder.toString()+cylinderIdStr).length()!=10){
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Something has gone wrong with barcode generation!");
+                }
                 newLens = new Product(newLensIdBuilder.toString() + lensPowerIdBuilder.toString()+cylinderIdStr);
                 newLens.setProductName(lensName + lensPowerNameBuilder.toString()+" -"+0.25*cylinderDivisibleCount);
                 newLens.setProductPrice(newLenses.getLensPrice());
