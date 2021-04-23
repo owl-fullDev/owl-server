@@ -278,17 +278,20 @@ public class ProductService {
     @Transactional
     public void newCustomLens(String customLensName, double customLensPrice) {
         List<Product> customLensList = productRepository.findAllByProductIdStartsWith("33");
-        int largest = 0;
+        long largest = 0;
+        if (customLensList.size()==0){
+            largest = 33000000000000L;
+        }
         for (Product product:customLensList){
-            if ((Integer.parseInt(product.getProductId()))>largest){
-                largest = Integer.parseInt(product.getProductId());
+            if ((Long.parseLong(product.getProductId()))>largest){
+                largest = Long.parseLong(product.getProductId());
             }
         }
 
-        while (productRepository.existsById(Integer.toString(largest+1))){
+        while (productRepository.existsById(Long.toString(largest+1))){
             largest = largest+1;
         }
-        Product newCustomLens = new Product(Integer.toString(largest));
+        Product newCustomLens = new Product(Long.toString(largest));
         newCustomLens.setProductName(customLensName);
         newCustomLens.setProductPrice(customLensPrice);
         productRepository.save(newCustomLens);
