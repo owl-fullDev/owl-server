@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -270,7 +271,26 @@ public class ProductService {
         if (newLensIdList.size() != 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The following lens IDs already exist!: {" + existingProductIdList.toString() + "}");
         }
-
         productRepository.saveAll(newLensList);
+    }
+
+
+    @Transactional
+    public void newCustomLens(String customLensName, double customLensPrice) {
+        List<Product> customLensList = productRepository.findAllByProductIdStartsWith("33");
+        int largest = 0;
+        for (Product product:customLensList){
+            if ((Integer.parseInt(product.getProductId()))>largest){
+                largest = Integer.parseInt(product.getProductId());
+            }
+        }
+
+        while (productRepository.existsById(Integer.toString(largest+1))){
+            largest = largest+1;
+        }
+        Product newCustomLens = new Product(Integer.toString(largest));
+        newCustomLens.setProductName(customLensName);
+        newCustomLens.setProductPrice(customLensPrice);
+        productRepository.save(newCustomLens);
     }
 }

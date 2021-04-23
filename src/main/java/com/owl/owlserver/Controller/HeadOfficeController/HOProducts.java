@@ -228,4 +228,14 @@ public class HOProducts {
         return lensModelRepository.findAll();
     }
 
+    @PostMapping(value = "/addNewCustomLens")
+    public ResponseEntity<String> addNewCustomLens(@RequestBody String jsonString) throws JsonProcessingException {
+        JsonNode wholeJSON = objectMapper.readTree(jsonString);
+        String customLensName = wholeJSON.get("customLensName").asText();
+        double customLensPrice = wholeJSON.get("customLensPrice").asDouble();
+
+        productService.newCustomLens(customLensName,customLensPrice);
+        return new ResponseEntity<>("Successfully added new custom lens", HttpStatus.OK);
+    }
+
 }
