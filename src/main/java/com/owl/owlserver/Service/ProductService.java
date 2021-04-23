@@ -16,6 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -98,6 +100,7 @@ public class ProductService {
         //Colors
         List<FrameColour> frameColourList = frameColourRepository.findAll();
         String newFrameId = newFrameIdBuilder.toString();
+        List<String> newFrameIdList = new ArrayList<>();
         String newFrameName = newFrameNameBuilder.toString();
         List<Product> newProductsList = new ArrayList<>();
         for (NewFrameColours newFrameColour : newFrames.getNewFrameColoursList()) {
@@ -120,7 +123,16 @@ public class ProductService {
             newProduct.setProductName(newFrameName +" "+ frameColour.getFrameColour());
             newProduct.setSupplierCode(newFrames.getSupplierName() +" "+ newFrames.getSupplierModelCode() +" "+ newFrameColour.getSupplierColourCode());
             newProductsList.add(newProduct);
+            newFrameIdList.add(newFrameId+colourId+newFrameColour.getFrameColourId());
         }
+
+        //error check to see if products already exist
+        List<String> existingProductIdList = productRepository.findProductIdByProductIdIn(newFrameIdList);
+
+        if (newFrameIdList.size() != 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The following frame IDs already exist!: {" + existingProductIdList.toString() + "}");
+        }
+
         productRepository.saveAll(newProductsList);
     }
 
@@ -164,6 +176,7 @@ public class ProductService {
 
         //prescriptions
         List<Product> newLensList = new ArrayList<>();
+        List<String> newLensIdList = new ArrayList<>();
         String lensName = newLensNameBuilder.toString();
 
         for (NewLensesPrescription newLensPrescription : newLenses.getNewLensesPrescriptionList()) {
@@ -215,10 +228,12 @@ public class ProductService {
             if ((newLensIdBuilder.toString() + lensPowerIdBuilder.toString() + "00").length()!=14){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Something has gone wrong with barcode generation!");
             }
-            Product newLens = new Product(newLensIdBuilder.toString() + lensPowerIdBuilder.toString() + "00");
+            String newLensId = newLensIdBuilder.toString() + lensPowerIdBuilder.toString() + "00";
+            Product newLens = new Product(newLensId);
             newLens.setProductName(lensName + lensPowerNameBuilder.toString() + " -0.00");
             newLens.setProductPrice(newLenses.getLensPrice());
             newLensList.add(newLens);
+            newLensIdList.add(newLensId);
 
             int cylinderId = 0;
             double cylinderDivisibleCount = 0;
@@ -240,12 +255,22 @@ public class ProductService {
                 if ((newLensIdBuilder.toString() + lensPowerIdBuilder.toString()+cylinderIdStr).length()!=14){
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Something has gone wrong with barcode generation!");
                 }
-                newLens = new Product(newLensIdBuilder.toString() + lensPowerIdBuilder.toString()+cylinderIdStr);
+                newLensId = newLensIdBuilder.toString() + lensPowerIdBuilder.toString()+cylinderIdStr;
+                newLens = new Product(newLensId);
                 newLens.setProductName(lensName + lensPowerNameBuilder.toString()+" -"+0.25*cylinderDivisibleCount);
                 newLens.setProductPrice(newLenses.getLensPrice());
                 newLensList.add(newLens);
+                newLensIdList.add(newLensId);
             }
         }
+
+        //error check to see if products already exist
+        List<String> existingProductIdList = productRepository.findProductIdByProductIdIn(newLensIdList);
+
+        if (newLensIdList.size() != 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The following lens IDs already exist!: {" + existingProductIdList.toString() + "}");
+        }
+
         productRepository.saveAll(newLensList);
     }
 }
