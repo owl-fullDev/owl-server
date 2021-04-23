@@ -22,7 +22,7 @@ public class Product implements Serializable {
     private double productPrice;
 
     @JsonIgnore
-    @Column(name = "SUPPLIER_CODE", nullable = false)
+    @Column(name = "SUPPLIER_CODE")
     private String supplierCode;
 
     @JsonIgnore
