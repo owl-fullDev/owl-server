@@ -187,10 +187,6 @@ public class ProductService {
             newLens.setProductPrice(newLenses.getLensPrice());
             newLensList.add(newLens);
 
-            System.out.println("\n");
-            System.out.println(newLens.getProductId());
-            System.out.println(newLens.getProductName());
-
             int cylinderId = 0;
             double cylinderDivisibleCount = 0;
             boolean add2or3 = true;
@@ -212,12 +208,8 @@ public class ProductService {
                 newLens.setProductName(lensName + newLensNameBuilder.toString()+" -"+0.25*cylinderDivisibleCount);
                 newLens.setProductPrice(newLenses.getLensPrice());
                 newLensList.add(newLens);
-                System.out.println("\n");
-                System.out.println(newLens.getProductId());
-                System.out.println(newLens.getProductName());
-
             }
         }
-        //productRepository.saveAll(newLensList);
+        productRepository.saveAll(newLensList);
     }
 }
