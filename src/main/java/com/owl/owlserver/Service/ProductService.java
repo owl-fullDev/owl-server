@@ -145,7 +145,7 @@ public class ProductService {
 
         //prescriptions
         List<Product> newLensList = new ArrayList<>();
-        String lensName = lensCategory.getCategoryName()+" "+newLenses.getLensThickness()+" "+lensModel.getLensModel()+" ";
+        String lensName = lensCategory.getCategoryName()+" 1."+newLenses.getLensThickness()+" "+lensModel.getLensModel()+" ";
 
         for (NewLensesPrescription newLensPrescription : newLenses.getNewLensesPrescriptionList()) {
             StringBuilder lensPowerIdBuilder = new StringBuilder();
@@ -156,8 +156,7 @@ public class ProductService {
             if (lensPower == 0) {
                 lensPowerIdBuilder.append("0000");
                 newLensNameBuilder.append("+0.00 -0.00");
-            }
-            else {
+            } else {
                 int powerId = 0;
                 double powerDivisibleCount = lensPower / .25;
                 boolean add2or3 = true;
@@ -168,47 +167,57 @@ public class ProductService {
                         powerId = powerId + 3;
                     }
                     add2or3 = !add2or3;
-                    powerDivisibleCount=powerDivisibleCount-1;
+                    powerDivisibleCount = powerDivisibleCount - 1;
                 }
 
-                if (newLensPrescription.isPowerPolarity()){
+                if (newLensPrescription.isPowerPolarity()) {
                     lensPowerIdBuilder.append(powerId).append("00");
                     newLensNameBuilder.append("+").append(newLensPrescription.getPower()).append(" -0.00");
-                }
-                else {
+                } else {
                     newLensNameBuilder.append("+0.00").append(" -").append(newLensPrescription.getPower());
                     lensPowerIdBuilder.append("00").append(powerId);
                 }
             }
 
-            //cylinder value
+            //cylinder values
             double cylinder = newLensPrescription.getCylinder();
-            if (cylinder == 0) {
-                lensPowerIdBuilder.append("00");
-                newLensNameBuilder.append(" -0.00");
-            }
-            else {
-                int cylinderId = 0;
-                double cylinderDivisibleCount = cylinder / .25;
-                boolean add2or3 = true;
-                while (cylinderDivisibleCount != 0) {
-                    if (add2or3) {
-                        cylinderId = cylinderId + 2;
-                    } else {
-                        cylinderId = cylinderId + 3;
-                    }
-                    add2or3 = !add2or3;
-                    cylinderDivisibleCount=cylinderDivisibleCount-1;
-                }
-                newLensNameBuilder.append(" -").append(newLensPrescription.getCylinder());
-                lensPowerIdBuilder.append(cylinderId);
-            }
 
-            Product newLens = new Product(newLensIdBuilder.toString()+lensPowerIdBuilder.toString());
-            newLens.setProductName(lensName+newLensNameBuilder.toString());
+            Product newLens = new Product(newLensIdBuilder.toString() + lensPowerIdBuilder.toString() + "00");
+            newLens.setProductName(lensName + newLensNameBuilder.toString() + " -0.00");
             newLens.setProductPrice(newLenses.getLensPrice());
             newLensList.add(newLens);
+
+            System.out.println("\n");
+            System.out.println(newLens.getProductId());
+            System.out.println(newLens.getProductName());
+
+            int cylinderId = 0;
+            double cylinderDivisibleCount = 0;
+            boolean add2or3 = true;
+            while (cylinderDivisibleCount < cylinder/0.25) {
+                if (add2or3) {
+                    cylinderId = cylinderId + 2;
+                } else {
+                    cylinderId = cylinderId + 3;
+                }
+                add2or3 = !add2or3;
+                cylinderDivisibleCount = cylinderDivisibleCount + 1;
+
+                String cylinderIdStr = Integer.toString(cylinderId);
+                if (cylinderId<10){
+                    cylinderIdStr = '0'+Integer.toString(cylinderId);
+                }
+
+                newLens = new Product(newLensIdBuilder.toString() + lensPowerIdBuilder.toString()+cylinderIdStr);
+                newLens.setProductName(lensName + newLensNameBuilder.toString()+" -"+0.25*cylinderDivisibleCount);
+                newLens.setProductPrice(newLenses.getLensPrice());
+                newLensList.add(newLens);
+                System.out.println("\n");
+                System.out.println(newLens.getProductId());
+                System.out.println(newLens.getProductName());
+
+            }
         }
-        productRepository.saveAll(newLensList);
+        //productRepository.saveAll(newLensList);
     }
 }
