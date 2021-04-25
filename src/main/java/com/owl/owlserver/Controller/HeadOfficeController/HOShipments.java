@@ -122,8 +122,9 @@ public class HOShipments {
     @Transactional
     @PostMapping(value = "/cancelShipment")
     public ResponseEntity<String> cancelShipment(int shipmentId) {
-        shipmentRepository.findById(shipmentId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No shipment with ID of: "+shipmentId+" exists!"));
-        shipmentRepository.deleteById(shipmentId);
+        Shipment shipment = shipmentRepository.findById(shipmentId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "No shipment with ID of: "+shipmentId+" exists!"));
+        shipmentDetailRepository.deleteInBatch(shipment.getShipmentDetailList());
+        shipmentRepository.delete(shipment);
         return new ResponseEntity<>("Successfully deleted shipment, ID: "+shipmentId, HttpStatus.OK);
     }
 }
