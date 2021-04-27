@@ -12,6 +12,7 @@ import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
+@PreAuthorize("hasRole('OFFICE') or hasRole('ADMIN')")
 @CrossOrigin
 @RestController
 @RequestMapping("/hoShipmentsEndpoint")

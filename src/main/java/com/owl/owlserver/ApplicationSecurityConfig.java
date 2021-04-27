@@ -1,39 +1,62 @@
-//package com.owl.owlserver;
-//
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.context.annotation.Bean;
-//import org.springframework.context.annotation.Configuration;
-//import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-//import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-//import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-//import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-//import org.springframework.security.crypto.password.PasswordEncoder;
-//
-//@Configuration
-//@EnableWebSecurity
-//public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
-//
-//    @Override
-//    protected void configure(HttpSecurity httpSecurity) throws Exception {
-//        httpSecurity.csrf().disable()
-//                .authorizeRequests().anyRequest().authenticated()
-//                .and().httpBasic();
-//
-//    }
-//
-//    @Autowired
-//    public void configureGlobal(AuthenticationManagerBuilder authentication)
-//            throws Exception
-//    {
-//        authentication.inMemoryAuthentication()
-//                .withUser("user").password(passwordEncoder().encode("user")).authorities("USER")
-//                .and()
-//                .withUser("admin").password(passwordEncoder().encode("admin")).authorities("ADMIN");
-//    }
-//
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
-//}
+package com.owl.owlserver;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+
+import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
+
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+
+@Configuration
+public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private static final String[] AUTH_WHITELIST = {
+            "/actuator/info",
+            "/actuator/health"
+    };
+
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .cors().and()
+                .csrf().disable()
+                .sessionManagement().sessionCreationPolicy(STATELESS).and()
+                .authorizeRequests()
+                .antMatchers(HttpMethod.OPTIONS).permitAll()
+                .antMatchers(AUTH_WHITELIST).permitAll()
+                .antMatchers("/posEndpoint").access("hasRole('USER') or hasRole('ADMIN')")
+                .antMatchers("/hoEndpoint").access("hasRole('USER')")
+                .anyRequest().authenticated()
+                .and()
+                .httpBasic();
+
+        http.headers().frameOptions().disable();
+    }
+
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth)
+            throws Exception {
+        auth.inMemoryAuthentication()
+                .withUser("warehouse")
+                .password("{noop}warehouse")
+                .roles("WAREHOUSE");
+        auth.inMemoryAuthentication()
+                .withUser("admin")
+                .password("{noop}admin")
+                .roles("ADMIN");
+        auth.inMemoryAuthentication()
+                .withUser("office")
+                .password("{noop}office")
+                .roles("OFFICE");
+        auth.inMemoryAuthentication()
+                .withUser("store")
+                .password("{noop}store")
+                .roles("store");
+    }
+}

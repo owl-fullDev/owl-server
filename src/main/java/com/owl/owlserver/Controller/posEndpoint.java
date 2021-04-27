@@ -12,6 +12,7 @@ import com.owl.owlserver.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,7 +20,7 @@ import javax.transaction.Transactional;
 import java.time.*;
 import java.util.List;
 
-@CrossOrigin
+@PreAuthorize("hasRole('WAREHOUSE') or hasRole('STORE') or hasRole('OFFICE') or hasRole('ADMIN')")
 @RestController
 @RequestMapping("/posEndpoint")
 public class posEndpoint {
