@@ -16,7 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
-@PreAuthorize("hasRole('OFFICE') or hasRole('ADMIN')")
+//@PreAuthorize("hasRole('OFFICE') or hasRole('ADMIN')")
 @CrossOrigin
 @RestController
 @RequestMapping("/hoSuppliersEndpoint")

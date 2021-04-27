@@ -20,7 +20,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-@PreAuthorize("hasRole('OFFICE') or hasRole('ADMIN')")
+//@PreAuthorize("hasRole('OFFICE') or hasRole('ADMIN')")
 @CrossOrigin
 @RestController
 @RequestMapping("/hoSalesEndpoint")

@@ -30,11 +30,9 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.OPTIONS).permitAll()
                 .antMatchers(AUTH_WHITELIST).permitAll()
-                .antMatchers("/posEndpoint").access("hasRole('USER') or hasRole('ADMIN')")
-                .antMatchers("/hoEndpoint").access("hasRole('USER')")
-                .anyRequest().authenticated()
-                .and()
-                .httpBasic();
+                .anyRequest().authenticated();
+//                .and()
+//                .formLogin();
 
         http.headers().frameOptions().disable();
     }
