@@ -1,4 +1,4 @@
-package com.owl.owlserver.Controller;
+package com.owl.owlserver.Controller.HeadOfficeController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/LoginEndpoint")
-public class LoginEndpoint {
+@RequestMapping("/Login")
+public class HOLogin {
 
     //REST endpoints
     @GetMapping
@@ -21,15 +21,25 @@ public class LoginEndpoint {
         return new ResponseEntity<>("This is the login endpoint, GET request successfully received", HttpStatus.OK);
     }
 
-    @PostMapping(value = "/login")
+    @PostMapping()
     public ResponseEntity<String> login(@RequestBody String jsonString) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
         String username = wholeJSON.get("username").asText();
         String password = wholeJSON.get("password").asText();
-        //login here
+
+        //login functionality
+        //start session.
+        //timeout after 12 hrs or 00:00
 
         return new ResponseEntity<>("Successfully logged in", HttpStatus.OK);
     }
 
+    @GetMapping(value = "/logout")
+    public ResponseEntity<String> logout()  {
+
+        //logout functionality
+
+        return new ResponseEntity<>("Successfully logged out", HttpStatus.OK);
+    }
 }
