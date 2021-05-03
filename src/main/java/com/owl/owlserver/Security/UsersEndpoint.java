@@ -32,7 +32,7 @@ public class UsersEndpoint {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
 
-        String username = wholeJSON.get("name").asText();
+        String username = wholeJSON.get("username").asText();
         String password = wholeJSON.get("password").asText();
         
         UserCredentials userCredentials = userCredentialsService.findUserCredentialByUsername(username);
