@@ -33,11 +33,14 @@ public class login {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
 
         String username = wholeJSON.get("name").asText();
-        String password = wholeJSON.get("address").asText();
+        String password = wholeJSON.get("password").asText();
         
         UserCredentials userCredentials = userCredentialsService.findUserCredentialByUsername(username);
+
         if (userCredentials!=null){
-            return new ResponseEntity<>(userCredentials.getRole(),HttpStatus.OK);
+            if (passwordEncoder.matches(password,userCredentials.getPassword())) {
+                return new ResponseEntity<>(userCredentials.getRole(), HttpStatus.OK);
+            }
         }
         else {
             return new ResponseEntity<>("Wrong username or password",HttpStatus.UNAUTHORIZED);
