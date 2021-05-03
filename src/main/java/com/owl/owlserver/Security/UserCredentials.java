@@ -1,4 +1,4 @@
-package com.owl.owlserver.model;
+package com.owl.owlserver.Security;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,7 +13,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "USER")
-public class User implements Serializable {
+public class UserCredentials implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,5 +24,11 @@ public class User implements Serializable {
     @Column(name = "PASSWORD", nullable = false)
     private String password;
     @Column(name = "ROLE", nullable = false)
-    private int role;
+    private String role;
+
+    public UserCredentials(String username, String encodedPassword, String role) {
+        this.username = username;
+        this.password = encodedPassword;
+        this.role = role;
+    }
 }
