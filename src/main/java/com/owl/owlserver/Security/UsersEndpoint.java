@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.*;
 public class UsersEndpoint {
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    PasswordEncoder passwordEncoder;
     @Autowired
-    private UserCredentialsRepository userCredentialsRepository;
+    UserCredentialsRepository userCredentialsRepository;
     @Autowired
     UserCredentialsService userCredentialsService;
 
