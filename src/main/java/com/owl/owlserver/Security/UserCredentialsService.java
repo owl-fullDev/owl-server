@@ -1,4 +1,4 @@
-package com.owl.owlserver.Service;
+package com.owl.owlserver.Security;
 
 import com.owl.owlserver.Security.UserCredentials;
 import com.owl.owlserver.Security.UserCredentialsRepository;

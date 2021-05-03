@@ -17,12 +17,12 @@ import java.util.List;
 public class APIUserDetailsService implements UserDetailsService {
 
     @Autowired
-    private UserCredentialsRepository userCredentialsRepository;
+    private UserCredentialsService userCredentialsService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        UserCredentials userCredentials = userCredentialsRepository.findByUsername(username);
+        UserCredentials userCredentials = userCredentialsService.findUserCredentialByUsername(username);
 
         if (userCredentials != null) {
             List<GrantedAuthority> authorities = new ArrayList<>();
