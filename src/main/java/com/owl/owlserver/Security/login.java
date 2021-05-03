@@ -41,6 +41,7 @@ public class login {
             if (passwordEncoder.matches(password,userCredentials.getPassword())) {
                 return new ResponseEntity<>(userCredentials.getRole(), HttpStatus.OK);
             }
+            return new ResponseEntity<>("Wrong username or password",HttpStatus.UNAUTHORIZED);
         }
         else {
             return new ResponseEntity<>("Wrong username or password",HttpStatus.UNAUTHORIZED);
