@@ -39,7 +39,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
         return authProvider;
     }
 
-    private static final String[] AUTH_WHITELIST = {"/UsersEndpoint/login"};
+    private static final String[] AUTH_WHITELIST = {"/usersEndpoint/login"};
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
