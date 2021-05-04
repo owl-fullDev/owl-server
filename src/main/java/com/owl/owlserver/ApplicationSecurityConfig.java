@@ -17,8 +17,6 @@ import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
@@ -28,9 +26,6 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     APIUserDetailsService apiUserDetailsService;
-
-//    @Autowired
-//    PasswordEncoder passwordEncoder;
 
     @Bean
     public DaoAuthenticationProvider authProvider() {

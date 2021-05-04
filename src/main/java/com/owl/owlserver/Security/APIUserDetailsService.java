@@ -26,12 +26,12 @@ public class APIUserDetailsService implements UserDetailsService {
 
         if (userCredentials != null) {
             List<GrantedAuthority> authorities = new ArrayList<>();
-            authorities.add(new SimpleGrantedAuthority(userCredentials.getRole()));
 
             return User
                     .withUsername(userCredentials.getUsername())
                     .password(userCredentials.getPassword())
                     .authorities(authorities)
+                    .roles(userCredentials.getRole())
                     .build();
         }
         else {

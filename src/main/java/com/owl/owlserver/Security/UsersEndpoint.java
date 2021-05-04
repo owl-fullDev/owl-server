@@ -46,7 +46,7 @@ public class UsersEndpoint {
     }
 
     @PostMapping(value = "/newUser")
-    public void newUser(@RequestBody String jsonString) throws JsonProcessingException {
+    public ResponseEntity<String> newUser(@RequestBody String jsonString) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
 
@@ -58,6 +58,7 @@ public class UsersEndpoint {
         UserCredentials userCredentials = new UserCredentials(username, encodedPassword, role);
         userCredentialsRepository.save(userCredentials);
 
+        return new ResponseEntity<>("New user sucessfully created", HttpStatus.OK);
     }
 }
         

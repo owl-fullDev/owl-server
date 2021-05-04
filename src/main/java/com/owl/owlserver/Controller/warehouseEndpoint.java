@@ -20,8 +20,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.*;
 import java.util.List;
 
-//@PreAuthorize("hasRole('WAREHOUSE') or hasRole('OFFICE') or hasRole('ADMIN')")
 @CrossOrigin
+@PreAuthorize("hasRole('warehouse') or hasRole('office') or hasRole('admin') or hasRole('boss')")
 @RestController
 @RequestMapping("/warehouseEndpoint")
 public class warehouseEndpoint {

@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-//@PreAuthorize("hasRole('OFFICE') or hasRole('ADMIN')")
+@PreAuthorize("hasRole('office') or hasRole('admin') or hasRole('boss')")
 @CrossOrigin
 @RestController
 @RequestMapping("/hoEndpoint")

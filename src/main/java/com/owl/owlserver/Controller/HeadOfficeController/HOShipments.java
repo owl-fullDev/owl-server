@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-//@PreAuthorize("hasRole('OFFICE') or hasRole('ADMIN')")
+@PreAuthorize("hasRole('office') or hasRole('admin') or hasRole('boss')")
 @CrossOrigin
 @RestController
 @RequestMapping("/hoShipmentsEndpoint")

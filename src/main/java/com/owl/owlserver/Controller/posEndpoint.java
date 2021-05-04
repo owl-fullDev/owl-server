@@ -20,8 +20,9 @@ import javax.transaction.Transactional;
 import java.time.*;
 import java.util.List;
 
-//@PreAuthorize("hasRole('WAREHOUSE') or hasRole('STORE') or hasRole('OFFICE') or hasRole('ADMIN')")
+@CrossOrigin
 @RestController
+@PreAuthorize("hasRole('store') or hasRole('office') or hasRole('admin') or hasRole('boss')")
 @RequestMapping("/posEndpoint")
 public class posEndpoint {
 
