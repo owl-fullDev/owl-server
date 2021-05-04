@@ -83,8 +83,6 @@ public class UsersEndpoint {
         JsonNode wholeJSON = objectMapper.readTree(jsonString);
 
         String username = wholeJSON.get("username").asText();
-        String password = wholeJSON.get("password").asText();
-
         UserCredentials userCredentials = userCredentialsRepository.findByUsername(username);
 
         if (userCredentials==null){
@@ -93,9 +91,6 @@ public class UsersEndpoint {
         String role = userCredentials.getRole();
         if (role.equals("admin")||role.equals("boss")){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"not enough pauthorithy to delete user with role of: "+role);
-        }
-        if (!passwordEncoder.matches(password,userCredentials.getPassword())){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Wrong password of deleted user given");
         }
         userCredentialsRepository.deleteById(userCredentials.getUserId());
 
