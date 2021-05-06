@@ -156,16 +156,16 @@ public class ShipmentService {
 
         //for every shipmentDetail
         shipmentDetailRepository.saveAll(emptyIfNull(shipment.getShipmentDetailList()).stream()
-                //peek means accessing the element in the array, MAP means transform/modify, peek means accesing
+                //peek means accessing the element in the array, MAP means transform/modify, peek means accessing
                 .peek(shipmentDetail -> shipmentDetail.setProduct(new Product(shipmentDetail.getProductId())))
                 .peek(shipmentDetail -> shipmentDetail.setShipment(shipment))
                 .collect(Collectors.toList()));
     }
 
     public List<ShipmentDTO> shipmentToDTO(List<Shipment> shipmentList){
-        Map<Integer, Supplier> suppliers = supplierRespository.findAll().stream().collect(Collectors.toMap(s -> s.getSupplierId(), Function.identity()));
-        Map<Integer, Warehouse> warehouses = warehouseRepository.findAll().stream().collect(Collectors.toMap(w -> w.getWarehouseId(), Function.identity()));
-        Map<Integer, Store> stores = storeRepository.findAll().stream().collect(Collectors.toMap(s -> s.getStoreId(), Function.identity()));
+        Map<Integer, Supplier> suppliers = supplierRespository.findAll().stream().collect(Collectors.toMap(Supplier::getSupplierId, Function.identity()));
+        Map<Integer, Warehouse> warehouses = warehouseRepository.findAll().stream().collect(Collectors.toMap(Warehouse::getWarehouseId, Function.identity()));
+        Map<Integer, Store> stores = storeRepository.findAll().stream().collect(Collectors.toMap(Store::getStoreId, Function.identity()));
 
         BiFunction<Integer, Integer, Tuple3<String, String, String>> fun = (type, typeId) -> {
 
@@ -258,6 +258,7 @@ public class ShipmentService {
             //first time receiving product
             if(warehouseQuantity==null){
                 warehouseQuantity = new WarehouseQuantity(warehouse,product,receivedQuantity);
+                warehouseQuantityList.add(warehouseQuantity);
             }
             else {
                 warehouseQuantity.setInWarehouseQuantity(warehouseQuantity.getInWarehouseQuantity() + receivedQuantity);
