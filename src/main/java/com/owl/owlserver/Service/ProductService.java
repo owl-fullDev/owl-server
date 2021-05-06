@@ -121,7 +121,7 @@ public class ProductService {
 
             Product newProduct = new Product(newFrameId+colourId+newFrameColour.getFrameColourId());
             newProduct.setProductPrice(newFrames.getFramePrice());
-            newProduct.setProductName(newFrameName +" "+ frameColour.getFrameColour());
+            newProduct.setProductName(newFrameName +" "+ newFrameColour.getSupplierColourCode() +"|"+ frameColour.getFrameColour());
             newProduct.setSupplierCode(newFrames.getSupplierName() +" "+ newFrames.getSupplierModelCode() +" "+ newFrameColour.getSupplierColourCode());
             newProductsList.add(newProduct);
             newFrameIdList.add(newFrameId+colourId+newFrameColour.getFrameColourId());
@@ -205,7 +205,7 @@ public class ProductService {
                     powerDivisibleCount = powerDivisibleCount - 1;
                 }
 
-                String powerIdStr = "";
+                String powerIdStr;
                 if (powerId<10){
                     powerIdStr = "0"+ powerId;
                 }
