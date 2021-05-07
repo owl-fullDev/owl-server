@@ -22,10 +22,6 @@ public class Product implements Serializable {
     private double productPrice;
 
     @JsonIgnore
-    @Column(name = "SUPPLIER_CODE")
-    private String supplierCode;
-
-    @JsonIgnore
     @Column(name = "IMAGE_LINK")
     private String imageLink;
 
@@ -36,10 +32,28 @@ public class Product implements Serializable {
         this.productId = productId;
     }
 
-    public Product(String productId, String productName, double productPrice, String supplierCode) {
+    public Product(String productId, String productName, double productPrice) {
         this.productId = productId;
         this.productName = productName;
         this.productPrice = productPrice;
-        this.supplierCode = supplierCode;
+    }
+
+    public boolean isFrame(){
+        boolean productType = false;
+        if (productId.startsWith("11")||productId.startsWith("33")){
+            productType = true;
+        }
+        return productType;
+    }
+
+    public String getProductBrand(){
+        String productBrand = null;
+        if (productId.startsWith("11")||productId.startsWith("33")){
+            productBrand = "OWL";
+        }
+        else if (productId.startsWith("22")||productId.startsWith("44")){
+            productBrand = "Lee Cooper";
+        }
+        return productBrand;
     }
 }

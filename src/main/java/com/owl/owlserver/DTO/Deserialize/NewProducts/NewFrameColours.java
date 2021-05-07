@@ -6,5 +6,5 @@ import lombok.Data;
 public class NewFrameColours {
 
     public String supplierColourCode;
-    public int frameColourId;
+    public int colourId;
 }

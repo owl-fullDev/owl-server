@@ -7,15 +7,13 @@ import java.util.List;
 @Data
 public class NewFrames {
 
-    public int frameCategoryId;
-    public int frameBrandId;
-
-    public String supplierName;
-    public int frameModelId;
+    public int brandId;//11 for OWL, 33 FOR Lee Cooper
+    public int supplierId;//supplier Id
+    public int categoryId;
+    public int modelId;
     public String supplierModelCode;
-
-    public int frameMaterialId;
-    public double framePrice;
+    public int materialId;
+    public double price;
 
     public List<NewFrameColours> newFrameColoursList;
 }

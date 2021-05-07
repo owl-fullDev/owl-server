@@ -44,87 +44,86 @@ public class ProductService {
     public void newFrame(NewFrames newFrames) {
 
         StringBuilder newFrameIdBuilder = new StringBuilder();
-        StringBuilder newFrameNameBuilder = new StringBuilder();
-
-        //frames start with 11
-        newFrameIdBuilder.append("11");
 
         //Frame brand
-        if (newFrames.getFrameBrandId() == 11) {
-            newFrameNameBuilder.append("OWL ");
-        }
-        else if(newFrames.getFrameBrandId() == 22) {
-            newFrameNameBuilder.append("LEE COOPER ");
-        }
-        else {
+        if (!((newFrames.getBrandId() == 11)||(newFrames.getBrandId() == 33))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unknown frame brand Id");
         }
-        newFrameIdBuilder.append(newFrames.getFrameBrandId());
+        newFrameIdBuilder.append(newFrames.getBrandId());
+
+        //Supplier
+        if (newFrames.getSupplierId()<10){
+            newFrameIdBuilder.append('0');
+        }
+        newFrameIdBuilder.append(newFrames.getSupplierId());
 
         //Frame category
-        FrameCategory frameCategory = frameCategoryRepository.findById(newFrames.getFrameCategoryId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No frame category with ID of: " + newFrames.getFrameCategoryId() + " exists!"));
+        FrameCategory frameCategory = frameCategoryRepository.findById(newFrames.getCategoryId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No frame category with ID of: " + newFrames.getCategoryId() + " exists!"));
         if (frameCategory.getFrameCategoryId() < 10) {
             newFrameIdBuilder.append('0');
         }
-        newFrameIdBuilder.append(newFrames.getFrameCategoryId());
-        newFrameNameBuilder.append(frameCategory.getCategoryName()).append(" ");
+        newFrameIdBuilder.append(newFrames.getCategoryId());
 
         //Frame model
-        FrameModel frameModel = frameModelRepository.findAllByFrameCategory_FrameCategoryIdAndFrameCategoryModelId(newFrames.getFrameCategoryId(), newFrames.getFrameModelId());
-        if (frameModel == null) {//new model
-            if (newFrames.getFrameModelId()>=9999){
+        FrameModel frameModel = frameModelRepository.findAllByFrameCategory_FrameCategoryIdAndFrameCategoryModelId(newFrames.getCategoryId(), newFrames.getModelId());
+        //new model
+        if (frameModel == null) {
+            if (newFrames.getModelId()>=9999){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Model in category ID limit reached");
             }
-            frameModel = new FrameModel(frameCategory, newFrames.getFrameModelId(), newFrames.getSupplierModelCode());
+            frameModel = new FrameModel(frameCategory, newFrames.getModelId(), newFrames.getSupplierModelCode());
             frameModelRepository.save(frameModel);
         }
-        if (newFrames.getFrameModelId()<1000){
+        if (newFrames.getModelId()<1000){
             newFrameIdBuilder.append("0");
-            if (newFrames.getFrameModelId()<100){
+            if (newFrames.getModelId()<100){
                 newFrameIdBuilder.append("0");
-                if (newFrames.getFrameModelId()<10){
+                if (newFrames.getModelId()<10){
                     newFrameIdBuilder.append("0");
                 }
             }
         }
         newFrameIdBuilder.append(frameModel.getFrameCategoryModelId());
-        newFrameNameBuilder.append(frameModel.getFrameModel()).append(" ");
 
         //Material
-        FrameMaterial frameMaterial = frameMaterialRepository.findById(newFrames.getFrameMaterialId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No frame material with ID of: " + newFrames.getFrameMaterialId() + " exists!"));
+        FrameMaterial frameMaterial = frameMaterialRepository.findById(newFrames.getMaterialId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No frame material with ID of: " + newFrames.getMaterialId() + " exists!"));
         if (frameMaterial.getFrameMaterialId() < 10) {
             newFrameIdBuilder.append('0');
         }
-        newFrameIdBuilder.append(newFrames.getFrameMaterialId());
-        newFrameNameBuilder.append(frameMaterial.getFrameMaterial()).append(" ");
+        newFrameIdBuilder.append(newFrames.getMaterialId());
 
         //Colors
         List<FrameColour> frameColourList = frameColourRepository.findAll();
+        String newFrameName = frameCategory.getCategoryName()+" "+frameModel.getFrameModel()+" ";
         String newFrameId = newFrameIdBuilder.toString();
         List<String> newFrameIdList = new ArrayList<>();
-        String newFrameName = newFrameNameBuilder.toString();
         List<Product> newProductsList = new ArrayList<>();
         for (NewFrameColours newFrameColour : newFrames.getNewFrameColoursList()) {
-            String colourId = "";
-            if (newFrameColour.getFrameColourId()<10){
-                colourId = "0";
-            }
 
-            FrameColour frameColour = frameColourList.stream().filter(frameColour2 -> newFrameColour.frameColourId==frameColour2.getFrameColourId()).findFirst().orElse(null);
+            FrameColour frameColour = frameColourList.stream().filter(frameColour2 -> newFrameColour.getColourId()==frameColour2.getFrameColourId()).findFirst().orElse(null);
             if (frameColour==null){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Colour Id not recognized");
             }
 
-            if ((newFrameId+colourId+newFrameColour.getFrameColourId()).length()!=14){
+            String colourId = "";
+            if (newFrameColour.getColourId()<10){
+                colourId = "0"+newFrameColour.getColourId();
+            }
+            else {
+                colourId = Integer.toString(newFrameColour.getColourId());
+            }
+
+            String finalNewFrameId = newFrameId+colourId;
+            //Final Length check
+            if ((finalNewFrameId).length()!=16){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Something has gone wrong with barcode generation!");
             }
 
-            Product newProduct = new Product(newFrameId+colourId+newFrameColour.getFrameColourId());
-            newProduct.setProductPrice(newFrames.getFramePrice());
-            newProduct.setProductName(newFrameName +" "+ newFrameColour.getSupplierColourCode() +"|"+ frameColour.getFrameColour());
-            newProduct.setSupplierCode(newFrames.getSupplierName() +" "+ newFrames.getSupplierModelCode() +" "+ newFrameColour.getSupplierColourCode());
+            Product newProduct = new Product(finalNewFrameId);
+            newProduct.setProductPrice(newFrames.getPrice());
+            newProduct.setProductName(newFrameName+newFrameColour.getSupplierColourCode());
             newProductsList.add(newProduct);
-            newFrameIdList.add(newFrameId+colourId+newFrameColour.getFrameColourId());
+            newFrameIdList.add(finalNewFrameId);
         }
 
         //error check to see if products already exist
@@ -133,10 +132,8 @@ public class ProductService {
         if (existingProductIdList.size() != 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The following frame IDs already exist!: {" + existingProductIdList.toString() + "}");
         }
-
         productRepository.saveAll(newProductsList);
     }
-
 
 
     @Transactional
