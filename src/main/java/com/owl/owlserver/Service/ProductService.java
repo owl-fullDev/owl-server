@@ -46,7 +46,7 @@ public class ProductService {
         StringBuilder newFrameIdBuilder = new StringBuilder();
 
         //Frame brand
-        if (!((newFrames.getBrandId() == 11)||(newFrames.getBrandId() == 33))) {
+        if (!((newFrames.getBrandId() == 11)||(newFrames.getBrandId() == 22))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unknown frame brand Id");
         }
         newFrameIdBuilder.append(newFrames.getBrandId());
@@ -105,7 +105,7 @@ public class ProductService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Colour Id not recognized");
             }
 
-            String colourId = "";
+            String colourId;
             if (newFrameColour.getColourId()<10){
                 colourId = "0"+newFrameColour.getColourId();
             }
@@ -140,81 +140,53 @@ public class ProductService {
     public void newLens(NewLenses newLenses) {
 
         StringBuilder newLensIdBuilder = new StringBuilder();
-        StringBuilder newLensNameBuilder = new StringBuilder();
 
         //lenses start with 22
-        newLensIdBuilder.append("22");
+        newLensIdBuilder.append("33");
 
         //Lens category
-        LensCategory lensCategory = lensCategoryRepository.findById(newLenses.getLensCategoryId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No lens category with ID of: " + newLenses.getLensCategoryId() + " exists!"));
+        LensCategory lensCategory = lensCategoryRepository.findById(newLenses.getCategoryId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No lens category with ID of: " + newLenses.getCategoryId() + " exists!"));
         if (lensCategory.getLensCategoryId() < 10) {
             newLensIdBuilder.append('0');
         }
         newLensIdBuilder.append(lensCategory.getLensCategoryId());
-        newLensNameBuilder.append(lensCategory.getCategoryName()).append(" ");
-
-        //Lens thickness
-        if (newLenses.getLensThickness() < 10) {
-            newLensIdBuilder.append('0');
-        }
-        newLensIdBuilder.append(newLenses.getLensThickness());
-        newLensNameBuilder.append("1.").append(newLenses.getLensThickness()).append(" ");
 
         //Lens model
-        LensModel lensModel = lensModelRepository.findByLensCategory_LensCategoryIdAndLensCategoryModelId(lensCategory.getLensCategoryId(), newLenses.getLensModelId());
+        LensModel lensModel = lensModelRepository.findByLensCategory_LensCategoryIdAndLensCategoryModelId(lensCategory.getLensCategoryId(), newLenses.getModelId());
         if (lensModel == null) {
-            lensModel = new LensModel(lensCategory, newLenses.getLensModelId(), newLenses.getLensModel());
+            lensModel = new LensModel(lensCategory, newLenses.getModelId(), newLenses.getModel());
             lensModelRepository.save(lensModel);
         }
         if (lensModel.getLensCategoryModelId() < 10) {
             newLensIdBuilder.append('0');
         }
         newLensIdBuilder.append(lensModel.getLensModelId());
-        newLensNameBuilder.append(lensModel.getLensModel()).append(" ");
 
         //prescriptions
         List<Product> newLensList = new ArrayList<>();
         List<String> newLensIdList = new ArrayList<>();
-        String lensName = newLensNameBuilder.toString();
 
         for (NewLensesPrescription newLensPrescription : newLenses.getNewLensesPrescriptionList()) {
             StringBuilder lensPowerIdBuilder = new StringBuilder();
             StringBuilder lensPowerNameBuilder = new StringBuilder();
 
             double lensPower = newLensPrescription.getPower();
-
             if (lensPower == 0) {
                 lensPowerIdBuilder.append("0000");
                 lensPowerNameBuilder.append("+0.00 -0.00");
-            }
-            else {
-                int powerId = 0;
-                double powerDivisibleCount = lensPower / .25;
-                boolean add2or3 = true;
-                while (powerDivisibleCount != 0) {
-                    if (add2or3) {
-                        powerId = powerId + 2;
-                    }
-                    else {
-                        powerId = powerId + 3;
-                    }
-                    add2or3 = !add2or3;
-                    powerDivisibleCount = powerDivisibleCount - 1;
-                }
-
+            } else {
+                int powerId = (int) (newLensPrescription.getPower() / 0.25);
                 String powerIdStr;
-                if (powerId<10){
-                    powerIdStr = "0"+ powerId;
-                }
-                else {
+                if (powerId < 10) {
+                    powerIdStr = '0' + Integer.toString(powerId);
+                } else {
                     powerIdStr = Integer.toString(powerId);
                 }
 
                 if (newLensPrescription.isPowerPolarity()) {
                     lensPowerIdBuilder.append(powerIdStr).append("00");
                     lensPowerNameBuilder.append("+").append(newLensPrescription.getPower()).append(" -0.00");
-                }
-                else {
+                } else {
                     lensPowerIdBuilder.append("00").append(powerIdStr);
                     lensPowerNameBuilder.append("+0.00").append(" -").append(newLensPrescription.getPower());
                 }
@@ -222,44 +194,52 @@ public class ProductService {
 
             //cylinder values
             double cylinder = newLensPrescription.getCylinder();
-
-            if ((newLensIdBuilder.toString() + lensPowerIdBuilder.toString() + "00").length()!=14){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Something has gone wrong with barcode generation!");
+            if (cylinder == 0) {
+                lensPowerIdBuilder.append("00");
+                lensPowerNameBuilder.append(" CYL-0.00");
             }
-            String newLensId = newLensIdBuilder.toString() + lensPowerIdBuilder.toString() + "00";
+            else {
+                int cylinderId = (int) (newLensPrescription.getCylinder() / 0.25);
+                String cylinderIdStr;
+                if (cylinderId < 10) {
+                    cylinderIdStr = '0' + Integer.toString(cylinderId);
+                } else {
+                    cylinderIdStr = Integer.toString(cylinderId);
+                }
+
+                lensPowerIdBuilder.append(cylinderIdStr);
+                lensPowerNameBuilder.append(" CYL-").append(cylinder);
+            }
+
+            //Add values
+            double add = newLensPrescription.getAdd();
+            if (add == 0) {
+                lensPowerIdBuilder.append("00");
+                lensPowerNameBuilder.append(" ADD+0.00");
+            }
+            else {
+                int addId = (int) (newLensPrescription.getAdd() / 0.25);
+                String addIdStr;
+                if (addId < 10) {
+                    addIdStr = '0' + Integer.toString(addId);
+                } else {
+                    addIdStr = Integer.toString(addId);
+                }
+
+                lensPowerIdBuilder.append(addIdStr);
+                lensPowerNameBuilder.append(" ADD+").append(add);
+            }
+
+            if ((newLensIdBuilder.toString() + lensPowerIdBuilder.toString()).length() != 16) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Something has gone wrong with lens barcode generation!");
+            }
+
+            String newLensId = newLensIdBuilder.toString() + lensPowerIdBuilder.toString();
             Product newLens = new Product(newLensId);
-            newLens.setProductName(lensName + lensPowerNameBuilder.toString() + " -0.00");
-            newLens.setProductPrice(newLenses.getLensPrice());
+            newLens.setProductName(lensCategory.getCategoryName()+" "+lensModel.getLensModel()+" "+lensPowerNameBuilder.toString());
+            newLens.setProductPrice(newLenses.getPrice());
             newLensList.add(newLens);
             newLensIdList.add(newLensId);
-
-            int cylinderId = 0;
-            double cylinderDivisibleCount = 0;
-            boolean add2or3 = true;
-            while (cylinderDivisibleCount < cylinder/0.25) {
-                if (add2or3) {
-                    cylinderId = cylinderId + 2;
-                } else {
-                    cylinderId = cylinderId + 3;
-                }
-                add2or3 = !add2or3;
-                cylinderDivisibleCount = cylinderDivisibleCount + 1;
-
-                String cylinderIdStr = Integer.toString(cylinderId);
-                if (cylinderId<10){
-                    cylinderIdStr = '0'+Integer.toString(cylinderId);
-                }
-
-                if ((newLensIdBuilder.toString() + lensPowerIdBuilder.toString()+cylinderIdStr).length()!=14){
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Something has gone wrong with barcode generation!");
-                }
-                newLensId = newLensIdBuilder.toString() + lensPowerIdBuilder.toString()+cylinderIdStr;
-                newLens = new Product(newLensId);
-                newLens.setProductName(lensName + lensPowerNameBuilder.toString()+" -"+0.25*cylinderDivisibleCount);
-                newLens.setProductPrice(newLenses.getLensPrice());
-                newLensList.add(newLens);
-                newLensIdList.add(newLensId);
-            }
         }
 
         //error check to see if products already exist

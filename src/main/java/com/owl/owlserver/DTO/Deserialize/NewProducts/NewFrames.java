@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class NewFrames {
 
-    public int brandId;//11 for OWL, 33 FOR Lee Cooper
+    public int brandId;//11 for OWL, 22 FOR Lee Cooper
     public int supplierId;//supplier Id
     public int categoryId;
     public int modelId;

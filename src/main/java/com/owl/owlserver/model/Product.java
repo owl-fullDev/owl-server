@@ -40,20 +40,9 @@ public class Product implements Serializable {
 
     public boolean isFrame(){
         boolean productType = false;
-        if (productId.startsWith("11")||productId.startsWith("33")){
+        if (productId.startsWith("11")||productId.startsWith("22")){
             productType = true;
         }
         return productType;
-    }
-
-    public String getProductBrand(){
-        String productBrand = null;
-        if (productId.startsWith("11")||productId.startsWith("33")){
-            productBrand = "OWL";
-        }
-        else if (productId.startsWith("22")||productId.startsWith("44")){
-            productBrand = "Lee Cooper";
-        }
-        return productBrand;
     }
 }

@@ -7,13 +7,11 @@ import java.util.List;
 @Data
 public class NewLenses {
 
-    public int lensCategoryId;
-    public int lensThickness;
+    public int categoryId;//33 for lenses
+    public int modelId;
+    public String model;
 
-    public int lensModelId;
-    public String lensModel;
-
-    public double lensPrice;
+    public double price;
 
     public List<NewLensesPrescription> newLensesPrescriptionList;
 }

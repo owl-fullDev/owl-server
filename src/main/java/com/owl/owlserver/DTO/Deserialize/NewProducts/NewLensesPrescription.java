@@ -8,4 +8,5 @@ public class NewLensesPrescription {
     public boolean powerPolarity;
     public double power;
     public double cylinder;
+    public double add;
 }
