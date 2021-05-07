@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -113,7 +114,10 @@ public class ProductService {
                 colourId = Integer.toString(newFrameColour.getColourId());
             }
 
-            String finalNewFrameId = newFrameId+colourId;
+            LocalDate date = LocalDate.now();
+            int year = date.getYear()-2000;
+
+            String finalNewFrameId = newFrameId+colourId+year;
             //Final Length check
             if ((finalNewFrameId).length()!=16){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Something has gone wrong with barcode generation!");
