@@ -161,8 +161,15 @@ public class ProductService {
             lensModel = new LensModel(lensCategory, newLenses.getModelId(), newLenses.getModel());
             lensModelRepository.save(lensModel);
         }
-        if (lensModel.getLensCategoryModelId() < 10) {
-            newLensIdBuilder.append('0');
+
+        if (lensModel.getLensCategoryModelId()<1000){
+            newLensIdBuilder.append("0");
+            if (lensModel.getLensCategoryModelId()<100){
+                newLensIdBuilder.append("0");
+                if (lensModel.getLensCategoryModelId()<10){
+                    newLensIdBuilder.append("0");
+                }
+            }
         }
         newLensIdBuilder.append(lensModel.getLensModelId());
 
@@ -178,7 +185,8 @@ public class ProductService {
             if (lensPower == 0) {
                 lensPowerIdBuilder.append("0000");
                 lensPowerNameBuilder.append("+0.00 -0.00");
-            } else {
+            }
+            else {
                 int powerId = (int) (newLensPrescription.getPower() / 0.25);
                 String powerIdStr;
                 if (powerId < 10) {
@@ -235,7 +243,7 @@ public class ProductService {
             }
 
             if ((newLensIdBuilder.toString() + lensPowerIdBuilder.toString()).length() != 16) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Something has gone wrong with lens barcode generation!");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Something has gone wrong with lens barcode generation!"+(newLensIdBuilder.toString() + lensPowerIdBuilder.toString()));
             }
 
             String newLensId = newLensIdBuilder.toString() + lensPowerIdBuilder.toString();

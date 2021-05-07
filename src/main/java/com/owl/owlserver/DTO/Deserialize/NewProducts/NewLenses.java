@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class NewLenses {
 
-    public int categoryId;//33 for lenses
+    public int categoryId;
     public int modelId;
     public String model;
 
